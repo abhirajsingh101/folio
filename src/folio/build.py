@@ -70,7 +70,12 @@ def run_charts(src: Path, quiet: bool = False) -> None:
     if not quiet:
         print(f"  charts    {script.name}")
     r = subprocess.run(
-        [sys.executable, str(script)], cwd=script.parent, capture_output=True, text=True
+        [sys.executable, str(script)],
+        cwd=script.parent,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     if r.returncode:
         raise BuildError(f"charts.py failed:\n{r.stdout}\n{r.stderr}")

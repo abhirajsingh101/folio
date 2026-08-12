@@ -53,7 +53,16 @@ folio doctor                        # tells you exactly what your machine is mis
 GDK-PixBuf through ctypes, and **pip cannot install those** — it is the single
 most common reason a document toolchain dies on someone else's laptop. folio
 detects that state, prints the exact command for your platform, and falls back
-to Chromium so you still get a document while you fix it.
+to a browser so you still get a document while you fix it.
+
+If you cannot install native libraries at all, the fallback needs no root:
+
+```bash
+pip install playwright && playwright install chromium
+```
+
+You lose running headers, page numbers and contents-page references — folio
+says so on every build — but you get a document.
 
 <details>
 <summary>Native libraries, per platform</summary>

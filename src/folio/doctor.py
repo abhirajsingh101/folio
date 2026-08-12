@@ -68,11 +68,14 @@ NATIVE_FIX = {
     "unknown": ["Install pango, cairo and gdk-pixbuf for your platform."],
 }
 
+# Ordered by reliability for headless print-to-pdf. Distro `chromium` is
+# often snap-confined and cannot read files outside its sandbox, so real
+# Chrome comes first.
 CHROME_BINARIES = [
-    "chromium",
-    "chromium-browser",
     "google-chrome",
     "google-chrome-stable",
+    "chromium-browser",
+    "chromium",
     "microsoft-edge",
     "brave-browser",
 ]
@@ -84,10 +87,30 @@ CHROME_PATHS = [
 ]
 
 
+def _playwright_ready() -> bool:
+    """Playwright with an installed browser — the reliable fallback.
+
+    It bundles its own Chromium and drives it over DevTools rather than the
+    command line, which is why it works on hosts where `chrome --print-to-pdf`
+    silently hangs.
+    """
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception:
+        return False
+    try:
+        with sync_playwright() as p:
+            return bool(p.chromium.executable_path)
+    except Exception:
+        return False
+
+
 def find_chrome() -> str | None:
-    """A Chromium-family binary usable for print-to-PDF, if one exists."""
+    """A usable print-to-PDF engine, most reliable first."""
     if os.environ.get("FOLIO_CHROME"):
         return os.environ["FOLIO_CHROME"]
+    if _playwright_ready():
+        return "playwright"
     for name in CHROME_BINARIES:
         p = shutil.which(name)
         if p:
@@ -95,12 +118,7 @@ def find_chrome() -> str | None:
     for p in CHROME_PATHS:
         if os.path.exists(p):
             return p
-    try:  # playwright ships its own chromium
-        from playwright.sync_api import sync_playwright  # noqa: F401
-
-        return "playwright"
-    except Exception:
-        return None
+    return None
 
 
 def check_weasyprint() -> Check:
@@ -133,9 +151,19 @@ def check_chrome() -> Check:
             "Chromium fallback",
             WARN,
             "no Chromium-family browser found",
-            ["Install Chrome/Chromium, or: pip install playwright && playwright install chromium"],
+            [
+                "pip install playwright && playwright install chromium  (recommended)",
+                "…or install Google Chrome.",
+            ],
         )
-    return Check("Chromium fallback", OK, p)
+    if p == "playwright":
+        return Check("Chromium fallback", OK, "playwright (bundled browser)")
+    return Check(
+        "Chromium fallback",
+        WARN,
+        f"{p} — command-line printing, unreliable on some hosts",
+        ["More reliable: pip install playwright && playwright install chromium"],
+    )
 
 
 def check_matplotlib() -> Check:

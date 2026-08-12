@@ -124,7 +124,7 @@ class ChromiumRenderer(Renderer):
     ]
 
     def _via_binary(self, url: str, out: Path) -> None:
-        with tempfile.TemporaryDirectory() as profile:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:
             cmd = [
                 self._bin,
                 *self._FLAGS,
@@ -133,12 +133,20 @@ class ChromiumRenderer(Renderer):
                 url,
             ]
             try:
-                r = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+                r = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=45,
+                    encoding="utf-8",
+                    errors="replace",
+                )
             except subprocess.TimeoutExpired as e:
                 raise RenderError(
-                    "chromium hung while printing and was killed after 90s.\n"
-                    "  This renderer is only a fallback — install WeasyPrint for\n"
-                    "  reliable output. Run `folio doctor` for the exact command."
+                    "chromium hung while printing and was killed after 45s.\n"
+                    "  Command-line printing is unreliable on some hosts. Either\n"
+                    "  `pip install playwright && playwright install chromium`,\n"
+                    "  or install WeasyPrint. Run `folio doctor`."
                 ) from e
             if not out.exists():
                 raise RenderError(
