@@ -33,6 +33,40 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
   guessing. Running headers and footers are measured as well, since margin
   boxes sit outside the content frame and never get a second look.
 
+### Added — figures
+- **`figure-rescaled`** — a vector drawn at a materially different size than
+  it was authored. This was the last blind spot: a chart is an image, so every
+  other rule stopped at its edge, while inside sat tick labels and a legend
+  authored to match the document's type. Stretch a half-column figure across a
+  full column and its 8pt labels arrive at 16pt; do the reverse and they
+  arrive at 4pt, under the legibility floor, with nothing downstream able to
+  say so. Vectors do not go soft, so this is not the raster rule renamed —
+  nothing is lost in resolution; what changes is the type.
+- Tolerance is ±10%. Column width shifts with each theme's page margins, so
+  exact is not achievable and a few percent is invisible. `folio components`
+  now carries the per-theme column widths, which nobody could derive.
+
+### Fixed — two checks that never ran
+- **`image-upscaled` had been dead.** It read `image.intrinsic_width`, which
+  WeasyPrint 68 does not have — the size comes from `get_intrinsic_size` — so
+  the attribute returned None for every image and the rule silently skipped
+  all of them. It was also the only rule with no test, which is why nothing
+  noticed. Now measured through the supported API, with tests.
+- **It also only looked at `InlineReplacedBox`**, while folio's own stylesheet
+  sets `figure img { display: block }`. So even once the size was readable,
+  the rule could not see a single image the kit actually produces. Both block
+  and inline replaced boxes are now covered, and rasters and vectors are split
+  between the two rules that suit them.
+
+### Added — chart colours enforced at the source
+`theme.use` emits chart text as outlines (`svg.fonttype='path'`) so a figure
+renders identically wherever the PDF is built. That is the right trade for a
+kit whose fragile dependency is fonts — and it means no document-time rule can
+ever see inside a chart. Chart label colours are therefore enforced where they
+are chosen: tests assert every palette's `ink` and `mute` clear AA on paper,
+and that the status fills support the white numerals drawn on them. Every
+pre-`0.1.0` mute value fails them.
+
 ### Added — imagery guidance
 - **`folio imagery`** — when a document may carry a non-chart image and how to
   make one that does not look generated. The default answer is no: a generic

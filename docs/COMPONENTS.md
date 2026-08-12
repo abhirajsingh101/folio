@@ -143,6 +143,27 @@ Caption the *conclusion*, not the axes.
 Every figure needs a number. A figure is a claim: numbered, captioned, and
 referenced from the text. If an image is not that, it is a plate.
 
+### Size a chart at the width it will print
+
+A chart carries type — tick labels, axis titles, a legend — authored to sit
+with the document's own. Scaling the image scales all of it, so a half-column
+figure stretched across a full column arrives with 16pt labels, and the
+reverse arrives with 4pt. `folio check` reports it as `figure-rescaled`.
+
+Column width depends on the theme's page margins, so there is no single right
+number. On A4:
+
+| theme | full column | half column |
+|---|---|---|
+| `report` | 6.85in | 3.31in |
+| `editorial` | 6.38in | 3.07in |
+| `technical` | 7.01in | 3.39in |
+| `minimal` | 6.54in | 3.15in |
+
+Half column assumes two figures in a `.fig-row`, which has a 6mm gutter.
+Being a few percent out is invisible and not reported; the check exists to
+catch a figure authored for one slot and dropped into another.
+
 ## Plates
 
 Decorative imagery — cover art, a section opener, a texture. **Never

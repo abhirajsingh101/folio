@@ -156,6 +156,12 @@ folio's own development — that thin page on p6 is a real finding from the
 example in this repo, and that 1.9:1 footer is a real finding from folio's own
 stylesheet, caught the day the contrast rule was written.
 
+Charts get measured too, which is harder than it sounds: a chart is an image,
+so every other rule stops at its edge. `figure-rescaled` catches a vector
+drawn at a materially different size than it was authored — the labels inside
+scale with the image, so a half-column figure stretched full width arrives
+with 16pt tick labels.
+
 It also asks whether the document was *built the way the kit intends*, which
 is the failure nothing else catches: a hand-rolled style renders perfectly and
 passes every other check. `inline-style` flags a hand-rolled declaration,

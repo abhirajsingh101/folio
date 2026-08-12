@@ -134,8 +134,10 @@ Only after all four is it done.
    genuinely missing everywhere, that is a pull request to folio, not a local
    hack.
 4. **Charts go through `from folio import theme`.** Size figures in real inches
-   at final printed width — full column 6.6in, half column 3.25in. Never scale
-   a figure in CSS; the labels shrink with it. Output SVG, never PNG.
+   at the width they will print — roughly 6.4–7.0in full column and 3.1–3.4in
+   half, depending on the theme's page margins (`folio components` has the
+   table). Never scale a figure in CSS; the labels scale with it, and
+   `folio check` reports it as `figure-rescaled`. Output SVG, never PNG.
 5. **Caption the conclusion, not the axes.** "Deploy frequency doubled after the
    July cutover" beats "Deploys per month".
 6. **Use real data.** Pull actual numbers from the repo — git history, test

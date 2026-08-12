@@ -29,6 +29,11 @@ ORPHAN_HEADING_MM = 22
 OVERFLOW_TOLERANCE_PX = 1.0
 # Raster upscaled beyond this looks soft on paper.
 MAX_IMAGE_UPSCALE = 1.15
+# A vector this far off its authored size carries type that no longer matches
+# the page. Column width shifts with each theme's page margins, so exact is
+# not achievable and a few percent is invisible; this catches the mistakes
+# that change what the labels look like.
+FIGURE_SCALE_TOL = 0.10
 # WCAG AA: body text needs 4.5:1, large text 3:1. Print is if anything less
 # forgiving than a screen — no backlight, and ink dries lighter than it renders.
 AA_NORMAL = 4.5
@@ -45,6 +50,7 @@ SAME_SIZE_PCT = 1.0
 
 MM = 96 / 25.4  # WeasyPrint lays out in CSS px
 PT = 96 / 72
+PX_IN = 96
 PAPER = (1.0, 1.0, 1.0)
 
 
@@ -470,15 +476,42 @@ def _check_contrast(root, n, parents: dict, paper) -> list[Finding]:
     return out
 
 
+def _replaced(root):
+    """Every box that draws an image, block or inline.
+
+    Restricting this to InlineReplacedBox was a silent bug: folio's own
+    stylesheet sets `figure img { display: block }`, so the only images the
+    kit produces were the ones the check could not see.
+    """
+    for box in _walk(root):
+        if getattr(box, "replacement", None) is not None:
+            yield box
+
+
+def _intrinsic_width(box) -> float | None:
+    """The image's own width in CSS px, or None if it declares none.
+
+    WeasyPrint 68 has no `intrinsic_width` attribute — the size comes from
+    `get_intrinsic_size`. Reading the attribute returned None for every image,
+    so the upscale rule quietly stopped firing at some point and nothing
+    noticed, because it was the one rule with no test.
+    """
+    try:
+        width, height, _ratio = box.replacement.get_intrinsic_size(1, box.style["font_size"])
+    except Exception:  # pragma: no cover - defensive
+        return None
+    if not width or not height:
+        return None
+    return float(width)
+
+
 def _check_image_scale(root, n) -> list[Finding]:
     """A raster blown up past its pixels looks soft on paper."""
     out = []
-    for box in _walk(root):
-        if type(box).__name__ != "InlineReplacedBox":
+    for box in _replaced(root):
+        if type(box.replacement).__name__ != "RasterImage":
             continue
-        img = getattr(box, "replacement", None)
-        intrinsic = getattr(img, "intrinsic_width", None)
-        r = _rect(box)
+        intrinsic, r = _intrinsic_width(box), _rect(box)
         if not r or not intrinsic:
             continue
         drawn = r[2] - r[0]
@@ -492,6 +525,44 @@ def _check_image_scale(root, n) -> list[Finding]:
                     "export the figure as SVG, or at the printed size",
                 )
             )
+    return out
+
+
+def _check_figure_scale(root, n) -> list[Finding]:
+    """A vector carries type, and scaling the image scales the type with it.
+
+    This is the blind spot every other rule had: a chart is an image, so
+    measurement stopped at its edge — while inside it were tick labels and a
+    legend, authored to sit with the document's own type. Draw a half-column
+    figure across a full column and its 8pt labels arrive at 16pt; do the
+    reverse and they arrive at 4pt, below the legibility floor, with nothing
+    downstream able to tell.
+
+    Vectors do not go soft, so this is not the raster problem wearing a
+    different name — nothing is lost in resolution. What changes is the type.
+    """
+    out = []
+    for box in _replaced(root):
+        if type(box.replacement).__name__ != "SVGImage":
+            continue
+        intrinsic, r = _intrinsic_width(box), _rect(box)
+        if not r or not intrinsic:
+            continue
+        drawn = r[2] - r[0]
+        scale = drawn / intrinsic
+        if abs(scale - 1.0) <= FIGURE_SCALE_TOL:
+            continue
+        out.append(
+            Finding(
+                "figure-rescaled",
+                WARN,
+                n,
+                f"vector drawn at {scale:.1f}× its authored size "
+                f"({intrinsic / PX_IN:.2f}in authored, {drawn / PX_IN:.2f}in drawn)",
+                "author the figure at its printed width — scaling it scales "
+                "every tick label with it",
+            )
+        )
     return out
 
 
@@ -729,6 +800,7 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
         findings += _check_tiny_text(root, i)
         findings += _check_orphan_heading(root, i, frame)
         findings += _check_image_scale(root, i)
+        findings += _check_figure_scale(root, i)
 
     # Structure and conformance are properties of the document, not of a page.
     ordered = list(_elements_in_order(pages))
