@@ -47,10 +47,17 @@ def _parser() -> argparse.ArgumentParser:
         choices=["weasyprint", "chromium"],
         help="force a renderer (default: best available)",
     )
+    b.add_argument(
+        "--check", action="store_true", help="measure the rendered layout and report defects"
+    )
     b.add_argument("-q", "--quiet", action="store_true")
 
     f = sub.add_parser("fonts", help="check font coverage for a document's scripts")
     f.add_argument("file", nargs="?", help="document to inspect (default: whole system)")
+
+    c = sub.add_parser("check", help="measure the rendered layout for real defects")
+    c.add_argument("file", help="source .html document")
+    c.add_argument("--strict", action="store_true", help="fail on warnings too")
 
     sub.add_parser("themes", help="list the available design directions")
     sub.add_parser("components", help="print the component vocabulary")
@@ -89,6 +96,26 @@ def main(argv: list[str] | None = None) -> int:
         checks, can_render = doctor.run()
         doctor.report(checks, can_render)
         return 0 if can_render else 1
+
+    if args.cmd == "check":
+        from .build import BuildError, prepare
+        from .check import ERROR, CheckUnavailable, inspect, summarise
+
+        src = Path(args.file)
+        try:
+            doc, _ = prepare(src)
+            findings = inspect(doc, src.parent)
+        except (BuildError, CheckUnavailable) as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        print(f"folio check — {src.name}\n")
+        for f in findings:
+            print(f)
+            if f.hint:
+                print(f"        → {f.hint}")
+        print(f"\n{summarise(findings)}")
+        errors = [f for f in findings if f.severity == ERROR]
+        return 1 if errors or (args.strict and findings) else 0
 
     if args.cmd == "fonts":
         from . import doctor as D
@@ -154,7 +181,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "build":
-        from .build import BuildError, build
+        from .build import BuildError, build, prepare
         from .renderers import RenderError
 
         src = Path(args.file)
@@ -171,6 +198,22 @@ def main(argv: list[str] | None = None) -> int:
         except (BuildError, RenderError) as e:
             print(f"\nerror: {e}", file=sys.stderr)
             return 1
+        if args.check:
+            from .check import ERROR, CheckUnavailable, inspect, summarise
+
+            try:
+                doc, _ = prepare(src)
+                findings = inspect(doc, src.resolve().parent)
+            except CheckUnavailable as e:
+                print(f"\n  ! check skipped: {e}")
+                return 0
+            print()
+            for f in findings:
+                print(f)
+                if f.hint:
+                    print(f"        → {f.hint}")
+            print(f"  {summarise(findings)}")
+            return 1 if any(f.severity == ERROR for f in findings) else 0
         return 0
 
     return 0  # pragma: no cover

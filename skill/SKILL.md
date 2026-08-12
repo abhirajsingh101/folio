@@ -26,12 +26,13 @@ contents page whose numbers are real. Author in HTML with folio's classes.
 ## Workflow
 
 ```bash
-folio doctor                     # FIRST RUN ON A NEW MACHINE — what's missing
-folio themes                     # the four design directions
-folio init --theme editorial     # scaffold document.html + charts.py
-folio build document.html        # → document.pdf + document.page.html
-folio components                 # the component vocabulary — READ FIRST
-folio gotchas                    # silent renderer failure modes
+folio doctor                        # FIRST RUN ON A NEW MACHINE — what's missing
+folio themes                        # the four design directions
+folio init --theme editorial        # scaffold document.html + charts.py
+folio build document.html --check   # render, then measure the layout
+folio check document.html           # measure without rebuilding
+folio components                    # the component vocabulary — READ FIRST
+folio gotchas                       # silent renderer failure modes
 ```
 
 `folio build` runs a sibling `charts.py` first, injects the stylesheet, then
@@ -50,6 +51,45 @@ Ask, or infer from the audience — do not always take the default.
   the least forgiving: with no fills or borders, weak content shows.
 
 Set it on the document (`<body data-theme="…">`), never per element.
+
+## The loop — do not skip a pass
+
+A document is not done when it renders. Print defects are silent by nature:
+the PDF is valid and merely looks wrong. Work in passes, and do not move on
+while a pass is failing.
+
+**Pass 1 — draft.** `folio init --theme <t>`, then write the content using the
+component vocabulary. Real data only.
+
+**Pass 2 — measure.** `folio build document.html --check`
+
+This renders and then measures the actual layout tree: text overrunning its
+box, elements overlapping, pages a fifth full, headings stranded at a page
+foot, text below legible size, rasters upscaled past their pixels. Every rule
+encodes a defect that really shipped.
+
+- **Any `✗` error → fix and re-run.** Never hand over a document with errors.
+- **Each `!` warning → judge it.** Most are real. A thin page almost always
+  means a block jumped rather than fitting; reorder the section, or mark a
+  short table `class="keep"`.
+
+**Pass 3 — look.** The checker measures geometry, not taste. It cannot see
+that a chart is the wrong type, a caption states the obvious, or a page is
+ugly. Render and actually look:
+
+```bash
+pdftoppm -png -r 100 document.pdf /tmp/p && ls /tmp/p*
+```
+
+Read every page, not just the one you were working on. Print layout is global:
+a change to table padding can strand rows four sections later.
+
+**Pass 4 — read it as the recipient.** Does the first page answer "what
+happened and what now?" Does every caption state a conclusion rather than
+naming the axes? Is any number unsourced? Cut anything that survives only
+because it was easy to generate.
+
+Only after all four is it done.
 
 ## Rules
 
@@ -71,11 +111,8 @@ Set it on the document (`<body data-theme="…">`), never per element.
    July cutover" beats "Deploys per month".
 6. **Use real data.** Pull actual numbers from the repo — git history, test
    counts, planning docs. A report with invented figures is worse than none.
-7. **Look at the output.** Layout bugs here are silent by nature: a valid PDF
-   that looks wrong. Always render and inspect before claiming success:
-   ```bash
-   pdftoppm -png -r 78 -f 1 -l 3 document.pdf /tmp/pg && ls /tmp/pg*
-   ```
+7. **Never claim a document is finished without a clean `--check` and a look
+   at the rendered pages.** "It built" is not "it is good".
 8. **If `folio build` warns about the Chromium renderer**, tell the user: their
    PDF has no running headers or page numbers, and `folio doctor` prints the
    fix.

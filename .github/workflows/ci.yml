@@ -95,6 +95,12 @@ jobs:
           test -f document.pdf || { echo "no PDF produced"; exit 1; }
           head -c 4 document.pdf | grep -q '%PDF' || { echo "not a PDF"; exit 1; }
 
+      # The scaffold every user starts from must pass folio's own quality gate.
+      - name: Scaffold passes the quality gate
+        if: runner.os != 'Windows'
+        shell: bash
+        run: cd /tmp/folio-e2e && python -m folio check document.html
+
   lint:
     runs-on: ubuntu-latest
     steps:

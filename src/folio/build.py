@@ -124,6 +124,22 @@ def _embed_assets(html: str, base: Path) -> str:
     return re.sub(r'(<img[^>]+src=")([^"]+)(")', repl, html)
 
 
+def prepare(src: Path) -> tuple[str, str]:
+    """Assemble the final HTML exactly as `build` would. Returns (html, theme).
+
+    Shared so `folio check` measures the document that would actually ship,
+    not an approximation of it.
+    """
+    src = src.resolve()
+    if not src.exists():
+        raise BuildError(f"not found: {src}")
+    raw = src.read_text(encoding="utf-8")
+    theme = detect_theme(raw)
+    prof = detect_scripts(raw)
+    run_charts(src, quiet=True, theme=theme)
+    return _inject(_wrap(raw, src, prof), _stylesheet(src, theme, rtl=prof.is_rtl)), theme
+
+
 def build(
     src: Path,
     out: Path | None = None,

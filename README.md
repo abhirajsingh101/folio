@@ -131,6 +131,30 @@ Write documents in plain HTML using the component vocabulary:
 </div>
 ```
 
+### It checks its own work
+
+```bash
+folio build document.html --check
+```
+
+folio measures the rendered layout tree — not the source, the actual laid-out
+pages — and reports real defects:
+
+```
+  ✗ p4   overflow-x     <div> runs 12.4mm past the right edge
+         → a flex child usually needs min-width:0
+  ! p6   thin-page      only 18% full
+         → a figure or table could not fit and jumped
+```
+
+Overflow, overlapping text, near-empty pages, stranded headings, illegibly
+small type, rasters blown up past their pixels. Every rule encodes a defect
+that really shipped during folio's own development — that thin page on p6 is
+a real finding from the example in this repo.
+
+Print bugs are silent: the PDF is valid and merely looks wrong. This is the
+difference between a tool that produces documents and one that verifies them.
+
 `folio components` prints the full catalogue — cover, contents, sections,
 metric tiles, figures, tables, status pills, callouts, timeline, numbered
 steps, pull quotes, code blocks.

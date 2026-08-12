@@ -17,6 +17,14 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
   `themes/*.css` (look). Tests enforce the split in both directions — base may
   not paint, themes may not restate structure.
 
+### Added — quality gate
+- **`folio check` / `folio build --check`** measures the rendered layout tree
+  and reports real defects: horizontal and vertical overflow, overlapping
+  text, near-empty pages, stranded headings, illegibly small type, upscaled
+  rasters. Errors exit non-zero.
+- Every rule encodes a defect that actually shipped during development, so
+  the suite is regression tests for the design system as much as a linter.
+
 ### Added — internationalisation
 - **Script detection.** A document is inspected for the writing systems in it,
   which sets `lang` and `dir`. Korean, Japanese, Chinese, Arabic, Hebrew, Thai,
