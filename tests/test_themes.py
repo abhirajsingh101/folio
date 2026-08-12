@@ -57,12 +57,13 @@ def test_theme_carries_no_structure(name):
 def test_base_carries_no_palette():
     """base.css may define token defaults but must not paint components.
 
-    The @page blocks are exempt: WeasyPrint does not resolve var() inside
-    margin boxes (verified against 68), so the running head and foot colours
-    have to be literals. See docs/GOTCHAS.md.
+    Only the `:root` contract is exempt. The `@page` block is *included*: it
+    used to hardcode three greys on the belief that var() cannot resolve in a
+    margin box, which is wrong — it resolves whenever the property is declared
+    on `:root`. See docs/GOTCHAS.md.
     """
     body = base_path().read_text(encoding="utf-8")
-    body = body[body.index("/* ── Base ──") :]  # past the :root contract and @page
+    body = body[body.index("/* ── Page furniture ──") :]  # past the :root contract
     assert "linear-gradient" not in body
     hexes = re.findall(r"#[0-9a-fA-F]{6}", body)
     assert not hexes, f"base.css hard-codes colours outside @page: {set(hexes)}"

@@ -38,7 +38,13 @@ LARGE_PX = 24.0
 LARGE_BOLD_PX = 18.6
 BOLD = 700
 
+# Two type sizes closer than this are the same size to a reader. Set below the
+# finest deliberate step in the shipped themes (1.4%), measured not guessed —
+# widen it and real scale steps start reporting as drift.
+SAME_SIZE_PCT = 1.0
+
 MM = 96 / 25.4  # WeasyPrint lays out in CSS px
+PT = 96 / 72
 PAPER = (1.0, 1.0, 1.0)
 
 
@@ -489,6 +495,141 @@ def _check_image_scale(root, n) -> list[Finding]:
     return out
 
 
+# ── conformance: was the document built the way the kit intends? ──────────
+
+HEADINGS = ("h1", "h2", "h3", "h4", "h5", "h6")
+
+
+def _elements_in_order(pages):
+    """Every source element once, in document order, with the page it starts on.
+
+    Boxes fragment across pages and nest inside anonymous parents, so the same
+    element surfaces many times over. Identity here is the element, never the
+    box — otherwise one styled `<div>` reports as a dozen findings.
+    """
+    seen = set()
+    for number, page in enumerate(pages, start=1):
+        for box in _walk(page._page_box):
+            el = getattr(box, "element", None)
+            if el is None or id(el) in seen:
+                continue
+            seen.add(id(el))
+            yield number, el
+
+
+def _check_heading_levels(ordered) -> list[Finding]:
+    """A level skipped is a level of structure claimed but never built.
+
+    Descending h2 → h4 says "this belongs to an h3" about an h3 that does not
+    exist. Climbing back up is fine: that closes sections rather than inventing
+    them.
+    """
+    out = []
+    previous = None
+    for page, el in ordered:
+        tag = str(getattr(el, "tag", "")).lower()
+        if tag not in HEADINGS:
+            continue
+        level = int(tag[1])
+        if previous is not None and level > previous + 1:
+            out.append(
+                Finding(
+                    "heading-skip",
+                    WARN,
+                    page,
+                    f"<{tag}> follows <h{previous}>, skipping h{previous + 1}",
+                    "use the next level down, or promote the heading",
+                )
+            )
+        previous = level
+    return out
+
+
+def _collect_type_sizes(pages) -> dict[float, tuple[int, int, str]]:
+    """Type size in pt → (text boxes using it, page it first appears, element)."""
+    sizes: dict[float, tuple[int, int, str]] = {}
+    for number, page in enumerate(pages, start=1):
+        parents = _parent_map(page._page_box)
+        for box in _walk(page._page_box):
+            if not _is_text(box):
+                continue
+            style = getattr(box, "style", None)
+            if style is None:
+                continue
+            pt = round(style["font_size"] / PT, 3)
+            count, first, tag = sizes.get(pt, (0, number, ""))
+            label = _label(box, parents)
+            # A ::marker or ::after merely inherits the size; name the element
+            # the author actually wrote. Keep a pseudo only if nothing else
+            # uses the size — then it really is the culprit.
+            if not tag or ("::" in tag and "::" not in label):
+                tag = label
+            sizes[pt] = (count + 1, first, tag)
+    return sizes
+
+
+def _check_type_drift(pages) -> list[Finding]:
+    """Two sizes a reader cannot tell apart are one size and one accident.
+
+    A designed scale steps by ratios the eye can see. When 8.096pt turns up
+    beside 8.1pt, nothing was designed: a relative size compounded — an `em`
+    nested inside an `em` — and landed a hair off an established step. The
+    scale gains a step that carries no meaning, which is how a type system
+    stops being a system.
+
+    The threshold sits below the finest deliberate step in the shipped themes,
+    so this catches artifacts and leaves design decisions alone. Widening it
+    starts flagging real scale steps, which was measured, not guessed.
+    """
+    sizes = _collect_type_sizes(pages)
+    ordered = sorted(sizes)
+    out, reported = [], set()
+    for lower, upper in zip(ordered, ordered[1:], strict=False):
+        gap = (upper - lower) / lower * 100
+        if gap >= SAME_SIZE_PCT:
+            continue
+        # The rarer of the pair is the stray; that is where the fix belongs.
+        stray, kept = (upper, lower) if sizes[upper][0] <= sizes[lower][0] else (lower, upper)
+        if stray in reported:
+            continue
+        reported.add(stray)
+        out.append(
+            Finding(
+                "type-drift",
+                WARN,
+                sizes[stray][1],
+                f"<{sizes[stray][2]}> at {stray:g}pt sits {gap:.1f}% "
+                f"from {kept:g}pt — indistinguishable in print",
+                "collapse them onto one step; an em nested inside an em is the usual cause",
+            )
+        )
+    return out
+
+
+def _check_inline_style(ordered) -> list[Finding]:
+    """Rule 2 of the kit — never hand-roll a style — now measured.
+
+    An inline declaration renders perfectly and passes every other check, which
+    is precisely how a design system erodes: one reasonable-looking exception
+    at a time, none of which anyone can see going wrong.
+    """
+    out = []
+    for page, el in ordered:
+        attrib = getattr(el, "attrib", None)
+        if not attrib or not attrib.get("style"):
+            continue
+        out.append(
+            Finding(
+                "inline-style",
+                WARN,
+                page,
+                f"<{str(el.tag).lower()}> carries an inline style",
+                "use an existing class, or put the rule in brand.css beside the source",
+            )
+        )
+    return out
+
+
 # ── entry point ───────────────────────────────────────────────────────────
 
 
@@ -520,6 +661,12 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
         findings += _check_tiny_text(root, i)
         findings += _check_orphan_heading(root, i, frame)
         findings += _check_image_scale(root, i)
+
+    # Structure and conformance are properties of the document, not of a page.
+    ordered = list(_elements_in_order(pages))
+    findings += _check_heading_levels(ordered)
+    findings += _check_inline_style(ordered)
+    findings += _check_type_drift(pages)
 
     order = {ERROR: 0, WARN: 1}
     findings.sort(key=lambda f: (order[f.severity], f.page))

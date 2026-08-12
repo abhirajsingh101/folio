@@ -101,6 +101,8 @@ p.lead { font-size: 10pt; line-height: 1.5; color: var(--ink-soft); margin-botto
   font: 600 16pt var(--font-mono); letter-spacing: -0.03em;
   color: var(--ink); line-height: 1.05;
 }
+/* unit or denominator riding on the value: "231ms", "27/43" */
+.metric .v .u { font-size: 0.6em; font-weight: 400; letter-spacing: 0; }
 .metric .l {
   font: 500 6.4pt var(--font-mono); letter-spacing: 0.09em; text-transform: uppercase;
   color: var(--brand); margin-top: 1.6mm;
@@ -189,7 +191,7 @@ pre .c { color: var(--ink-mute); }
 pre .k { color: var(--brand); font-weight: 700; }
 pre .s { color: var(--ok); }
 code {
-  font-size: 0.9em; background: var(--wash); border: 1px solid var(--rule-soft);
+  font-size: 7.7pt; background: var(--wash); border: 1px solid var(--rule-soft);
   padding: 0.2mm 0.9mm; color: var(--brand-deep);
 }
 

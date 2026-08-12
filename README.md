@@ -156,6 +156,14 @@ folio's own development — that thin page on p6 is a real finding from the
 example in this repo, and that 1.9:1 footer is a real finding from folio's own
 stylesheet, caught the day the contrast rule was written.
 
+It also asks whether the document was *built the way the kit intends*, which
+is the failure nothing else catches: a hand-rolled style renders perfectly and
+passes every other check. `inline-style` flags a hand-rolled declaration,
+`heading-skip` an h2 that jumps to h4, and `type-drift` two type sizes closer
+than 1% — 8.096pt beside 8.1pt is not a scale step, it is an `em` compounding
+inside another `em`. All three found real defects in folio's own themes and
+reference document the day they were written.
+
 Contrast is measured against WCAG AA (4.5:1, or 3:1 once type is large),
 resolving what each glyph actually sits on: ancestor fills are composited,
 translucency is applied, and the page background counts, so reversed cover

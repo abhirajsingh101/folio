@@ -98,6 +98,8 @@ p.lead + p::first-line { font-variant: small-caps; letter-spacing: 0.02em; }
 .metric { padding: 4mm 5mm 4mm 0; border-right: 1px solid var(--rule); }
 .metric:last-child { border-right: 0; }
 .metric .v { font: 400 22pt/1 var(--font-body); color: var(--ink); letter-spacing: -0.02em; }
+/* unit or denominator riding on the value: "231ms", "27/43" */
+.metric .v .u { font-size: 0.5em; letter-spacing: 0; }
 .metric .l {
   font: 500 6.8pt var(--font-ui); letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--brand); margin-top: 2.4mm;
@@ -192,7 +194,7 @@ pre {
 pre .c { color: var(--ink-mute); font-style: italic; }
 pre .k { color: var(--brand); }
 pre .s { color: var(--ink-soft); }
-code { font-size: 0.88em; color: var(--brand); background: none; }
+code { font-size: 8.4pt; color: var(--brand); background: none; }
 
 /* ── Timeline ───────────────────────────────────────────── */
 

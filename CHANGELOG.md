@@ -33,6 +33,48 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
   guessing. Running headers and footers are measured as well, since margin
   boxes sit outside the content frame and never get a second look.
 
+### Added — conformance
+Geometry and contrast ask whether a document renders correctly. These ask
+whether it was built the way the kit intends — the failure nothing else
+catches, because a hand-rolled style renders perfectly and passes every other
+check. This is how a design system erodes: one reasonable-looking exception at
+a time, none of which anyone can see going wrong.
+
+- **`inline-style`** — a `style="…"` attribute. Rule 2 of the kit was
+  honour-system until now.
+- **`heading-skip`** — an `h2` jumping straight to `h4`, which asserts a level
+  of structure that does not exist. Climbing back up is silent; only
+  descending can skip.
+- **`type-drift`** — two type sizes less than 1% apart. A designed scale steps
+  by ratios a reader can see; 8.096pt beside 8.1pt is an `em` compounding
+  inside another `em`. The threshold sits below the finest deliberate step in
+  the shipped themes, measured rather than guessed — widen it and real scale
+  steps start reporting as drift.
+
+### Fixed — the kit's own conformance
+Every one of the three rules failed the design system that shipped it.
+
+- Inline `code` was sized in `em` in all four themes, so it compounded off
+  each container and produced three near-identical sizes for one element
+  (8.096pt in a paragraph, 8.624pt in a list item). It is now a fixed size per
+  theme: one typographic register instead of three accidental ones.
+- `report` set `.cover .sub` at 12.5pt and `.pullquote` at 12.4pt — two names
+  for the same step, now collapsed.
+- The reference document carried two hand-rolled `font-size` styles, because
+  the metric tile had no component for a unit suffix. Added as `.metric .v .u`
+  in all four themes and documented, rather than patched at the call site.
+- The reference document's appendix skipped `h3`.
+
+### Fixed — a gotcha that was wrong
+`docs/GOTCHAS.md` claimed `var()` does not resolve inside `@page` margin
+boxes, "verified against WeasyPrint 68". It does — but only when the custom
+property is declared on `:root` or `html`; declare it on `body` and the value
+silently falls back to black. The original diagnosis mistook the symptom for
+the cause, and cost three hardcoded greys in `base.css`, page furniture that
+no theme could restyle, and a 1.9:1 footnote. The entry now carries the
+measured table, and `test_base_carries_no_palette` covers the `@page` block
+instead of exempting it.
+
 ### Changed — palette
 The contrast rule immediately failed the design system that shipped it, so the
 palette moved rather than the threshold. Muted text is now a little darker in

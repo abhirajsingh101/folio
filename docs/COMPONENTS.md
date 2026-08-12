@@ -118,6 +118,14 @@ Inside: `<h3>` for subsections, `<h4>` for uppercase eyebrow labels.
 Two to five tiles per row. `v` = value (tabular figures), `l` = uppercase
 label, `d` = context line.
 
+A unit or denominator rides on the value as `u`, so it stays proportional to
+whatever size the theme sets — never size it by hand:
+
+```html
+<span class="v">231<span class="u">ms</span></span>
+<span class="v">27<span class="u">/43</span></span>
+```
+
 ## Figures
 
 ```html

@@ -71,15 +71,29 @@ If a page comes out mostly empty, the cause is almost always a non-splittable
 block that could not fit and jumped. Figures, callouts and pull quotes all
 behave this way by design — a split callout looks broken.
 
-### `var()` does not resolve inside `@page` margin boxes
+### `var()` in an `@page` margin box only sees properties declared on `:root`
 
-Custom properties are scoped to the element tree, and margin boxes sit
-outside it. A running header written as `color: var(--ink-mute)` silently
-falls back to black — verified against WeasyPrint 68, not assumed.
+A running header written as `color: var(--ink-mute)` works — but only if the
+property is declared on `:root` or `html`. Declare it anywhere else and the
+colour silently falls back to black.
 
-This is why `base.css` uses literal colours in its `@page` block and nowhere
-else. A theme that genuinely needs different page furniture must restate the
-whole `@page` rule with its own literals.
+The page context inherits from the **root element**, not from `body`, so a
+token set in a `body { … }` block never reaches the running head. Measured on
+WeasyPrint 68:
+
+| declared on | running head resolves to |
+|---|---|
+| `:root` | the value |
+| `html` | the value |
+| `body` | **black** |
+| any class | **black** |
+
+This bites because `body { }` is the natural place to put document-wide
+defaults, and the failure is silent: the PDF is valid and the header is simply
+black. An earlier version of folio read this as "var() does not work in margin
+boxes at all" and hardcoded three greys into `base.css`, which meant themes
+could never restyle the page furniture — and left a 1.9:1 footnote grey in
+every document until `folio check` grew a contrast rule and found it.
 
 ---
 

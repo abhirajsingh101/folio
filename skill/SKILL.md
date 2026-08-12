@@ -77,6 +77,19 @@ the threshold and never silence the rule.** On paper there is no backlight and
 no zoom, so a caption that looks merely quiet on screen is the one that comes
 back from the printer unreadable.
 
+Three further rules ask whether the document was built the way the kit
+intends, because that failure is invisible — a hand-rolled style renders
+perfectly:
+
+- `inline-style` — you wrote `style="…"`. Use a class, or `brand.css`. If the
+  component genuinely does not exist, that is a pull request to folio (rule 3),
+  not an exception here.
+- `heading-skip` — an `h2` jumping to `h4` claims a level of structure that
+  was never built.
+- `type-drift` — two type sizes less than 1% apart. No reader can tell them
+  apart, so the scale has a step that carries no meaning. The usual cause is a
+  relative size compounding: an `em` nested inside another `em`.
+
 - **Any `✗` error → fix and re-run.** Never hand over a document with errors.
 - **Each `!` warning → judge it.** Most are real. A thin page almost always
   means a block jumped rather than fitting; reorder the section, or mark a
