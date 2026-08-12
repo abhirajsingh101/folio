@@ -33,6 +33,7 @@ folio build document.html --check   # render, then measure the layout
 folio check document.html           # measure without rebuilding
 folio components                    # the component vocabulary — READ FIRST
 folio gotchas                       # silent renderer failure modes
+folio imagery                       # before adding any non-chart image
 ```
 
 `folio build` runs a sibling `charts.py` first, injects the stylesheet, then
@@ -144,6 +145,35 @@ Only after all four is it done.
 8. **If `folio build` warns about the Chromium renderer**, tell the user: their
    PDF has no running headers or page numbers, and `folio doctor` prints the
    fix.
+
+## Imagery
+
+Real data is *always* a real table or a real chart. Never an image of one.
+
+For everything else — a cover, a section opener, a texture — the default
+answer is **no**. A generic illustration does not read as neutral; it reads as
+nobody having thought about the page. The bar: can you say in one sentence
+what the image does that the words do not? "Breaking up the text" is not an
+answer.
+
+Never generate: anything a reader could take as data; anything with text in it
+(models malform words, and a diagram with garbled labels is worse than no
+diagram — diagrams are SVG); anything evidentiary, meaning a photo of a real
+place, person, product or screen; anyone else's logo.
+
+Where it earns its place: covers, section openers in a long `editorial`
+document, a conceptual plate in an essay. `technical` and `minimal` should
+have none — one is built on density, the other on having nothing to hide
+behind.
+
+Every such image is a `<div class="plate">`, never a `<figure>` — a figure is
+numbered, captioned and referenced, and lending that grammar to decoration is
+how an illustration gets read as evidence. `folio check` enforces the boundary
+both ways.
+
+**Run `folio imagery` before generating anything.** It carries the prompt
+shape that avoids stock-AI output, the Codex invocation, resolution for print,
+and the placement rules.
 
 ## Pagination
 

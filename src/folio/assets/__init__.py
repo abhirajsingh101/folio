@@ -17,6 +17,16 @@ _ROOT = files(__package__)
 
 DEFAULT_THEME = "report"
 
+# Reference docs the CLI prints. Kept here rather than in cli.py so the wheel
+# packaging can be tested against the same list: `doc_text` falls back to the
+# repo, so a doc missing from the build only breaks for people who installed
+# from PyPI.
+SERVED_DOCS = {
+    "components": "COMPONENTS.md",
+    "gotchas": "GOTCHAS.md",
+    "imagery": "IMAGERY.md",
+}
+
 
 def asset_path(*parts: str) -> Path:
     """Filesystem path to a packaged asset."""

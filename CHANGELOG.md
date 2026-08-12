@@ -33,6 +33,25 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
   guessing. Running headers and footers are measured as well, since margin
   boxes sit outside the content frame and never get a second look.
 
+### Added — imagery guidance
+- **`folio imagery`** — when a document may carry a non-chart image and how to
+  make one that does not look generated. The default answer is no: a generic
+  illustration does not read as neutral, it reads as nobody having thought
+  about the page.
+- Hard rules, not judgement calls: nothing a reader could take as data;
+  nothing with text in it, since models malform words and a diagram with
+  garbled labels is worse than no diagram; nothing evidentiary; no borrowed
+  logos. Real numbers stay in real tables and real charts.
+- Prompt guidance aimed at the actual failure — a stock AI image illustrates a
+  *concept*, so prompt for a medium and a process instead, name the palette
+  from the document's own brand, and ask for flat rather than the default
+  glossy render. Plus the Codex `imagegen` invocation, print resolution, and
+  why clearing `image-upscaled` is a floor rather than a quality bar.
+- Reference docs are now registered in one place (`assets.SERVED_DOCS`), and a
+  test asserts each one is force-included in the wheel. `doc_text` falls back
+  to the repo, so a doc missing from the build would have worked locally and
+  in CI while raising `FileNotFoundError` for everyone installing from PyPI.
+
 ### Added — plates
 - **`.plate`** — decorative imagery: cover art, a section opener, a texture.
   Deliberately *not* a `<figure>`: no number, never referenced from the text.

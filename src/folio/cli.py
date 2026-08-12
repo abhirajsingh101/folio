@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from . import __version__
+from .assets import SERVED_DOCS
 
 EPILOG = """\
 examples:
@@ -87,6 +88,7 @@ def _parser() -> argparse.ArgumentParser:
     sub.add_parser("themes", help="list the available design directions")
     sub.add_parser("components", help="print the component vocabulary")
     sub.add_parser("gotchas", help="print the renderer gotchas reference")
+    sub.add_parser("imagery", help="when a document may carry a generated image, and how")
     sub.add_parser("css", help="print the path to the design system stylesheet")
     return p
 
@@ -186,11 +188,10 @@ def main(argv: list[str] | None = None) -> int:
         print(css_path())
         return 0
 
-    if args.cmd in ("components", "gotchas"):
+    if args.cmd in SERVED_DOCS:
         from .assets import doc_text
 
-        name = "COMPONENTS.md" if args.cmd == "components" else "GOTCHAS.md"
-        print(doc_text(name))
+        print(doc_text(SERVED_DOCS[args.cmd]))
         return 0
 
     if args.cmd == "init":

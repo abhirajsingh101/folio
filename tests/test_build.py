@@ -34,6 +34,35 @@ def test_reference_docs_resolve():
     assert doc_text("GOTCHAS.md").strip()
 
 
+def test_every_served_doc_resolves():
+    from folio.assets import SERVED_DOCS
+
+    for command, name in SERVED_DOCS.items():
+        assert doc_text(name).strip(), f"`folio {command}` has nothing to print"
+
+
+def test_every_served_doc_ships_in_the_wheel():
+    """`doc_text` falls back to the repo when a doc is not packaged.
+
+    That fallback is what makes this worth a test: forget the force-include
+    and everything works locally and in CI, while `folio components` raises
+    FileNotFoundError for everyone who installed from PyPI.
+    """
+    from pathlib import Path
+
+    import tomllib
+
+    from folio.assets import SERVED_DOCS
+
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    if not pyproject.exists():  # pragma: no cover - installed without sources
+        pytest.skip("pyproject not present")
+    cfg = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    shipped = cfg["tool"]["hatch"]["build"]["targets"]["wheel"]["force-include"]
+    for name in SERVED_DOCS.values():
+        assert f"docs/{name}" in shipped, f"{name} would be missing from the wheel"
+
+
 def test_starter_template_has_no_absolute_paths():
     """The scaffold must not assume where folio was installed."""
     text = template_text("starter_charts.py")
