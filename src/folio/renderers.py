@@ -98,26 +98,53 @@ class ChromiumRenderer(Renderer):
             )
             b.close()
 
+    # Headless Chrome will sit forever on a CI runner unless it is told not to
+    # phone home, not to wait on the network, and to give up on its own. Both
+    # spellings of the header flag are passed because Chrome ignores switches
+    # it does not recognise — cheaper than probing the version, and it avoids
+    # a retry that would double the worst-case hang.
+    _FLAGS = [
+        "--headless=new",
+        "--disable-gpu",
+        "--no-sandbox",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--disable-extensions",
+        "--disable-background-networking",
+        "--disable-component-update",
+        "--disable-sync",
+        "--disable-dev-shm-usage",
+        "--metrics-recording-only",
+        "--mute-audio",
+        "--run-all-compositor-stages-before-draw",
+        "--virtual-time-budget=10000",
+        "--timeout=30000",
+        "--no-pdf-header-footer",
+        "--print-to-pdf-no-header",
+    ]
+
     def _via_binary(self, url: str, out: Path) -> None:
         with tempfile.TemporaryDirectory() as profile:
             cmd = [
                 self._bin,
-                "--headless=new",
-                "--disable-gpu",
-                "--no-sandbox",
+                *self._FLAGS,
                 f"--user-data-dir={profile}",
-                "--no-pdf-header-footer",
-                "--virtual-time-budget=5000",
                 f"--print-to-pdf={out}",
                 url,
             ]
-            r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            try:
+                r = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+            except subprocess.TimeoutExpired as e:
+                raise RenderError(
+                    "chromium hung while printing and was killed after 90s.\n"
+                    "  This renderer is only a fallback — install WeasyPrint for\n"
+                    "  reliable output. Run `folio doctor` for the exact command."
+                ) from e
             if not out.exists():
-                # older builds spell the flag differently
-                cmd[cmd.index("--no-pdf-header-footer")] = "--print-to-pdf-no-header"
-                r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-            if not out.exists():
-                raise RenderError(f"chromium produced no PDF:\n{r.stderr[-800:]}")
+                raise RenderError(
+                    f"chromium exited {r.returncode} without producing a PDF:\n"
+                    f"{(r.stderr or r.stdout)[-800:]}"
+                )
 
 
 def pick(prefer: str | None = None) -> Renderer:

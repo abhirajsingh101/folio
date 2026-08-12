@@ -49,7 +49,12 @@ jobs:
 
       - name: Native libraries (macOS)
         if: runner.os == 'macOS'
-        run: brew install pango cairo gdk-pixbuf poppler
+        run: |
+          brew install pango cairo gdk-pixbuf poppler
+          # Homebrew's lib dir is not on the default dyld search path, so
+          # WeasyPrint's ctypes lookup fails without this. Same fix folio
+          # doctor prints for users.
+          echo "DYLD_FALLBACK_LIBRARY_PATH=$(brew --prefix)/lib" >> "$GITHUB_ENV"
 
       # Windows deliberately gets no native libraries. folio must fall back to
       # Chromium (preinstalled on the runner) and still produce a PDF.

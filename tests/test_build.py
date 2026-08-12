@@ -154,6 +154,16 @@ def test_weasyprint_declares_full_print_support():
     assert WeasyRenderer().full_print_support is True
 
 
+@pytest.mark.skipif(not HAS_CHROME, reason="no chromium available")
+def test_chromium_actually_renders(tmp_path):
+    """Regression: the fallback hung to timeout on CI runners (v0.1.0)."""
+    src = tmp_path / "doc.html"
+    src.write_text("<!DOCTYPE html><html><head></head><body><p>x</p></body></html>")
+    res = B.build(src, prefer="chromium", quiet=True)
+    assert res.pdf.read_bytes().startswith(b"%PDF")
+    assert res.degraded is True
+
+
 def test_chromium_is_marked_degraded():
     """The fallback must never claim print fidelity it does not have."""
     assert ChromiumRenderer.full_print_support is False
