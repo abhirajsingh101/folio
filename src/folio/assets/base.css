@@ -130,8 +130,39 @@ a { color: var(--brand); text-decoration: none; }
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 0 var(--page-margin-x) 22mm;
+  padding: var(--cover-plate-h, 0) var(--page-margin-x) 22mm;
   text-align: start;
+}
+
+/* A bleeding band across the head of the cover, sized by --cover-plate-h.
+   Two pieces, deliberately:
+
+   `.cover::before` is the band itself, so a theme gets one by setting the
+   token and painting the pseudo-element — no markup, which is what keeps
+   every existing document working and is how `technical` and `minimal` carry
+   a rule they never had to author.
+
+   `img.cover-plate` is the optional image that covers it, for the two themes
+   doctrine allows imagery on. When absent the painted band shows; when the
+   image fails to load, it shows through rather than leaving a hole.
+
+   Type never sits on either. That is the point of the split band:
+   `low-contrast` declines to measure anything over an image, so a cover that
+   reversed its title out of a generated plate would ship illegible with a
+   green build. */
+.cover::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: var(--cover-plate-h, 0);
+}
+img.cover-plate {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: var(--cover-plate-h, 0);
+  object-fit: cover;
+  display: block;
 }
 .cover h1, .cover .sub { text-align: start; margin: 0; }
 .cover-brand { position: absolute; top: 20mm; left: var(--page-margin-x); }

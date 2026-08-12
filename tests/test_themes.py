@@ -30,6 +30,7 @@ def test_theme_restyles_every_component(name):
     css = theme_path(name).read_text(encoding="utf-8")
     for sel in (
         ".cover",
+        ".cover::before",
         ".toc",
         "h2.section",
         ".metric",
@@ -88,15 +89,18 @@ def test_screen_styles_never_reach_the_paper(name):
     page = weasyprint.HTML(string=html).render().pages[0]
 
     covers = [
-        b.height
+        b.border_height()
         for b in _walk(page._page_box)
         if getattr(b, "element", None) is not None
         and "cover" in (b.element.attrib.get("class") or "").split()
         and isinstance(getattr(b, "height", None), int | float)
     ]
     assert covers, f"{name}: no cover box laid out"
-    # A full-page cover measures ~275mm of content box once its own bottom
-    # padding is taken out; collapsed to `height:auto` it lands near 190mm.
+    # Measured on the BORDER box, not the content box. A cover carries a
+    # plate band as top padding (`--cover-plate-h`, 158mm in report), so its
+    # content box is legitimately short while the page is still full — the
+    # content-box reading called that a collapse. The border box is 297mm in
+    # every theme, and 198mm or less the moment `height:auto` escapes.
     assert max(covers) / MM > 240, (
         f"{name}: cover collapsed to {max(covers) / MM:.0f}mm — `height:auto` escaped @media screen"
     )

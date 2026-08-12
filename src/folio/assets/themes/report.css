@@ -14,20 +14,15 @@
 /* ── Cover: brand gradient with layered geometry ────────── */
 
 .cover {
-  background: linear-gradient(160deg, var(--brand-deep) 0%, var(--brand) 46%, #14559f 100%);
+  --cover-plate-h: 158mm;
+  background: var(--brand-deep);
   color: #fff;
 }
-.cover::before {
-  content: ""; position: absolute; top: -40mm; right: -60mm;
-  width: 190mm; height: 190mm; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.055);
+.cover::before { background: var(--brand-deep); }
+.cover-brand {
+  position: static; font: 600 15pt var(--font-ui); letter-spacing: -0.01em;
+  margin-bottom: auto; padding-top: 10mm;
 }
-.cover::after {
-  content: ""; position: absolute; top: 26mm; right: -30mm;
-  width: 120mm; height: 120mm; border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-}
-.cover-brand { font: 600 15pt var(--font-ui); letter-spacing: -0.01em; }
 .cover-kicker {
   font: 500 8.6pt var(--font-ui); letter-spacing: 0.16em; text-transform: uppercase;
   color: rgba(255, 255, 255, 0.72); margin-bottom: 6mm;
@@ -43,8 +38,11 @@
 .cover-rule { width: 52mm; height: 3px; background: rgba(255, 255, 255, 0.55); margin-bottom: 8mm; }
 .cover-meta { font: 400 8.6pt var(--font-ui); color: rgba(255, 255, 255, 0.82); }
 .cover-meta .k {
+  /* 0.5 measured 4.4:1 on the solid ground and had shipped that way — the old
+     gradient cover was unmeasurable, so `low-contrast` never got to say so.
+     0.58 is 5.4:1, keeping headroom rather than sitting on the 4.5 line. */
   font-size: 7pt; letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5); margin-bottom: 1.5mm;
+  color: rgba(255, 255, 255, 0.58); margin-bottom: 1.5mm;
 }
 
 /* ── Contents ───────────────────────────────────────────── */

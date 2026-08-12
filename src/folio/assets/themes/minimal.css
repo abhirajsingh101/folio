@@ -36,10 +36,15 @@ body { text-align: left; hyphens: none; }
 
 /* ── Cover: type on white, nothing else ─────────────────── */
 
+/* No plate. The theme is built on having nothing to hide behind, so the band
+   is a 3mm accent rule — present enough to belong to the family, too thin to
+   become decoration. */
 .cover {
+  --cover-plate-h: 3mm;
   background: var(--paper); color: var(--ink);
   justify-content: flex-end; padding-bottom: 30mm;
 }
+.cover::before { background: var(--accent); }
 .cover-brand {
   position: absolute; top: 30mm; left: var(--page-margin-x);
   font: 500 10pt var(--font-body); letter-spacing: -0.01em; color: var(--ink);

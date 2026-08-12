@@ -33,17 +33,19 @@ body { text-align: left; hyphens: none; }   /* ragged right reads faster at this
 
 /* ── Cover: a data sheet, not a poster ──────────────────── */
 
+/* No plate: the theme exists to fit more on the page, so the band stays a
+   6mm rule rather than becoming an image. Same component as the other three,
+   sized down — one system, four positions on it. */
 .cover {
+  --cover-plate-h: 6mm;
   background: var(--paper); color: var(--ink);
-  justify-content: flex-start; padding-top: 18mm;
+  justify-content: flex-start;
 }
-.cover::before {
-  content: ""; position: absolute; left: 0; right: 0; top: 0;
-  height: 6mm; background: var(--brand);
-}
+.cover::before { background: var(--brand); }
 .cover-brand {
   position: static; font: 500 8.5pt var(--font-mono);
-  letter-spacing: 0.06em; color: var(--ink); margin-bottom: 40mm;
+  letter-spacing: 0.06em; color: var(--ink);
+  padding-top: 12mm; margin-bottom: 40mm;
 }
 .cover-kicker {
   font: 500 7.4pt var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase;

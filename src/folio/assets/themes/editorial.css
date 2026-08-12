@@ -29,11 +29,16 @@
 
 /* ── Cover: typographic, no ornament ────────────────────── */
 
-.cover { background: var(--paper); color: var(--ink); justify-content: space-between; padding-top: 24mm; }
+.cover {
+  --cover-plate-h: 150mm;
+  background: var(--paper); color: var(--ink);
+  justify-content: flex-end;
+}
+.cover::before { background: var(--brand-tint); }
 .cover-brand {
   position: static; font: 400 9pt var(--font-ui);
   letter-spacing: 0.34em; text-transform: uppercase; color: var(--ink-mute);
-  padding-bottom: 4mm; border-bottom: 1px solid var(--ink);
+  padding: 9mm 0 4mm; border-bottom: 1px solid var(--ink);
   margin-bottom: auto; width: 100%;
 }
 .cover-kicker {
