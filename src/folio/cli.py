@@ -14,11 +14,30 @@ examples:
   folio init                       scaffold document.html + charts.py here
   folio build document.html        render document.pdf + document.page.html
   folio build doc.html -o out.pdf  choose the output path
+  folio build doc.html --check     render, measure, and lay out the pages to read
+  folio preview document.pdf       one PNG per page — then actually look at them
   folio components                 the component vocabulary (read before authoring)
   folio css                        path to the design system stylesheet
 
 docs: https://github.com/abhirajsingh101/folio
 """
+
+
+def _print_pages(pdf: Path) -> None:
+    """Lay the pages out and say where they are.
+
+    The checker measures geometry, contrast and conformance; it cannot see that
+    a chart is the wrong type or a caption states the obvious. Only reading the
+    pages catches that, and it is the pass that gets skipped — so the images
+    are produced here rather than behind a command nobody runs.
+    """
+    from .preview import render_pages
+
+    pages = render_pages(pdf)
+    if not pages:
+        return
+    print(f"\n  pages     {pages[0].parent}  ({len(pages)} png)")
+    print("            read every one — the checker cannot see taste")
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -58,6 +77,12 @@ def _parser() -> argparse.ArgumentParser:
     c = sub.add_parser("check", help="measure the rendered layout for real defects")
     c.add_argument("file", help="source .html document")
     c.add_argument("--strict", action="store_true", help="fail on warnings too")
+
+    from .preview import PREVIEW_DPI
+
+    v = sub.add_parser("preview", help="render a built PDF to one PNG per page, and look at them")
+    v.add_argument("file", help="built .pdf (or the .html it came from)")
+    v.add_argument("--dpi", type=int, default=PREVIEW_DPI, help=f"default {PREVIEW_DPI}")
 
     sub.add_parser("themes", help="list the available design directions")
     sub.add_parser("components", help="print the component vocabulary")
@@ -213,7 +238,25 @@ def main(argv: list[str] | None = None) -> int:
                 if f.hint:
                     print(f"        → {f.hint}")
             print(f"  {summarise(findings)}")
+            _print_pages(src.resolve().with_suffix(".pdf") if not args.out else Path(args.out))
             return 1 if any(f.severity == ERROR for f in findings) else 0
+        return 0
+
+    if args.cmd == "preview":
+        src = Path(args.file)
+        pdf = src if src.suffix.lower() == ".pdf" else src.with_suffix(".pdf")
+        if not pdf.exists():
+            print(f"error: {pdf} does not exist — run `folio build` first", file=sys.stderr)
+            return 1
+        from .preview import render_pages
+
+        pages = render_pages(pdf, dpi=args.dpi)
+        if not pages:
+            print("error: could not render pages — is poppler installed?", file=sys.stderr)
+            return 1
+        print(f"folio preview — {pdf.name}\n")
+        for page in pages:
+            print(f"  {page}")
         return 0
 
     return 0  # pragma: no cover

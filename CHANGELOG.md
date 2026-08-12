@@ -33,6 +33,19 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
   guessing. Running headers and footers are measured as well, since margin
   boxes sit outside the content frame and never get a second look.
 
+### Added — the look pass
+- **`folio build --check` now renders the pages** to `<name>.pages/`, one PNG
+  per page, and prints the directory. Looking is the only pass that catches a
+  chart of the wrong type or a caption that states the obvious, and it was the
+  pass that got skipped — because it needed a separate command nobody was
+  obliged to run. The images are simply there now.
+- **`folio preview <pdf>`** re-renders them on demand, `--dpi` to taste. The
+  command was referenced in the source months before it existed.
+- Previews are a convenience, never a build requirement: without poppler the
+  build still succeeds and the step is silently skipped. Stale pages from a
+  longer draft are cleared first, since a leftover `p-9` reads as part of the
+  current document.
+
 ### Added — conformance
 Geometry and contrast ask whether a document renders correctly. These ask
 whether it was built the way the kit intends — the failure nothing else

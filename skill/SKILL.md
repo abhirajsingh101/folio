@@ -95,13 +95,19 @@ perfectly:
   means a block jumped rather than fitting; reorder the section, or mark a
   short table `class="keep"`.
 
-**Pass 3 — look.** The checker measures geometry, not taste. It cannot see
-that a chart is the wrong type, a caption states the obvious, or a page is
-ugly. Render and actually look:
+**Pass 3 — look.** The checker measures geometry, contrast and conformance —
+not taste. It cannot see that a chart is the wrong type for its data, that a
+caption states the obvious, or that a page is simply ugly.
 
-```bash
-pdftoppm -png -r 100 document.pdf /tmp/p && ls /tmp/p*
+`--check` has already rendered the pages and printed the directory:
+
 ```
+  pages     ./document.pages  (9 png)
+```
+
+**Open them.** This is the pass that gets skipped, and skipping it is how an
+ugly document ships with a clean report. `folio preview document.pdf`
+re-renders them on demand.
 
 Read every page, not just the one you were working on. Print layout is global:
 a change to table padding can strand rows four sections later.

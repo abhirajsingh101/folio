@@ -10,5 +10,6 @@ venv/
 # build outputs
 *.pdf
 *.page.html
+*.pages/
 examples/**/charts/*.svg
 !docs/gallery/*
