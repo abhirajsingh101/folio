@@ -45,8 +45,8 @@ def test_starter_template_has_no_absolute_paths():
 
 def test_fragment_gets_wrapped(tmp_path):
     src = tmp_path / "note.html"
-    src.write_text("<p>hello</p>")
-    out = B._wrap(src.read_text(), src)
+    src.write_text("<p>hello</p>", encoding="utf-8")
+    out = B._wrap(src.read_text(encoding="utf-8"), src)
     assert out.startswith("<!DOCTYPE html>")
     assert 'lang="en"' in out
     assert "<p>hello</p>" in out
@@ -54,14 +54,14 @@ def test_fragment_gets_wrapped(tmp_path):
 
 def test_korean_fragment_gets_ko_lang(tmp_path):
     src = tmp_path / "note.html"
-    src.write_text("<p>액추에이터 보고서</p>")
-    assert 'lang="ko"' in B._wrap(src.read_text(), src)
+    src.write_text("<p>액추에이터 보고서</p>", encoding="utf-8")
+    assert 'lang="ko"' in B._wrap(src.read_text(encoding="utf-8"), src)
 
 
 def test_full_document_is_left_alone(tmp_path):
     src = tmp_path / "doc.html"
     html = "<!DOCTYPE html><html><head></head><body>x</body></html>"
-    src.write_text(html)
+    src.write_text(html, encoding="utf-8")
     assert B._wrap(html, src) == html
 
 
@@ -72,8 +72,8 @@ def test_css_injected_before_head_close():
 
 def test_brand_css_is_appended_after_kit(tmp_path):
     src = tmp_path / "doc.html"
-    src.write_text("<p>x</p>")
-    (tmp_path / "brand.css").write_text(":root{--brand:#123456}")
+    src.write_text("<p>x</p>", encoding="utf-8")
+    (tmp_path / "brand.css").write_text(":root{--brand:#123456}", encoding="utf-8")
     css = B._stylesheet(src)
     assert css.index("--brand:        #003F87") < css.index("#123456")
 
@@ -97,15 +97,15 @@ def test_remote_and_data_urls_untouched(tmp_path):
 def test_build_never_overwrites_its_own_source(tmp_path):
     src = tmp_path / "doc.html"
     original = "<p>precious</p>"
-    src.write_text(original)
+    src.write_text(original, encoding="utf-8")
     B.build(src, quiet=True)
-    assert src.read_text() == original, "build clobbered the source document"
+    assert src.read_text(encoding="utf-8") == original, "build clobbered the source document"
 
 
 @pytest.mark.skipif(not ANY_RENDERER, reason="no renderer available")
 def test_standalone_page_uses_a_distinct_name(tmp_path):
     src = tmp_path / "doc.html"
-    src.write_text("<p>x</p>")
+    src.write_text("<p>x</p>", encoding="utf-8")
     res = B.build(src, quiet=True)
     assert res.page is not None
     assert res.page != src
@@ -114,7 +114,7 @@ def test_standalone_page_uses_a_distinct_name(tmp_path):
 
 def test_explicit_output_equal_to_source_is_refused(tmp_path):
     src = tmp_path / "doc.html"
-    src.write_text("<p>x</p>")
+    src.write_text("<p>x</p>", encoding="utf-8")
     with pytest.raises(B.BuildError, match="overwrite the source"):
         B.build(src, out=src, quiet=True)
 
@@ -124,15 +124,15 @@ def test_explicit_output_equal_to_source_is_refused(tmp_path):
 
 def test_charts_failure_is_reported(tmp_path):
     src = tmp_path / "doc.html"
-    src.write_text("<p>x</p>")
-    (tmp_path / "charts.py").write_text("raise SystemExit(3)")
+    src.write_text("<p>x</p>", encoding="utf-8")
+    (tmp_path / "charts.py").write_text("raise SystemExit(3)", encoding="utf-8")
     with pytest.raises(B.BuildError, match="charts.py failed"):
         B.run_charts(src, quiet=True)
 
 
 def test_missing_charts_is_not_an_error(tmp_path):
     src = tmp_path / "doc.html"
-    src.write_text("<p>x</p>")
+    src.write_text("<p>x</p>", encoding="utf-8")
     B.run_charts(src, quiet=True)  # must not raise
 
 
@@ -158,7 +158,9 @@ def test_weasyprint_declares_full_print_support():
 def test_chromium_actually_renders(tmp_path):
     """Regression: the fallback hung to timeout on CI runners (v0.1.0)."""
     src = tmp_path / "doc.html"
-    src.write_text("<!DOCTYPE html><html><head></head><body><p>x</p></body></html>")
+    src.write_text(
+        "<!DOCTYPE html><html><head></head><body><p>x</p></body></html>", encoding="utf-8"
+    )
     res = B.build(src, prefer="chromium", quiet=True)
     assert res.pdf.read_bytes().startswith(b"%PDF")
     assert res.degraded is True
@@ -189,11 +191,11 @@ def test_init_then_build_produces_a_pdf(tmp_path):
 
 @pytest.mark.skipif(not ANY_RENDERER, reason="no renderer available")
 def test_init_does_not_clobber_without_force(tmp_path):
-    (tmp_path / "document.html").write_text("mine")
+    (tmp_path / "document.html").write_text("mine", encoding="utf-8")
     B.init(tmp_path)
-    assert (tmp_path / "document.html").read_text() == "mine"
+    assert (tmp_path / "document.html").read_text(encoding="utf-8") == "mine"
     B.init(tmp_path, force=True)
-    assert (tmp_path / "document.html").read_text() != "mine"
+    assert (tmp_path / "document.html").read_text(encoding="utf-8") != "mine"
 
 
 @pytest.mark.skipif(
@@ -209,10 +211,17 @@ def test_page_furniture_renders(tmp_path):
         '<body data-title="RUNHEAD" data-footer="FOOTNOTE">'
         '<div class="section-wrap"><h2 class="section" id="a" data-section="Alpha">'
         '<span class="idx">SECTION 01</span>Alpha</h2><p>body</p></div>'
-        "</body></html>"
+        "</body></html>",
+        encoding="utf-8",
     )
     res = B.build(src, prefer="weasyprint", quiet=True)
-    text = subprocess.run(["pdftotext", str(res.pdf), "-"], capture_output=True, text=True).stdout
+    text = subprocess.run(
+        ["pdftotext", str(res.pdf), "-"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    ).stdout
     assert "RUNHEAD" in text
     assert "FOOTNOTE" in text
     assert "Alpha" in text
