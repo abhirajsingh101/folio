@@ -307,3 +307,71 @@ table.keep, figure.keep, .keep { break-inside: avoid; }
   hyphens: none;
   word-break: normal;
 }
+
+/* ── Screen ─────────────────────────────────────────────── */
+
+/* `folio build` also writes a standalone HTML page, and until now it was the
+   print stylesheet served raw. Every gutter here comes from `@page`, which a
+   browser ignores — so the shared page had no margins, no measure, and a
+   cover locked to a full 297mm. It rendered, which is exactly why nobody
+   noticed.
+
+   Print is untouched: WeasyPrint lays out for print media and never sees a
+   screen block. Colours are tokens only; base.css does not paint. */
+@media screen {
+  html {
+    background: var(--rule-soft);
+    padding: 6mm 0 12mm;
+  }
+  body {
+    /* One variable owns the screen gutter, because anything that reaches the
+       sheet edge cancels it with a negative margin and the two must agree. A
+       phone narrows it; if they drift, full-bleed blocks hang off the page. */
+    --sheet-pad: var(--page-margin-x);
+    max-width: 210mm;                     /* the sheet, at its real width */
+    margin: 0 auto;
+    padding: var(--page-margin-top) var(--sheet-pad) var(--page-margin-bottom);
+    background: var(--paper);
+    box-shadow: 0 0 0 1px var(--rule);
+  }
+  .bleed {
+    margin-left: calc(-1 * var(--sheet-pad));
+    margin-right: calc(-1 * var(--sheet-pad));
+    width: calc(100% + 2 * var(--sheet-pad));
+  }
+  .bleed figcaption { padding: 0 var(--sheet-pad); }
+
+  /* In print the cover owns a page with `@page cover { margin: 0 }`, so its
+     own padding is the only gutter. On screen it would inherit the sheet's
+     gutter on top of that — double-inset, with a full-bleed band that stops
+     short of the edge. Pull it back out to the sheet, and drop the forced
+     297mm, which is a page constraint rather than a screen one. */
+  .cover {
+    height: auto;
+    min-height: 170mm;
+    break-after: auto;
+    margin: calc(-1 * var(--page-margin-top)) calc(-1 * var(--sheet-pad)) 0;
+    width: calc(100% + 2 * var(--sheet-pad));
+    padding: var(--page-margin-top) var(--sheet-pad) 18mm;
+  }
+  .toc { break-after: auto; padding-bottom: 4mm; }
+  /* Contents page numbers come from `target-counter`, which no browser
+     resolves — on screen the leader dots ran to an empty cell. Drop the
+     leader and the number; the titles are the useful part. */
+  .toc li .fill, .toc li a.pg { display: none; }
+
+  /* Page breaks carry meaning the browser drops; give them visible weight. */
+  .section-wrap { break-before: auto; margin-top: 13mm; padding-top: 11mm; border-top: 1px solid var(--rule); }
+  .section-wrap:first-of-type, .section-wrap.cont { border-top: 0; padding-top: 0; margin-top: 7mm; }
+}
+
+/* A phone is narrower than the page gutter it would otherwise inherit. */
+@media screen and (max-width: 640px) {
+  html { padding: 0; }
+  body { --sheet-pad: 5mm; box-shadow: none; }
+
+  /* A table sized for A4 does not fit a phone, and `th` is deliberately
+     nowrap. Let the wide thing scroll inside itself rather than letting it
+     scroll the whole page sideways. */
+  table, pre { display: block; max-width: 100%; overflow-x: auto; }
+}

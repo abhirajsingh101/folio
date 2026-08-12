@@ -55,6 +55,59 @@ def test_theme_carries_no_structure(name):
         )
 
 
+def test_the_shared_page_is_styled_for_a_screen():
+    """`folio build` also writes an HTML page, and it was unusable.
+
+    Every gutter in the kit comes from `@page`, which a browser ignores — so
+    the shared page had no margins, no measure, and a cover locked to 297mm.
+    It rendered, so nothing ever failed.
+    """
+    css = css_text()
+    assert "@media screen" in css, "the shared page has no screen styles at all"
+    screen = css[css.index("@media screen") :]
+    for prop in ("max-width", "margin", "padding"):
+        assert prop in screen, f"screen block sets no {prop}"
+
+
+@pytest.mark.parametrize("name", THEMES)
+def test_screen_styles_never_reach_the_paper(name):
+    """Print is the product; the screen block must not move a single box.
+
+    WeasyPrint lays out for print media, so a `@media screen` rule is inert —
+    but only while it stays inside the media block. The two asserts below are
+    the screen block's most destructive escapes: a cover that stops filling
+    its page, and a grey ground printed behind every sheet.
+    """
+    weasyprint = pytest.importorskip("weasyprint")
+    from folio.check import MM, _srgb, _walk
+
+    html = (
+        f"<!DOCTYPE html><html><head><style>{css_text(name)}</style></head>"
+        '<body><section class="cover"><h1>Title</h1></section><p>body</p></body></html>'
+    )
+    page = weasyprint.HTML(string=html).render().pages[0]
+
+    covers = [
+        b.height
+        for b in _walk(page._page_box)
+        if getattr(b, "element", None) is not None
+        and "cover" in (b.element.attrib.get("class") or "").split()
+        and isinstance(getattr(b, "height", None), int | float)
+    ]
+    assert covers, f"{name}: no cover box laid out"
+    # A full-page cover measures ~275mm of content box once its own bottom
+    # padding is taken out; collapsed to `height:auto` it lands near 190mm.
+    assert max(covers) / MM > 240, (
+        f"{name}: cover collapsed to {max(covers) / MM:.0f}mm — `height:auto` escaped @media screen"
+    )
+
+    root = next(b for b in _walk(page._page_box) if getattr(b, "element_tag", None) == "html")
+    ground = _srgb(root.style["background_color"])
+    assert ground is None or ground[3] == 0, (
+        f"{name}: the page ground is painted {ground} — the screen background escaped @media screen"
+    )
+
+
 def test_chart_text_colours_clear_aa():
     """Chart labels are text, and unmeasurable from the document.
 
