@@ -72,13 +72,50 @@ def test_tight_leading_inside_one_heading_is_not_an_overlap():
 
 
 def test_thin_page_is_flagged():
-    """A block that could not fit jumps and leaves a near-empty page."""
+    """A block that could not fit jumps and leaves a near-empty page.
+
+    The fixture models an actual jump — a tall unbreakable block with too
+    little room left — rather than a page the author asked for. An earlier
+    version used `break-before: page`, which is the opposite case and is now
+    deliberately silent.
+    """
     body = (
-        '<p style="margin-bottom:200mm">first page</p>'
-        '<div style="break-before:page">stranded</div>'
-        '<div style="break-before:page">last page so the middle one counts</div>'
+        '<p style="margin-bottom:40mm">a short opening paragraph</p>'
+        '<div style="height:230mm;break-inside:avoid">a block too tall to fit here</div>'
+        "<p>trailing text</p>"
     )
     assert "thin-page" in rules(doc(body))
+
+
+def test_a_block_that_jumps_mid_section_is_still_flagged():
+    """A section wrapper stays an ancestor of every page the section runs onto.
+
+    So finding `break-before: page` somewhere overhead proves nothing about
+    *this* page — the break may have happened two pages ago. Only an element
+    that actually begins here authorises the short page before it.
+    """
+    body = (
+        "<p>one</p>"
+        '<div style="break-before:page"><h2>Section</h2>'
+        '<div style="height:230mm;break-inside:avoid"></div>'
+        "<p>tail</p></div>"
+    )
+    assert "thin-page" in rules(doc(body))
+
+
+def test_a_page_the_author_asked_for_is_not_thin():
+    """`break-before: page` ends a page on purpose; that is a chapter break.
+
+    folio's own `.section-wrap` does exactly this, so every short section in
+    every document reported a defect whose hint said a block had jumped —
+    which was never what happened.
+    """
+    body = (
+        "<p>a deliberately short opening section</p>"
+        '<div style="break-before:page"><h2>Second section</h2><p>text</p></div>'
+        '<div style="break-before:page"><h2>Third section</h2><p>text</p></div>'
+    )
+    assert "thin-page" not in rules(doc(body))
 
 
 def test_illegibly_small_text_is_flagged():

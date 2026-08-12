@@ -92,9 +92,10 @@ perfectly:
   relative size compounding: an `em` nested inside another `em`.
 
 - **Any `✗` error → fix and re-run.** Never hand over a document with errors.
-- **Each `!` warning → judge it.** Most are real. A thin page almost always
-  means a block jumped rather than fitting; reorder the section, or mark a
-  short table `class="keep"`.
+- **Each `!` warning → judge it.** Most are real. A thin page means a block
+  jumped rather than fitting; reorder the section, or mark a short table
+  `class="keep"`. A section that simply *ends* early is not reported — a page
+  you asked for with `break-before` is a chapter break, not a defect.
 
 **Pass 3 — look.** The checker measures geometry, contrast and conformance —
 not taste. It cannot see that a chart is the wrong type for its data, that a

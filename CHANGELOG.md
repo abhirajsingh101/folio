@@ -33,6 +33,25 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
   guessing. Running headers and footers are measured as well, since margin
   boxes sit outside the content frame and never get a second look.
 
+### Fixed — `thin-page` reported chapter breaks as defects
+A page can be short for two reasons that look identical by fill: the author
+demanded the next page, or a block on this one would not fit. Only the second
+is a defect, and the rule reported both — with a hint about a block that
+jumped, on pages where nothing had. folio's own `.section-wrap` breaks with
+`break-before: page`, so every short section in every document produced a
+warning whose suggested remedy did not apply to it.
+
+The rule now reads the property that caused the break. Finding
+`break-before: page` overhead is not sufficient: a section wrapper stays an
+ancestor of every page its section runs onto, so the break it caused may be
+two pages back. WeasyPrint exposes no marker for a continuation fragment, so a
+page counts as authored only when the element carrying the break appears on no
+earlier page.
+
+The reference document now reports **nothing at all** in any of the four
+themes, down from seven warnings — and a tall figure that genuinely jumps
+mid-section still reports, which is the case the rule exists for.
+
 ### Added — figures
 - **`figure-rescaled`** — a vector drawn at a materially different size than
   it was authored. This was the last blind spot: a chart is an image, so every

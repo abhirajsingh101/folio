@@ -326,9 +326,48 @@ def _check_overflow(root, n, frame) -> list[Finding]:
     return out
 
 
-def _check_thin_page(root, n, frame, is_last: bool, kind: str) -> list[Finding]:
-    """A page 15% full means a block jumped rather than fitting."""
-    if is_last or kind != "body":
+FORCED_BREAK = frozenset({"page", "always", "left", "right", "recto", "verso"})
+
+
+def _authored_page_starts(pages) -> list[bool]:
+    """Per page: did an element carrying `break-before` actually begin on it?
+
+    A page can be short for two reasons, and by fill alone they look the same:
+    the author demanded the next page, or a block on this one would not fit.
+    Only the second is a defect — folio's own `.section-wrap` breaks this way,
+    so without the distinction every short section reported a problem whose
+    suggested remedy did not apply to it.
+
+    Finding `break-before: page` overhead is not enough. A section wrapper
+    stays an ancestor of every page its section runs onto, so the break it
+    caused may be two pages back. WeasyPrint exposes no marker for a
+    continuation fragment, so "begins here" is established the only way left:
+    the element was on no earlier page.
+    """
+    seen: set[int] = set()
+    authored: list[bool] = []
+    for page in pages:
+        root = _content_root(page)
+        parents = _parent_map(root)
+
+        chain, node = [], next((b for b in _walk(root) if _is_text(b)), None)
+        while node is not None:
+            element, style = getattr(node, "element", None), getattr(node, "style", None)
+            if element is not None and style is not None:
+                chain.append((id(element), style["break_before"]))
+            node = parents.get(id(node))
+        authored.append(any(brk in FORCED_BREAK and ref not in seen for ref, brk in chain))
+
+        for box in _walk(root):
+            element = getattr(box, "element", None)
+            if element is not None:
+                seen.add(id(element))
+    return authored
+
+
+def _check_thin_page(root, n, frame, is_last: bool, kind: str, authored: bool) -> list[Finding]:
+    """A page a fifth full means a block jumped rather than fitting."""
+    if is_last or kind != "body" or authored:
         return []
     top, bottom = frame[1], frame[3]
     usable = bottom - top
@@ -792,6 +831,8 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
 
     doc = HTML(string=html, base_url=str(base_dir)).render()
     pages = doc.pages
+    # Indexed 0-based, so page i (1-based) reads its successor at [i].
+    authored_starts = _authored_page_starts(pages) + [False]
     findings: list[Finding] = []
     for i, page in enumerate(pages, start=1):
         frame = _content_frame(page)
@@ -804,7 +845,11 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
         for margin_box in _margin_boxes(page):
             findings += _check_contrast(margin_box, i, _parent_map(margin_box), paper)
         findings += _check_text_overlap(root, i)
-        findings += _check_thin_page(root, i, frame, i == len(pages), kind)
+        # A page is thin because the next one was demanded, or because
+        # something on this one would not fit. Only the second is a defect.
+        findings += _check_thin_page(
+            root, i, frame, i == len(pages), kind, authored=authored_starts[i]
+        )
         findings += _check_tiny_text(root, i)
         findings += _check_orphan_heading(root, i, frame)
         findings += _check_image_scale(root, i)
