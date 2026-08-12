@@ -50,7 +50,9 @@ def test_every_served_doc_ships_in_the_wheel():
     """
     from pathlib import Path
 
-    import tomllib
+    # tomllib is 3.11+, and folio supports 3.10. Packaging config does not vary
+    # by interpreter, so running this on the newer legs of the matrix is enough.
+    tomllib = pytest.importorskip("tomllib", reason="tomllib is 3.11+")
 
     from folio.assets import SERVED_DOCS
 
