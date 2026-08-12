@@ -363,15 +363,18 @@ table.keep, figure.keep, .keep { break-inside: avoid; }
   /* Page breaks carry meaning the browser drops; give them visible weight. */
   .section-wrap { break-before: auto; margin-top: 13mm; padding-top: 11mm; border-top: 1px solid var(--rule); }
   .section-wrap:first-of-type, .section-wrap.cont { border-top: 0; padding-top: 0; margin-top: 7mm; }
-}
 
-/* A phone is narrower than the page gutter it would otherwise inherit. */
-@media screen and (max-width: 640px) {
-  html { padding: 0; }
-  body { --sheet-pad: 5mm; box-shadow: none; }
+  /* A phone is narrower than the page gutter it would otherwise inherit.
+     Nested inside `screen` on purpose: WeasyPrint parses only bare media
+     types, and a flat `@media screen and (…)` makes it log a parse error
+     on every render. Nested, it skips the whole screen block untouched. */
+  @media (max-width: 640px) {
+    html { padding: 0; }
+    body { --sheet-pad: 5mm; box-shadow: none; }
 
-  /* A table sized for A4 does not fit a phone, and `th` is deliberately
-     nowrap. Let the wide thing scroll inside itself rather than letting it
-     scroll the whole page sideways. */
-  table, pre { display: block; max-width: 100%; overflow-x: auto; }
+    /* A table sized for A4 does not fit a phone, and `th` is deliberately
+       nowrap. Let the wide thing scroll inside itself rather than letting it
+       scroll the whole page sideways. */
+    table, pre { display: block; max-width: 100%; overflow-x: auto; }
+  }
 }

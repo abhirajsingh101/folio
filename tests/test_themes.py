@@ -108,6 +108,42 @@ def test_screen_styles_never_reach_the_paper(name):
     )
 
 
+@pytest.mark.parametrize("name", THEMES)
+def test_a_bleeding_plate_reaches_both_page_edges(name):
+    """`.bleed` cancels the page gutter with negative margins, and a theme rule
+    using the `margin` shorthand silently resets them.
+
+    base.css sets `.bleed` before any theme is appended, so a theme selector of
+    equal specificity wins. When that happened the plate kept its full width but
+    lost the left pull: it hung 24mm off the right edge and left a gutter-wide
+    gap on the left. It still rendered.
+    """
+    weasyprint = pytest.importorskip("weasyprint")
+    from folio.check import MM, _walk
+
+    html = (
+        f"<!DOCTYPE html><html><head><style>{css_text(name)}</style></head>"
+        '<body><p>text</p><div class="plate bleed">'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="200"></svg>'
+        "</div></body></html>"
+    )
+    page = weasyprint.HTML(string=html).render().pages[0]
+    plate = next(
+        b
+        for b in _walk(page._page_box)
+        if getattr(b, "element", None) is not None
+        and "plate" in (b.element.attrib.get("class") or "").split()
+    )
+    # position_x is the margin-box origin, so with a negative margin it sits
+    # inside the ink. The visible edge is the border box.
+    left = plate.position_x + plate.margin_left
+    right = left + plate.border_width()
+    assert abs(left) / MM < 1, f"{name}: plate starts {left / MM:.1f}mm in, not at the edge"
+    assert abs(right - page.width) / MM < 1, (
+        f"{name}: plate ends {right / MM:.1f}mm on a {page.width / MM:.0f}mm page"
+    )
+
+
 def test_chart_text_colours_clear_aa():
     """Chart labels are text, and unmeasurable from the document.
 

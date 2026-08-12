@@ -120,7 +120,7 @@ figcaption .fnum { font: 500 7.4pt var(--font-mono); color: var(--brand); margin
 
 /* ── Plates: decorative imagery, never evidence ─────────── */
 
-.plate { margin: 5mm 0; }
+.plate { margin-top: 5mm; margin-bottom: 5mm; }
 .plate .credit {
   font: 400 6.6pt var(--font-mono); color: var(--ink-mute); margin-top: 1.6mm;
 }

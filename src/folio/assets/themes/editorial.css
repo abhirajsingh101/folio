@@ -119,7 +119,7 @@ figcaption .fnum {
 
 /* ── Plates: decorative imagery, never evidence ─────────── */
 
-.plate { margin: 10mm 0; }
+.plate { margin-top: 10mm; margin-bottom: 10mm; }
 .plate .credit {
   font: italic 400 7.6pt var(--font-body); color: var(--ink-mute); margin-top: 3mm;
 }
