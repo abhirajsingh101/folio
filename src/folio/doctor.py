@@ -124,7 +124,10 @@ def find_chrome() -> str | None:
 def check_weasyprint() -> Check:
     if importlib.util.find_spec("weasyprint") is None:
         return Check(
-            "WeasyPrint", FAIL, "not installed", ["pip install weasyprint", *NATIVE_FIX[_system()]]
+            "WeasyPrint",
+            FAIL,
+            "not installed",
+            ["pip install 'folio-press[weasyprint]'", *NATIVE_FIX[_system()]],
         )
     try:
         import weasyprint
@@ -172,7 +175,7 @@ def check_matplotlib() -> Check:
             "Charts (matplotlib)",
             WARN,
             "not installed — charts.py will not run",
-            ["pip install matplotlib"],
+            ["pip install 'folio-press[charts]'"],
         )
     return Check("Charts (matplotlib)", OK, "")
 

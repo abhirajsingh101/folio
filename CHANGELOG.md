@@ -233,6 +233,15 @@ the hint: an ImportError raised *inside* matplotlib is a different fault, and
 telling that reader to install the charts extra sends them to reinstall the one
 thing they have.
 
+`folio doctor` was pointing the other way for the same two gaps — `pip install
+matplotlib`, `pip install weasyprint`. Both work, and both teach that folio's
+pieces are installed one loose package at a time, so the next gap sends the
+reader to a search engine instead of to `[all]`. Both now name the extra.
+WeasyPrint keeps its platform commands underneath: the native libraries are
+outside pip's reach, and that half of the remedy is the half users get stuck
+on. A test ties every extra folio recommends to one pyproject declares, so a
+hint cannot name an extra that does not exist.
+
 ### Changed
 - Install posture: `pipx install folio-press` is core-only. Charts, WeasyPrint
   and fonts are pulled in per need, guided by `doctor` and `fonts`.
