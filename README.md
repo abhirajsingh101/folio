@@ -143,14 +143,25 @@ pages — and reports real defects:
 ```
   ✗ p4   overflow-x     <div> runs 12.4mm past the right edge
          → a flex child usually needs min-width:0
+  ✗ p2   low-contrast   <@bottom-left> #b3bcc8 on #ffffff is 1.9:1
+         → body text wants 4.5:1 — darken the ink or lighten the fill
   ! p6   thin-page      only 18% full
          → a figure or table could not fit and jumped
 ```
 
 Overflow, overlapping text, near-empty pages, stranded headings, illegibly
-small type, rasters blown up past their pixels. Every rule encodes a defect
-that really shipped during folio's own development — that thin page on p6 is
-a real finding from the example in this repo.
+small type, rasters blown up past their pixels, and text too close in tone to
+what it sits on. Every rule encodes a defect that really shipped during
+folio's own development — that thin page on p6 is a real finding from the
+example in this repo, and that 1.9:1 footer is a real finding from folio's own
+stylesheet, caught the day the contrast rule was written.
+
+Contrast is measured against WCAG AA (4.5:1, or 3:1 once type is large),
+resolving what each glyph actually sits on: ancestor fills are composited,
+translucency is applied, and the page background counts, so reversed cover
+type passes and a grey caption on a grey panel does not. Running headers and
+footers are checked too — page furniture is set once and never re-read, which
+is exactly where faint grey hides.
 
 Print bugs are silent: the PDF is valid and merely looks wrong. This is the
 difference between a tool that produces documents and one that verifies them.

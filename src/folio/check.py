@@ -29,8 +29,17 @@ ORPHAN_HEADING_MM = 22
 OVERFLOW_TOLERANCE_PX = 1.0
 # Raster upscaled beyond this looks soft on paper.
 MAX_IMAGE_UPSCALE = 1.15
+# WCAG AA: body text needs 4.5:1, large text 3:1. Print is if anything less
+# forgiving than a screen — no backlight, and ink dries lighter than it renders.
+AA_NORMAL = 4.5
+AA_LARGE = 3.0
+# WCAG's "large" is 18pt, or 14pt when bold, expressed here in CSS px.
+LARGE_PX = 24.0
+LARGE_BOLD_PX = 18.6
+BOLD = 700
 
 MM = 96 / 25.4  # WeasyPrint lays out in CSS px
+PAPER = (1.0, 1.0, 1.0)
 
 
 @dataclass
@@ -102,6 +111,9 @@ def _label(box, parents: dict) -> str:
         tag = getattr(node, "element_tag", None)
         if tag:
             return tag
+        at = getattr(node, "at_keyword", None)
+        if at:
+            return at  # page furniture: "@bottom-right" and friends
         node = parents.get(id(node))
     return "block"
 
@@ -123,6 +135,19 @@ def _content_frame(page) -> tuple[float, float, float, float]:
     return (0.0, 0.0, page.width, page.height)
 
 
+def _margin_boxes(page):
+    """Running headers and footers.
+
+    They are PageBox children rather than document content, which is why the
+    geometry checks skip them — and exactly why their colour never gets a
+    second look. Each is walked as its own root so the page background is not
+    composited twice.
+    """
+    for child in getattr(page._page_box, "children", ()) or ():
+        if type(child).__name__ == "MarginBox":
+            yield child
+
+
 def _page_kind(page) -> str:
     """Cover and contents pages are deliberately sparse; do not flag them.
 
@@ -136,6 +161,113 @@ def _page_kind(page) -> str:
     if name in ("cover", "frontmatter"):
         return name
     return "body"
+
+
+# ── colour ────────────────────────────────────────────────────────────────
+
+
+def _srgb(color) -> tuple[float, float, float, float] | None:
+    """(r, g, b, alpha) in sRGB, or None if the value is not a usable colour.
+
+    Values reach us as tinycss2 `Color`, which may be in any CSS colour space;
+    `lab()` and `oklch()` are legal in a stylesheet and must be converted, not
+    read coordinate-wise.
+    """
+    if color is None:
+        return None
+    try:
+        srgb = color if getattr(color, "space", None) == "srgb" else color.to("srgb")
+        r, g, b = srgb.coordinates
+        return (float(r), float(g), float(b), float(srgb.alpha))
+    except Exception:
+        return None
+
+
+def _over(rgba, backdrop) -> tuple[float, float, float]:
+    """Composite a translucent colour onto an opaque one (source-over)."""
+    alpha = rgba[3]
+    return tuple(c * alpha + b * (1 - alpha) for c, b in zip(rgba[:3], backdrop, strict=True))
+
+
+def _luminance(rgb) -> float:
+    def channel(c: float) -> float:
+        c = min(max(c, 0.0), 1.0)
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+    r, g, b = (channel(c) for c in rgb)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def contrast_ratio(fg, bg) -> float:
+    """WCAG relative-luminance ratio: 1.0 is invisible, 21.0 is black on white."""
+    lo, hi = sorted((_luminance(fg), _luminance(bg)))
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def _hex(rgb) -> str:
+    return "#" + "".join(f"{round(min(max(c, 0.0), 1.0) * 255):02x}" for c in rgb)
+
+
+def _paints_an_image(style) -> bool:
+    for layer in style["background_image"] or ():
+        kind = layer[0] if isinstance(layer, tuple | list) else layer
+        if kind != "none":
+            return True
+    return False
+
+
+def _backdrop(box, parents: dict, paper) -> tuple[float, float, float] | None:
+    """The colour actually behind this text.
+
+    Backgrounds are painted by ancestors, so the only way to know what a glyph
+    sits on is to walk up collecting layers and composite them onto the page.
+    Returns None when anything in the stack paints an image or a gradient: the
+    backdrop is then genuinely unknowable, and silence beats a confident wrong
+    answer.
+    """
+    layers = []
+    node = box
+    while node is not None:
+        style = getattr(node, "style", None)
+        if style is not None:
+            if _paints_an_image(style):
+                return None
+            rgba = _srgb(style["background_color"])
+            if rgba and rgba[3] > 0:
+                layers.append(rgba)
+        node = parents.get(id(node))
+    backdrop = paper
+    for rgba in reversed(layers):  # outermost first
+        backdrop = _over(rgba, backdrop)
+    return backdrop
+
+
+def _paper(page) -> tuple[float, float, float] | None:
+    """What the sheet is painted before the document draws anything.
+
+    A cover that sets `@page cover { background: … }` paints the page box, not
+    a block inside it. Read only the page background here; margin boxes are
+    checked separately.
+    """
+    style = getattr(page._page_box, "style", None)
+    if style is None:
+        return PAPER
+    if _paints_an_image(style):
+        return None
+    rgba = _srgb(style["background_color"])
+    if rgba and rgba[3] > 0:
+        return _over(rgba, PAPER)
+    return PAPER
+
+
+def _is_large(style) -> bool:
+    size = style["font_size"]
+    weight = style["font_weight"]
+    try:
+        bold = int(weight) >= BOLD
+    except (TypeError, ValueError):
+        bold = str(weight) in ("bold", "bolder")
+    return size >= (LARGE_BOLD_PX if bold else LARGE_PX)
 
 
 # ── checks ────────────────────────────────────────────────────────────────
@@ -288,6 +420,50 @@ def _check_text_overlap(root, n) -> list[Finding]:
     return out
 
 
+def _check_contrast(root, n, parents: dict, paper) -> list[Finding]:
+    """Type too close in tone to what it sits on.
+
+    Screens flatter low contrast: they are lit from behind and the reader can
+    zoom. Paper does neither, so a caption that looked merely quiet in the
+    browser is the one that comes back from the printer unreadable.
+    """
+    if paper is None:
+        return []
+    out, seen = [], set()
+    for box in _walk(root):
+        if not _is_text(box):
+            continue
+        style = getattr(box, "style", None)
+        if style is None:
+            continue
+        fg = _srgb(style["color"])
+        backdrop = _backdrop(box, parents, paper)
+        if fg is None or backdrop is None:
+            continue
+        ink = _over(fg, backdrop)
+        ratio = contrast_ratio(ink, backdrop)
+        large = _is_large(style)
+        wanted = AA_LARGE if large else AA_NORMAL
+        if ratio >= wanted:
+            continue
+        tag = _label(box, parents)
+        key = (tag, _hex(ink), _hex(backdrop))
+        if key in seen:
+            continue
+        seen.add(key)
+        size = "large text" if large else "body text"
+        out.append(
+            Finding(
+                "low-contrast",
+                ERROR if ratio < AA_LARGE else WARN,
+                n,
+                f"<{tag}> {_hex(ink)} on {_hex(backdrop)} is {ratio:.1f}:1",
+                f"{size} wants {wanted}:1 — darken the ink or lighten the fill",
+            )
+        )
+    return out
+
+
 def _check_image_scale(root, n) -> list[Finding]:
     """A raster blown up past its pixels looks soft on paper."""
     out = []
@@ -333,7 +509,12 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
         frame = _content_frame(page)
         kind = _page_kind(page)
         root = _content_root(page)
+        parents = _parent_map(root)
+        paper = _paper(page)
         findings += _check_overflow(root, i, frame)
+        findings += _check_contrast(root, i, parents, paper)
+        for margin_box in _margin_boxes(page):
+            findings += _check_contrast(margin_box, i, _parent_map(margin_box), paper)
         findings += _check_text_overlap(root, i)
         findings += _check_thin_page(root, i, frame, i == len(pages), kind)
         findings += _check_tiny_text(root, i)

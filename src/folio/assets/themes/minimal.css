@@ -15,14 +15,14 @@
 
   --ink: #111111;
   --ink-soft: #555555;
-  --ink-mute: #949494;
+  --ink-mute: #6f6f6f;
   --rule: #dcdcdc;
   --rule-soft: #ececec;
   --wash: transparent;
   --zebra: transparent;
 
-  --accent: #E8501E;             /* used sparingly — signal, never decoration */
-  --ok: #2b7a4b;   --warn: #9a6a12;   --err: #c2352b;
+  --accent: #C64014;             /* used sparingly — signal, never decoration */
+  --ok: #2b7a4b;   --warn: #946611;   --err: #c2352b;
 
   --font-body: "Inter", "Noto Sans KR", system-ui, sans-serif;
   --fs-body: 9.6pt;

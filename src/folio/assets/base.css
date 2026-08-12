@@ -20,7 +20,9 @@
 
   --ink: #1f2733;
   --ink-soft: #475569;
-  --ink-mute: #7c8899;
+  /* Muted, but never below WCAG AA (4.5:1) on any surface it is used on —
+     including --mute-bg, the darkest. `folio check` enforces this. */
+  --ink-mute: #626d7e;
 
   --rule: #e2e8f0;
   --rule-soft: #eef1f5;
@@ -28,8 +30,10 @@
   --zebra: #fafbfd;
   --paper: #ffffff;
 
-  --ok: #2F855A;      --ok-bg: #e6f4ec;
-  --warn: #B7791F;    --warn-bg: #fdf3e0;
+  /* Status hues carry meaning, so they are also read as text on their own
+     tint and reversed out of a solid pill. Both directions clear AA. */
+  --ok: #2B7A53;      --ok-bg: #e6f4ec;
+  --warn: #97641A;    --warn-bg: #fdf3e0;
   --err: #C53030;     --err-bg: #fdeaea;
   --mute-bg: #eef1f5;
 
@@ -56,7 +60,7 @@
   @top-left {
     content: string(doctitle);
     font: 500 7.4pt var(--font-ui);
-    color: #7c8899;
+    color: var(--ink-mute);
     letter-spacing: 0.04em;
     text-transform: uppercase;
     margin-bottom: 5mm;
@@ -64,21 +68,21 @@
   @top-right {
     content: string(section);
     font: 400 7.4pt var(--font-ui);
-    color: #7c8899;
+    color: var(--ink-mute);
     letter-spacing: 0.04em;
     margin-bottom: 5mm;
   }
   @bottom-right {
     content: counter(page) " / " counter(pages);
     font: 500 7.6pt var(--font-ui);
-    color: #7c8899;
+    color: var(--ink-mute);
     font-variant-numeric: tabular-nums;
     margin-top: 4mm;
   }
   @bottom-left {
     content: string(footnote);
     font: 400 7.2pt var(--font-ui);
-    color: #b3bcc8;
+    color: var(--ink-mute);
     margin-top: 4mm;
   }
 }

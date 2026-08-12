@@ -65,8 +65,17 @@ component vocabulary. Real data only.
 
 This renders and then measures the actual layout tree: text overrunning its
 box, elements overlapping, pages a fifth full, headings stranded at a page
-foot, text below legible size, rasters upscaled past their pixels. Every rule
-encodes a defect that really shipped.
+foot, text below legible size, rasters upscaled past their pixels, and type
+too close in tone to what it sits on. Every rule encodes a defect that really
+shipped.
+
+`low-contrast` is measured against WCAG AA — 4.5:1 for body text, 3:1 once
+type is large — after resolving what the glyph actually sits on, so reversed
+cover type passes and grey-on-grey does not. The shipped themes all clear it.
+If your own colours trip it, **darken the colour in `brand.css`; never raise
+the threshold and never silence the rule.** On paper there is no backlight and
+no zoom, so a caption that looks merely quiet on screen is the one that comes
+back from the printer unreadable.
 
 - **Any `✗` error → fix and re-run.** Never hand over a document with errors.
 - **Each `!` warning → judge it.** Most are real. A thin page almost always

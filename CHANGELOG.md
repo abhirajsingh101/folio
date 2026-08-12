@@ -24,6 +24,34 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
   rasters. Errors exit non-zero.
 - Every rule encodes a defect that actually shipped during development, so
   the suite is regression tests for the design system as much as a linter.
+- **Contrast (`low-contrast`)** against WCAG AA — 4.5:1 for body text, 3:1
+  once type is large (18pt, or 14pt bold). The backdrop is resolved rather
+  than assumed: ancestor fills are composited, translucent colours are applied
+  before measuring, and a page background counts, so reversed cover type is
+  silent while grey-on-grey is not. Where the backdrop is genuinely unknowable
+  — anything over a gradient or image — the rule stays quiet instead of
+  guessing. Running headers and footers are measured as well, since margin
+  boxes sit outside the content frame and never get a second look.
+
+### Changed — palette
+The contrast rule immediately failed the design system that shipped it, so the
+palette moved rather than the threshold. Muted text is now a little darker in
+every direction; the hierarchy is unchanged, and it is legible on paper.
+
+- `--ink-mute` darkened in all four themes (base `#7c8899` → `#626d7e`,
+  editorial `#82878f` → `#686c74`, technical `#7d868d` → `#687077`, minimal
+  `#949494` → `#6f6f6f`). Each now clears 4.5:1 on the *darkest* surface it is
+  used on, not merely on white.
+- `--ok` `#2F855A` → `#2B7A53` and `--warn` `#B7791F` → `#97641A`, which fixes
+  them both as text on their own tint and reversed out of a solid pill.
+  minimal's `--accent` `#E8501E` → `#C64014`.
+- Page furniture now uses `var(--ink-mute)` instead of three hardcoded greys.
+  This fixes a real bug — themes could never restyle the running head — and
+  retires a footnote grey of `#b3bcc8`, which measured **1.9:1** and had
+  shipped in every folio document to date.
+- Chart tick labels followed the same move (`theme.MUTED` was `#94a3b8`, or
+  2.9:1). The checker cannot see inside an SVG, so those must be right at
+  source.
 
 ### Added — internationalisation
 - **Script detection.** A document is inspected for the writing systems in it,

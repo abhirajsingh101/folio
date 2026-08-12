@@ -11,10 +11,10 @@ import os
 
 INK = "#2d3748"
 INK_SOFT = "#475569"
-MUTED = "#94a3b8"
+MUTED = "#626d7e"
 GRID = "#e2e8f0"
-SUCCESS = "#2F855A"
-WARNING = "#B7791F"
+SUCCESS = "#2B7A53"
+WARNING = "#97641A"
 ERROR = "#C53030"
 
 # Per-theme palettes, mirroring themes/*.css so a figure never looks pasted in.
@@ -24,7 +24,7 @@ PALETTES = {
         "deep": "#002B6B",
         "ramp": ["#5FBEEB", "#2E86C7", "#0F5FA6", "#003F87", "#002B6B"],
         "ink": "#2d3748",
-        "mute": "#94a3b8",
+        "mute": "#626d7e",
         "grid": "#e2e8f0",
     },
     "editorial": {
@@ -32,7 +32,7 @@ PALETTES = {
         "deep": "#4A121C",
         "ramp": ["#D9A0A8", "#BF6C79", "#9E3F4F", "#6E1D2B", "#4A121C"],
         "ink": "#14161a",
-        "mute": "#82878f",
+        "mute": "#686c74",
         "grid": "#d8d5d0",
     },
     "technical": {
@@ -40,7 +40,7 @@ PALETTES = {
         "deep": "#08383B",
         "ramp": ["#7FBFC2", "#4A9DA2", "#22797F", "#0F5257", "#08383B"],
         "ink": "#16191c",
-        "mute": "#7d868d",
+        "mute": "#687077",
         "grid": "#d4d8db",
     },
     "minimal": {
@@ -48,9 +48,9 @@ PALETTES = {
         "deep": "#000000",
         "ramp": ["#c9c9c9", "#9a9a9a", "#6b6b6b", "#3d3d3d", "#111111"],
         "ink": "#111111",
-        "mute": "#949494",
+        "mute": "#6f6f6f",
         "grid": "#dcdcdc",
-        "accent": "#E8501E",
+        "accent": "#C64014",
     },
 }
 
