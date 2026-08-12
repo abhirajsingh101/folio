@@ -6,6 +6,8 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-08-12
+
 ### Added
 - **Four design directions** — `report`, `editorial`, `technical`, `minimal`.
   Not colour variants: each is a distinct typographic system with its own page

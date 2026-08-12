@@ -280,3 +280,29 @@ def test_page_furniture_renders(tmp_path):
     assert "RUNHEAD" in text
     assert "FOOTNOTE" in text
     assert "Alpha" in text
+
+
+def test_the_version_is_declared_once():
+    """`__version__` and the packaging metadata must not drift apart.
+
+    They are two literals in two files, and only one of them is easy to
+    remember at release time. `folio --version` reads the module; PyPI reads
+    pyproject; nothing else would notice they disagree.
+    """
+    import re
+    from pathlib import Path
+
+    import folio
+
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    if not pyproject.exists():  # pragma: no cover - installed without sources
+        pytest.skip("pyproject not present")
+    # Read it with a regex rather than tomllib, which is 3.11+ while folio
+    # supports 3.10 — the same trap this suite already fell into once.
+    declared = re.search(
+        r'^version = "([^"]+)"', pyproject.read_text(encoding="utf-8"), re.M
+    ).group(1)
+    assert folio.__version__ == declared, (
+        f"folio.__version__ is {folio.__version__}, pyproject says {declared}"
+    )
+    assert re.fullmatch(r"\d+\.\d+\.\d+", declared)
