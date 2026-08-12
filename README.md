@@ -47,9 +47,15 @@ default it inherits.
 ## Install
 
 ```bash
-pipx install "folio-press[all]"     # or: uv tool install "folio-press[all]"
-folio doctor                        # tells you exactly what your machine is missing
+pipx install folio-press     # core only — no heavy dependencies
+folio doctor                 # tells you exactly what to add, and nothing more
 ```
+
+folio installs almost nothing by default and pulls in the rest only when a
+document actually needs it. Charts? `pip install "folio-press[charts]"`.
+Japanese? one Noto family, not all of them. `folio doctor` and
+`folio fonts <file>` name the specific gap and the exact command for your
+platform, so you never install a toolchain to find out which half you needed.
 
 `folio doctor` is not decoration. WeasyPrint binds Pango, cairo and
 GDK-PixBuf through ctypes, and **pip cannot install those** — it is the single
@@ -193,6 +199,30 @@ efficiency winner. WeasyPrint won on layout control for screenshot-heavy
 documents, on the edit loop, and on shipping a web version from one source.
 
 Full write-up, including every bug: [docs/ENGINE-CHOICE.md](docs/ENGINE-CHOICE.md).
+
+## Not Latin-only
+
+A document is inspected for the writing systems actually in it, and that sets
+`lang`, `dir`, and the line-breaking rules. Korean gets `word-break: keep-all`;
+Japanese and Chinese get kinsoku breaking and no hyphenation; Thai defers to
+the shaper; Arabic and Hebrew get a full right-to-left layout with every
+accent, marker and rule mirrored.
+
+```bash
+folio fonts report.html
+#   ✓ Scripts      Arabic → lang=ar dir=rtl
+#   ✓   Arabic     Noto Sans Arabic
+```
+
+**No fonts are bundled.** Covering the world would mean shipping tens of
+megabytes to everyone so a few can set Japanese. folio tells you which
+families a given document needs and how to install them on your platform —
+and if one is missing, it says so rather than letting the text render as
+boxes.
+
+Mixed documents work: a Korean report full of English identifiers is still
+Korean. Declare `<html lang="…">` when you want to be certain — an explicit
+declaration always wins over the heuristic.
 
 ## Not for
 

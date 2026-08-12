@@ -49,6 +49,9 @@ def _parser() -> argparse.ArgumentParser:
     )
     b.add_argument("-q", "--quiet", action="store_true")
 
+    f = sub.add_parser("fonts", help="check font coverage for a document's scripts")
+    f.add_argument("file", nargs="?", help="document to inspect (default: whole system)")
+
     sub.add_parser("themes", help="list the available design directions")
     sub.add_parser("components", help="print the component vocabulary")
     sub.add_parser("gotchas", help="print the renderer gotchas reference")
@@ -69,6 +72,29 @@ def main(argv: list[str] | None = None) -> int:
         checks, can_render = doctor.run()
         doctor.report(checks, can_render)
         return 0 if can_render else 1
+
+    if args.cmd == "fonts":
+        from . import doctor as D
+
+        if args.file:
+            src = Path(args.file)
+            if not src.exists():
+                sys.exit(f"not found: {src}")
+            print(f"folio fonts — {src.name}\n")
+            checks = D.check_document_fonts(src.read_text(encoding="utf-8"))
+        else:
+            print("folio fonts — system\n")
+            checks = [D.check_fonts()]
+        for c in checks:
+            print(f"  {D._MARK[c.status]} {c.name:<18} {c.detail}".rstrip())
+        gaps = [c for c in checks if c.status == D.FAIL]
+        if gaps:
+            print("\nTo fix:")
+            for line in dict.fromkeys(x for c in gaps for x in c.fix):
+                print(f"    {line}")
+        else:
+            print("\nEvery script in this document has a font that covers it.")
+        return 1 if gaps else 0
 
     if args.cmd == "themes":
         from .assets import DEFAULT_THEME, theme_names

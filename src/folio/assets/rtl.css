@@ -1,0 +1,89 @@
+/* ============================================================
+   folio — RTL mirror layer.
+
+   Injected only when a document is right-to-left (Arabic, Hebrew,
+   Persian, Urdu), after base and theme so it wins.
+
+   This file exists because WeasyPrint does not implement logical
+   properties: `border-inline-start`, `padding-inline-start` and
+   `margin-inline-*` are silently ignored (verified against 68 — the
+   rule simply does not paint). `text-align: start/end` DOES work, so
+   alignment is handled in base.css and only physical box offsets need
+   mirroring here.
+
+   If WeasyPrint gains logical-property support, this whole file can be
+   deleted and base.css switched to `*-inline-start`.
+   ============================================================ */
+
+/* ── Cover ──────────────────────────────────────────────── */
+
+.cover-brand { left: auto; right: var(--page-margin-x); }
+.cover::before, .cover::after { right: auto; }
+.cover::before { left: -60mm; }
+.cover::after { left: -30mm; }
+
+/* ── Accent rules: every left border becomes a right border ─ */
+
+.metric {
+  border-left: 0;
+  border-right: 2.5px solid var(--brand);
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.callout {
+  border-left: 0;
+  border-right: 3px solid var(--ink-mute);
+  padding-left: 4mm;
+  padding-right: 4mm;
+}
+.callout.info { border-right-color: var(--brand); }
+.callout.warn { border-right-color: var(--warn); }
+.callout.risk { border-right-color: var(--err); }
+.callout.ok   { border-right-color: var(--ok); }
+
+.pullquote {
+  border-left: 0;
+  border-right: 2.5px solid var(--brand);
+  padding-left: 0;
+  padding-right: 6mm;
+}
+
+pre {
+  border-left-width: 1px;
+  border-right: 2.5px solid var(--brand-deep);
+}
+
+/* ── Lists: markers move to the right edge ──────────────── */
+
+ul.tick li, ol.steps li { padding-left: 0; padding-right: 6mm; }
+ul.tick li::before { left: auto; right: 1mm; }
+ol.steps li { padding-right: 6.5mm; }
+ol.steps li::before { left: auto; right: 0; }
+
+/* ── Timeline: the spine flips side ─────────────────────── */
+
+.timeline li {
+  border-left: 0;
+  border-right: 1.5px solid var(--rule);
+  padding-left: 0;
+  padding-right: 9mm;
+  margin-left: 0;
+  margin-right: 2mm;
+}
+.timeline li:last-child { border-right-color: transparent; }
+.timeline li::before { left: auto; right: -3.2px; }
+.timeline li.now::before { left: auto; right: -4.2px; }
+
+/* ── Contents: the dot leader reverses with the row ─────── */
+
+.toc li { flex-direction: row; }
+
+/* ── Tables ─────────────────────────────────────────────── */
+
+/* Numeric columns still hug the *reading* end, which text-align: end
+   already handles; only explicit padding needs mirroring. */
+thead th, tbody td, tfoot td { padding-left: 2.4mm; padding-right: 2.4mm; }
+
+/* ── Editorial / minimal use trailing rules on tiles ────── */
+
+.metrics .metric { border-right-width: 2.5px; }

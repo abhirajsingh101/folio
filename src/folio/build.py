@@ -18,14 +18,14 @@ from pathlib import Path
 
 from .assets import DEFAULT_THEME, css_text, template_text, theme_names
 from .renderers import Renderer, pick
+from .scripts import Profile
+from .scripts import detect as detect_scripts
 
 SKELETON = """<!DOCTYPE html>
-<html lang="{lang}"><head><meta charset="utf-8"><title>{title}</title></head>
+<html lang="{lang}" dir="{dir}"><head><meta charset="utf-8"><title>{title}</title></head>
 <body data-title="{title}" data-footer="">
 {body}
 </body></html>"""
-
-_HANGUL = re.compile(r"[가-힣]")
 _THEME_ATTR = re.compile(r"<body[^>]*\bdata-theme=[\"']([\w-]+)[\"']", re.I)
 
 
@@ -39,6 +39,7 @@ class Result:
     page: Path | None
     renderer: str
     degraded: bool
+    profile: Profile | None = None
 
 
 def detect_theme(html: str) -> str:
@@ -55,20 +56,24 @@ def detect_theme(html: str) -> str:
     return name
 
 
-def _stylesheet(src: Path, theme: str) -> str:
-    css = css_text(theme)
+def _stylesheet(src: Path, theme: str, rtl: bool = False) -> str:
+    css = css_text(theme, rtl=rtl)
     brand = src.parent / "brand.css"
     if brand.exists():
         css += f"\n\n/* ── project brand.css ── */\n{brand.read_text(encoding='utf-8')}"
     return css
 
 
-def _wrap(html: str, src: Path) -> str:
+def _wrap(html: str, src: Path, prof: Profile) -> str:
+    """Wrap a fragment, or stamp lang/dir onto a full document that omits them."""
     if "<html" in html.lower():
+        if not re.search(r"<html[^>]*\blang=", html, re.I):
+            html = re.sub(r"<html\b", f'<html lang="{prof.lang}"', html, count=1, flags=re.I)
+        if prof.is_rtl and not re.search(r"<html[^>]*\bdir=", html, re.I):
+            html = re.sub(r"<html\b", '<html dir="rtl"', html, count=1, flags=re.I)
         return html
     title = src.stem.replace("-", " ").replace("_", " ").title()
-    lang = "ko" if _HANGUL.search(html) else "en"
-    return SKELETON.format(lang=lang, title=title, body=html)
+    return SKELETON.format(lang=prof.lang, dir=prof.direction, title=title, body=html)
 
 
 def _inject(html: str, css: str) -> str:
@@ -134,11 +139,13 @@ def build(
     renderer: Renderer = pick(prefer)
     raw = src.read_text(encoding="utf-8")
     theme = detect_theme(raw)
+    prof = detect_scripts(raw)
     run_charts(src, quiet, theme)
 
-    doc = _inject(_wrap(raw, src), _stylesheet(src, theme))
+    doc = _inject(_wrap(raw, src, prof), _stylesheet(src, theme, rtl=prof.is_rtl))
     if not quiet:
         print(f"  theme     {theme}")
+        print(f"  scripts   {prof.describe()}")
 
     pdf = (out or src.with_suffix(".pdf")).resolve()
     if pdf == src:
@@ -164,7 +171,7 @@ def build(
             f"    table-of-contents page references are NOT supported by this\n"
             f"    renderer. Run `folio doctor` to enable WeasyPrint."
         )
-    return Result(pdf, page, renderer.name, degraded)
+    return Result(pdf, page, renderer.name, degraded, prof)
 
 
 def init(target: Path, *, force: bool = False, theme: str = DEFAULT_THEME) -> list[Path]:

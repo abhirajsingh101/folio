@@ -17,12 +17,35 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
   `themes/*.css` (look). Tests enforce the split in both directions — base may
   not paint, themes may not restate structure.
 
+### Added — internationalisation
+- **Script detection.** A document is inspected for the writing systems in it,
+  which sets `lang` and `dir`. Korean, Japanese, Chinese, Arabic, Hebrew, Thai,
+  Devanagari, Bengali, Tamil, Cyrillic, Greek and Latin.
+- **Per-script line breaking.** Korean `word-break: keep-all`; kinsoku and no
+  hyphenation for Japanese and Chinese; shaper-driven breaking for Thai, Lao,
+  Khmer, Burmese; whole clusters for Indic; no hyphenation for RTL scripts.
+  Applying Latin hyphenation to these was previously silent breakage.
+- **Right-to-left layout** for Arabic, Hebrew, Persian and Urdu, as a mirror
+  layer injected only when needed. Every accent rule, list marker, timeline
+  spine and tile border flips.
+- **`folio fonts <file>`** reports whether this machine can set the scripts a
+  document uses, with the install command for the platform. No fonts are
+  bundled: shipping every writing system would cost every user tens of
+  megabytes so that a few can set Japanese.
+
+### Changed
+- Install posture: `pipx install folio-press` is core-only. Charts, WeasyPrint
+  and fonts are pulled in per need, guided by `doctor` and `fonts`.
+
 ### Planned
 - `folio build --check` to flag under-filled pages, the most common authoring
   problem and one the tool can detect better than a human can eyeball.
 - A second document family (invoice / proposal) sharing the same tokens.
-- Bundled subset fonts so output is byte-identical across machines. Currently
-  the look degrades gracefully but is not identical everywhere.
+- Optional `folio fonts --install <script>` to fetch a single Noto family into
+  a user font directory, for machines with no package manager.
+- Byte-identical output across machines. Currently the look degrades
+  gracefully but is not pinned; solving it without bundling everything means
+  optional per-script subsets.
 
 ## [0.1.0] — 2026-08-12
 

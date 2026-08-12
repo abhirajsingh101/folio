@@ -255,8 +255,22 @@ Output is SVG with text as outlines, so it renders identically everywhere.
 
 ---
 
-## Korean / CJK
+## Writing systems
 
-Set `lang="ko"` on `<html>`, or `class="ko"` on any element. That switches on
-`word-break: keep-all` and disables hyphenation, which is required for Korean
-to break correctly. Body and sans stacks already fall back to Noto Sans KR.
+folio detects the scripts in your document and sets `lang` and `dir` for you.
+You only need to intervene in two cases:
+
+- **Chinese vs Japanese** — they share Han characters, so declare
+  `<html lang="zh">` or `<html lang="ja">` when a document is mostly Han.
+- **A document whose language differs from its content** — a mostly-English
+  document quoting long Korean passages, for instance.
+
+An explicit `<html lang="…">` always wins.
+
+What it buys you: Korean gets `word-break: keep-all` so words never split
+mid-syllable; Japanese and Chinese get kinsoku line breaking and no
+hyphenation; Thai, Lao, Khmer and Burmese defer to the shaper; Indic scripts
+keep clusters whole; Arabic, Hebrew, Persian and Urdu get a mirrored
+right-to-left layout.
+
+Check fonts before you ship: `folio fonts document.html`.

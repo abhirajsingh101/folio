@@ -260,3 +260,75 @@ def report(checks: list[Check], can_render: bool) -> None:
             print(f"\n  {c.name}")
             for line in c.fix:
                 print(f"    {line}")
+
+
+# ── Script-aware font coverage ────────────────────────────────────────────
+
+FONT_INSTALL = {
+    "linux-apt": "sudo apt-get install -y fonts-noto-core fonts-noto-cjk",
+    "linux-dnf": "sudo dnf install -y google-noto-fonts-common google-noto-cjk-fonts",
+    "linux-pacman": "sudo pacman -S --needed noto-fonts noto-fonts-cjk",
+    "linux-apk": "sudo apk add font-noto font-noto-cjk",
+    "linux": "Install the Noto font families with your package manager.",
+    "macos": "Most scripts ship with macOS. For the rest: brew install --cask font-noto-sans-cjk",
+    "windows": "Settings → Time & Language → Language → add the language pack,\n"
+    "    or download the family from https://fonts.google.com/noto",
+    "unknown": "Install the relevant Noto family: https://fonts.google.com/noto",
+}
+
+
+def installed_families() -> set[str] | None:
+    """Lower-cased font families known to the system, or None if unknowable."""
+    fc = shutil.which("fc-list")
+    if not fc:
+        return None
+    try:
+        out = subprocess.run([fc, ":", "family"], capture_output=True, text=True, timeout=10).stdout
+    except Exception:
+        return None
+    fams = set()
+    for line in out.splitlines():
+        for part in line.split(","):
+            fams.add(part.strip().lower())
+    return fams
+
+
+def check_document_fonts(html: str) -> list[Check]:
+    """Whether this machine can actually set the scripts this document uses.
+
+    folio bundles no fonts. Shipping every writing system would mean tens of
+    megabytes for everyone so that a few can set Japanese, so coverage is
+    reported per document and installed only if needed.
+    """
+    from .scripts import SCRIPT_INFO, detect
+
+    prof = detect(html)
+    have = installed_families()
+    checks: list[Check] = [Check("Scripts", OK, prof.describe())]
+
+    for script, families in prof.fonts_needed.items():
+        label = SCRIPT_INFO[script][1]
+        if have is None:
+            checks.append(
+                Check(
+                    f"  {label}",
+                    WARN,
+                    "cannot enumerate fonts on this platform",
+                    [f"If {label} renders as boxes: {FONT_INSTALL[_system()]}"],
+                )
+            )
+            continue
+        hit = next((f for f in families if f.lower() in have), None)
+        if hit:
+            checks.append(Check(f"  {label}", OK, hit))
+        else:
+            checks.append(
+                Check(
+                    f"  {label}",
+                    FAIL,
+                    f"no font covers it — text will render as boxes "
+                    f"(want one of: {', '.join(families)})",
+                    [FONT_INSTALL[_system()]],
+                )
+            )
+    return checks

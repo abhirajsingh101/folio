@@ -51,12 +51,19 @@ def css_path() -> Path:
     return base_path()
 
 
-def css_text(theme: str = DEFAULT_THEME) -> str:
-    """The full stylesheet: structure, then the chosen look."""
-    return (
+def rtl_path() -> Path:
+    return asset_path("rtl.css")
+
+
+def css_text(theme: str = DEFAULT_THEME, rtl: bool = False) -> str:
+    """The full stylesheet: structure, the chosen look, then RTL if needed."""
+    css = (
         f"/* ── folio base (structure) ── */\n{base_path().read_text(encoding='utf-8')}\n\n"
         f"/* ── folio theme: {theme} ── */\n{theme_path(theme).read_text(encoding='utf-8')}"
     )
+    if rtl:
+        css += f"\n\n/* ── folio rtl mirror ── */\n{rtl_path().read_text(encoding='utf-8')}"
+    return css
 
 
 def template_text(name: str) -> str:

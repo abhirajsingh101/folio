@@ -88,10 +88,16 @@ Fix by reordering blocks or adding `class="keep"` to a short table that must not
 split. WeasyPrint ignores `widows`/`orphans` on table rows, so there is no CSS
 knob for it.
 
-## Korean and CJK
+## Writing systems
 
-Set `lang="ko"` on `<html>` — that enables `word-break: keep-all` and disables
-hyphenation, both required for correct Korean line breaking.
+Scripts are detected and `lang`/`dir` set automatically, including full RTL
+for Arabic and Hebrew. Two cases need you:
+
+- Declare `<html lang="zh">` or `lang="ja"` for Han-heavy documents — they
+  share characters and the heuristic cannot tell them apart.
+- Run `folio fonts <file>` before shipping any non-Latin document. folio
+  bundles no fonts; if a script has no font it renders as boxes, and this is
+  the command that says so.
 
 ## Not for
 

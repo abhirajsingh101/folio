@@ -127,9 +127,9 @@ a { color: var(--brand); text-decoration: none; }
   flex-direction: column;
   justify-content: flex-end;
   padding: 0 var(--page-margin-x) 22mm;
-  text-align: left;
+  text-align: start;
 }
-.cover h1, .cover .sub { text-align: left; margin: 0; }
+.cover h1, .cover .sub { text-align: start; margin: 0; }
 .cover-brand { position: absolute; top: 20mm; left: var(--page-margin-x); }
 .cover-meta { display: flex; gap: 14mm; }
 .cover-meta .k { display: block; }
@@ -143,7 +143,7 @@ a { color: var(--brand); text-decoration: none; }
 .toc li a.pg {
   font-variant-numeric: tabular-nums;
   min-width: 5mm;
-  text-align: right;
+  text-align: end;
 }
 /* page numbers resolve at render time — never typed by the author */
 .toc li a.pg::after { content: target-counter(attr(href), page); }
@@ -152,11 +152,11 @@ a { color: var(--brand); text-decoration: none; }
 
 /* content() would swallow the SECTION 0N kicker into the running head,
    so the title is carried explicitly on the element. */
-h2.section { string-set: section attr(data-section); break-after: avoid; text-align: left; }
+h2.section { string-set: section attr(data-section); break-after: avoid; text-align: start; }
 h2.section .idx { display: block; }
 .section-wrap { break-before: page; }
 .section-wrap.cont { break-before: auto; margin-top: 9mm; }
-h3, h4 { break-after: avoid; text-align: left; }
+h3, h4 { break-after: avoid; text-align: start; }
 
 /* ── Metric tiles ───────────────────────────────────────── */
 
@@ -169,7 +169,7 @@ h3, h4 { break-after: avoid; text-align: left; }
 
 figure { margin: 6mm 0; break-inside: avoid; }
 figure img { width: 100%; display: block; }
-figcaption { text-align: left; }
+figcaption { text-align: start; }
 .fig-row { display: flex; gap: 6mm; break-inside: avoid; margin: 6mm 0; }
 .fig-row figure { flex: 1; margin: 0; }
 .bleed {
@@ -190,10 +190,10 @@ table {
 }
 thead { display: table-header-group; }   /* header repeats after a break */
 tbody tr { break-inside: avoid; }        /* only whole rows are atomic */
-caption { caption-side: top; text-align: left; break-after: avoid; }
-th { text-align: left; white-space: nowrap; }
-tbody td, tfoot td { text-align: left; vertical-align: top; }
-td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+caption { caption-side: top; text-align: start; break-after: avoid; }
+th { text-align: start; white-space: nowrap; }
+tbody td, tfoot td { text-align: start; vertical-align: top; }
+td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; }
 .pill { display: inline-block; white-space: nowrap; }
 
 /* ── Callouts ───────────────────────────────────────────── */
@@ -201,23 +201,23 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .callout {
   display: flex;
   break-inside: avoid;
-  text-align: left;
+  text-align: start;
 }
 .callout .ico { flex: 0 0 21mm; }
 /* without min-width:0 a flex child refuses to wrap and overruns the box */
 .callout .body { flex: 1 1 auto; min-width: 0; }
-.callout p { text-align: left; }
+.callout p { text-align: start; }
 .callout p:last-child { margin-bottom: 0; }
 
 /* ── Pull quote ─────────────────────────────────────────── */
 
-.pullquote { break-inside: avoid; text-align: left; }
+.pullquote { break-inside: avoid; text-align: start; }
 .pullquote cite { display: block; font-style: normal; }
 
 /* ── Lists ──────────────────────────────────────────────── */
 
 ul.tick, ol.steps { margin: 2mm 0 4mm; padding-left: 0; list-style: none; }
-ul.tick li, ol.steps li { position: relative; padding-left: 6mm; margin-bottom: 1.7mm; text-align: left; }
+ul.tick li, ol.steps li { position: relative; padding-left: 6mm; margin-bottom: 1.7mm; text-align: start; }
 ul.tick li::before { position: absolute; left: 1mm; }
 ol.steps { counter-reset: st; }
 ol.steps li::before { counter-increment: st; content: counter(st); position: absolute; left: 0; }
@@ -228,7 +228,7 @@ pre {
   font-family: var(--font-mono);
   margin: 4mm 0;
   break-inside: avoid;
-  text-align: left;
+  text-align: start;
   white-space: pre-wrap;
 }
 code { font-family: var(--font-mono); }
@@ -241,7 +241,7 @@ code { font-family: var(--font-mono); }
   padding-left: 9mm;
   padding-bottom: 3.6mm;
   margin-left: 2mm;
-  text-align: left;
+  text-align: start;
   break-inside: avoid;
 }
 .timeline li::before { content: ""; position: absolute; left: -3.2px; top: 1.3mm; }
@@ -258,8 +258,37 @@ table.keep, figure.keep, .keep { break-inside: avoid; }
 .two-col { column-count: 2; column-gap: 8mm; }
 .divider { height: 1px; background: var(--rule); margin: 7mm 0; border: 0; }
 
-/* ── CJK ────────────────────────────────────────────────── */
+/* ── Writing systems ────────────────────────────────────── */
 
-/* Korean must break on word boundaries and never hyphenate. */
+/* Latin, Cyrillic and Greek hyphenate; nothing else does. Applying Latin
+   line-breaking to other scripts is the most common way a "global" document
+   toolchain quietly produces broken typography. `folio` sets <html lang> from
+   the scripts actually present — see scripts.py. */
+
+/* Korean: break on word boundaries, never mid-word. */
 :lang(ko), .ko { word-break: keep-all; hyphens: none; }
 :lang(ko) table, .ko table { word-break: keep-all; }
+
+/* Japanese and Chinese: break anywhere per kinsoku, never hyphenate. */
+:lang(ja), :lang(zh), .ja, .zh {
+  hyphens: none;
+  line-break: strict;
+  word-break: normal;
+}
+
+/* Thai, Lao, Khmer, Burmese: no spaces between words; the shaper decides
+   where a line may break, so never impose Latin rules. */
+:lang(th), :lang(lo), :lang(km), :lang(my) {
+  hyphens: none;
+  word-break: normal;
+  line-break: loose;
+}
+
+/* Arabic, Hebrew, Persian, Urdu: hyphenation would break joining forms. */
+:lang(ar), :lang(he), :lang(fa), :lang(ur) { hyphens: none; }
+
+/* Indic scripts: no hyphenation dictionary, and clusters must stay whole. */
+:lang(hi), :lang(bn), :lang(ta), :lang(te), :lang(mr), :lang(gu), :lang(pa) {
+  hyphens: none;
+  word-break: normal;
+}

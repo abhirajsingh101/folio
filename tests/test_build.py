@@ -9,6 +9,7 @@ import pytest
 from folio import build as B
 from folio.assets import css_path, css_text, doc_text, template_text
 from folio.renderers import ChromiumRenderer, RenderError, WeasyRenderer, pick
+from folio.scripts import detect as detect_scripts
 
 HAS_WEASY = WeasyRenderer().available()
 HAS_CHROME = ChromiumRenderer().available()
@@ -46,7 +47,8 @@ def test_starter_template_has_no_absolute_paths():
 def test_fragment_gets_wrapped(tmp_path):
     src = tmp_path / "note.html"
     src.write_text("<p>hello</p>", encoding="utf-8")
-    out = B._wrap(src.read_text(encoding="utf-8"), src)
+    raw = src.read_text(encoding="utf-8")
+    out = B._wrap(raw, src, detect_scripts(raw))
     assert out.startswith("<!DOCTYPE html>")
     assert 'lang="en"' in out
     assert "<p>hello</p>" in out
@@ -55,14 +57,36 @@ def test_fragment_gets_wrapped(tmp_path):
 def test_korean_fragment_gets_ko_lang(tmp_path):
     src = tmp_path / "note.html"
     src.write_text("<p>액추에이터 보고서</p>", encoding="utf-8")
-    assert 'lang="ko"' in B._wrap(src.read_text(encoding="utf-8"), src)
+    raw = src.read_text(encoding="utf-8")
+    assert 'lang="ko"' in B._wrap(raw, src, detect_scripts(raw))
 
 
-def test_full_document_is_left_alone(tmp_path):
+def test_full_document_keeps_its_own_lang_and_dir(tmp_path):
+    """An author's explicit declaration is never second-guessed."""
     src = tmp_path / "doc.html"
-    html = "<!DOCTYPE html><html><head></head><body>x</body></html>"
+    html = '<!DOCTYPE html><html lang="fr" dir="ltr"><head></head><body>x</body></html>'
     src.write_text(html, encoding="utf-8")
-    assert B._wrap(html, src) == html
+    assert B._wrap(html, src, detect_scripts(html)) == html
+
+
+def test_full_document_without_lang_gets_one_stamped(tmp_path):
+    """Per-script line breaking keys off <html lang>, so it must be present."""
+    src = tmp_path / "doc.html"
+    html = "<!DOCTYPE html><html><head></head><body><p>これは日本語の文書です。</p></body></html>"
+    src.write_text(html, encoding="utf-8")
+    out = B._wrap(html, src, detect_scripts(html))
+    assert 'lang="ja"' in out
+    assert "<p>これは日本語の文書です。</p>" in out
+
+
+def test_rtl_document_gets_dir_stamped(tmp_path):
+    src = tmp_path / "doc.html"
+    html = (
+        "<!DOCTYPE html><html><head></head><body><p>هذا تقرير تجريبي عن الجودة.</p></body></html>"
+    )
+    src.write_text(html, encoding="utf-8")
+    out = B._wrap(html, src, detect_scripts(html))
+    assert 'dir="rtl"' in out and 'lang="ar"' in out
 
 
 def test_css_injected_before_head_close():
