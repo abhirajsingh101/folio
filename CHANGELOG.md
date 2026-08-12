@@ -247,8 +247,6 @@ hint cannot name an extra that does not exist.
   and fonts are pulled in per need, guided by `doctor` and `fonts`.
 
 ### Planned
-- `folio build --check` to flag under-filled pages, the most common authoring
-  problem and one the tool can detect better than a human can eyeball.
 - A second document family (invoice / proposal) sharing the same tokens.
 - Optional `folio fonts --install <script>` to fetch a single Noto family into
   a user font directory, for machines with no package manager.
