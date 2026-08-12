@@ -60,6 +60,9 @@ packages = ["src/folio"]
 
 [tool.hatch.build.targets.sdist]
 include = ["src/folio", "docs", "skill", "tests", "README.md", "LICENSE"]
+# `docs` ships whole, which is right for the reference docs and wrong for
+# internal design specs. Without this they accumulate in every tarball.
+exclude = ["docs/superpowers"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
