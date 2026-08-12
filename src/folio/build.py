@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import base64
 import mimetypes
+import os
 import re
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from .assets import css_text, template_text
+from .assets import DEFAULT_THEME, css_text, template_text, theme_names
 from .renderers import Renderer, pick
 
 SKELETON = """<!DOCTYPE html>
@@ -25,6 +26,7 @@ SKELETON = """<!DOCTYPE html>
 </body></html>"""
 
 _HANGUL = re.compile(r"[가-힣]")
+_THEME_ATTR = re.compile(r"<body[^>]*\bdata-theme=[\"']([\w-]+)[\"']", re.I)
 
 
 class BuildError(RuntimeError):
@@ -39,8 +41,22 @@ class Result:
     degraded: bool
 
 
-def _stylesheet(src: Path) -> str:
-    css = css_text()
+def detect_theme(html: str) -> str:
+    """Themes are declared on <body data-theme=…>, so a document is self-describing."""
+    m = _THEME_ATTR.search(html)
+    if not m:
+        return DEFAULT_THEME
+    name = m.group(1)
+    if name not in theme_names():
+        raise BuildError(
+            f"unknown theme {name!r} in <body data-theme=…>\n"
+            f"  available: {', '.join(theme_names())}"
+        )
+    return name
+
+
+def _stylesheet(src: Path, theme: str) -> str:
+    css = css_text(theme)
     brand = src.parent / "brand.css"
     if brand.exists():
         css += f"\n\n/* ── project brand.css ── */\n{brand.read_text(encoding='utf-8')}"
@@ -62,16 +78,22 @@ def _inject(html: str, css: str) -> str:
     return tag + html
 
 
-def run_charts(src: Path, quiet: bool = False) -> None:
-    """Run a sibling charts.py first so figures are never stale."""
+def run_charts(src: Path, quiet: bool = False, theme: str = DEFAULT_THEME) -> None:
+    """Run a sibling charts.py first so figures are never stale.
+
+    The theme is passed through the environment so `theme.use()` picks the
+    matching palette without the author wiring anything up.
+    """
     script = src.parent / "charts.py"
     if not script.exists():
         return
     if not quiet:
         print(f"  charts    {script.name}")
+    env = {**os.environ, "FOLIO_THEME": theme}
     r = subprocess.run(
         [sys.executable, str(script)],
         cwd=script.parent,
+        env=env,
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -110,9 +132,13 @@ def build(
         raise BuildError(f"not found: {src}")
 
     renderer: Renderer = pick(prefer)
-    run_charts(src, quiet)
+    raw = src.read_text(encoding="utf-8")
+    theme = detect_theme(raw)
+    run_charts(src, quiet, theme)
 
-    doc = _inject(_wrap(src.read_text(encoding="utf-8"), src), _stylesheet(src))
+    doc = _inject(_wrap(raw, src), _stylesheet(src, theme))
+    if not quiet:
+        print(f"  theme     {theme}")
 
     pdf = (out or src.with_suffix(".pdf")).resolve()
     if pdf == src:
@@ -141,7 +167,7 @@ def build(
     return Result(pdf, page, renderer.name, degraded)
 
 
-def init(target: Path, *, force: bool = False) -> list[Path]:
+def init(target: Path, *, force: bool = False, theme: str = DEFAULT_THEME) -> list[Path]:
     """Scaffold a document beside whatever project you are in."""
     target.mkdir(parents=True, exist_ok=True)
     written = []
@@ -150,7 +176,10 @@ def init(target: Path, *, force: bool = False) -> list[Path]:
         if dst.exists() and not force:
             print(f"  skip      {name} (exists — use --force to overwrite)")
             continue
-        dst.write_text(template_text(tpl), encoding="utf-8")
+        body = template_text(tpl)
+        if name == "document.html" and theme != DEFAULT_THEME:
+            body = body.replace("<body data-title=", f'<body data-theme="{theme}" data-title=')
+        dst.write_text(body, encoding="utf-8")
         print(f"  create    {dst}")
         written.append(dst)
     return written

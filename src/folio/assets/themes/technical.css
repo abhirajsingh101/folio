@@ -1,0 +1,208 @@
+/* ============================================================
+   technical — dense engineering memo.
+
+   Sans body at a small size, monospace for every label, identifier
+   and number. Tight leading, narrow gutters, hairline rules, almost
+   no colour: status is carried by a single signal hue and by weight.
+   Fits substantially more on a page than the other themes, which is
+   the point — this is for documents that get read at a desk.
+   ============================================================ */
+
+:root {
+  --brand: #0F5257;              /* deep teal, used sparingly */
+  --brand-deep: #08383B;
+  --brand-tint: #edf4f4;
+
+  --ink: #16191c;
+  --ink-soft: #40474d;
+  --ink-mute: #7d868d;
+  --rule: #d4d8db;
+  --rule-soft: #e9ecee;
+  --wash: #f4f6f7;
+  --zebra: #f8f9fa;
+
+  --font-body: "Inter", "Noto Sans KR", system-ui, sans-serif;
+  --fs-body: 8.9pt;
+  --lh-body: 1.46;
+  --radius: 0;
+  --page-margin-x: 16mm;
+  --page-margin-top: 18mm;
+}
+
+body { text-align: left; hyphens: none; }   /* ragged right reads faster at this size */
+
+/* ── Cover: a data sheet, not a poster ──────────────────── */
+
+.cover {
+  background: var(--paper); color: var(--ink);
+  justify-content: flex-start; padding-top: 18mm;
+}
+.cover::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0;
+  height: 6mm; background: var(--brand);
+}
+.cover-brand {
+  position: static; font: 500 8.5pt var(--font-mono);
+  letter-spacing: 0.06em; color: var(--ink); margin-bottom: 40mm;
+}
+.cover-kicker {
+  font: 500 7.4pt var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--brand); margin-bottom: 4mm;
+}
+.cover h1 {
+  font: 600 30pt/1.06 var(--font-body); letter-spacing: -0.03em;
+  color: var(--ink); margin-bottom: 4mm; max-width: 150mm;
+}
+.cover .sub {
+  font: 400 10.6pt/1.5 var(--font-body); color: var(--ink-soft);
+  max-width: 124mm; margin-bottom: 10mm;
+}
+.cover-rule { width: 100%; height: 1px; background: var(--rule); margin-bottom: 5mm; }
+.cover-meta { font: 400 8pt var(--font-mono); color: var(--ink); gap: 10mm; }
+.cover-meta .k {
+  font-size: 6.6pt; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-mute); margin-bottom: 1.2mm;
+}
+
+/* ── Contents ───────────────────────────────────────────── */
+
+.toc h2 {
+  font: 600 12pt var(--font-body); letter-spacing: -0.01em; color: var(--ink);
+  margin: 0 0 5mm; padding-bottom: 2mm; border-bottom: 1px solid var(--ink);
+}
+.toc li { font: 400 9.2pt var(--font-body); padding: 1.7mm 0; border-bottom: 1px solid var(--rule-soft); }
+.toc li .num { font: 500 8pt var(--font-mono); color: var(--brand); min-width: 9mm; }
+.toc li .fill { border-bottom: 1px dotted var(--rule); margin: 0 1mm; }
+.toc li a.pg { font: 500 8.2pt var(--font-mono); color: var(--ink-mute); }
+
+/* ── Headings ───────────────────────────────────────────── */
+
+h2.section {
+  font: 600 14pt var(--font-body); letter-spacing: -0.024em; color: var(--ink);
+  margin: 0 0 3mm; padding-bottom: 2.4mm; border-bottom: 2px solid var(--brand);
+}
+h2.section .idx {
+  font: 500 7pt var(--font-mono); letter-spacing: 0.1em;
+  color: var(--brand); margin-bottom: 1.6mm;
+}
+h3 { font: 600 9.6pt var(--font-body); color: var(--ink); margin: 5mm 0 2mm; }
+h4 {
+  font: 500 7pt var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-mute); margin: 4mm 0 1.6mm;
+}
+p.lead { font-size: 10pt; line-height: 1.5; color: var(--ink-soft); margin-bottom: 1em; }
+
+/* ── Metric tiles: a readout strip ──────────────────────── */
+
+.metrics { gap: 0; border: 1px solid var(--rule); margin: 5mm 0 6mm; }
+.metric { padding: 3mm 3.4mm; border-right: 1px solid var(--rule); }
+.metric:last-child { border-right: 0; }
+.metric .v {
+  font: 600 16pt var(--font-mono); letter-spacing: -0.03em;
+  color: var(--ink); line-height: 1.05;
+}
+.metric .l {
+  font: 500 6.4pt var(--font-mono); letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--brand); margin-top: 1.6mm;
+}
+.metric .d { font: 400 7pt var(--font-body); color: var(--ink-mute); margin-top: 0.6mm; }
+
+/* ── Figures ────────────────────────────────────────────── */
+
+figure { margin: 5mm 0; }
+figcaption {
+  font: 400 7.4pt/1.4 var(--font-body); color: var(--ink-soft);
+  margin-top: 2mm; padding-top: 1.6mm; border-top: 1px solid var(--rule);
+}
+figcaption .fnum { font: 500 7.4pt var(--font-mono); color: var(--brand); margin-right: 1.6mm; }
+
+/* ── Tables: dense, boxed, monospace figures ────────────── */
+
+table { font-size: 7.8pt; border: 1px solid var(--rule); }
+caption { font: 600 7.8pt var(--font-body); color: var(--ink); padding-bottom: 1.8mm; }
+caption .tnum { font-family: var(--font-mono); color: var(--brand); margin-right: 1.4mm; }
+thead th {
+  font: 500 6.5pt var(--font-mono); letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--ink-mute); padding: 1.6mm 2mm; background: var(--wash);
+  border-bottom: 1px solid var(--rule);
+}
+tbody td { padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule-soft); color: var(--ink-soft); }
+tbody tr:nth-child(even) { background: var(--zebra); }
+tbody td:first-child { color: var(--ink); font-family: var(--font-mono); font-weight: 500; }
+td.num, th.num { font-family: var(--font-mono); }
+tfoot td { padding: 1.8mm 2mm; border-top: 1px solid var(--ink); font-weight: 600; color: var(--ink); }
+
+.pill {
+  font: 500 6.2pt var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 0.5mm 1.4mm; border: 1px solid currentColor; border-radius: 0; background: none !important;
+}
+.pill.ok { color: var(--ok); }
+.pill.warn { color: var(--warn); }
+.pill.err { color: var(--err); }
+.pill.mute { color: var(--ink-mute); }
+.pill.p0 { color: #fff; background: var(--err) !important; border-color: var(--err); }
+.pill.p1 { color: #fff; background: var(--warn) !important; border-color: var(--warn); }
+
+/* ── Callouts: bracketed notes ──────────────────────────── */
+
+.callout {
+  gap: 3mm; padding: 2.8mm 3mm; margin: 4mm 0;
+  background: var(--wash); border: 1px solid var(--rule); border-left: 3px solid var(--ink-mute);
+  font-size: 8.6pt;
+}
+.callout .ico {
+  flex-basis: 19mm;
+  font: 500 6.5pt var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-mute); padding-top: 0.5mm;
+}
+.callout.info { border-left-color: var(--brand); } .callout.info .ico { color: var(--brand); }
+.callout.warn { border-left-color: var(--warn); } .callout.warn .ico { color: var(--warn); }
+.callout.risk { border-left-color: var(--err); }  .callout.risk .ico { color: var(--err); }
+.callout.ok   { border-left-color: var(--ok); }   .callout.ok .ico { color: var(--ok); }
+
+/* ── Pull quote ─────────────────────────────────────────── */
+
+.pullquote {
+  margin: 5mm 0; padding: 3mm 0 3mm 4mm; border-left: 2px solid var(--brand);
+  font: 400 10.4pt/1.45 var(--font-body); color: var(--ink);
+}
+.pullquote cite { font: 500 6.8pt var(--font-mono); color: var(--ink-mute); margin-top: 2mm; }
+
+/* ── Lists ──────────────────────────────────────────────── */
+
+ul.tick li, ol.steps li { margin-bottom: 1.2mm; }
+ul.tick li::before { content: "·"; color: var(--brand); font-weight: 700; }
+ol.steps li::before {
+  top: 0; font: 500 7.4pt var(--font-mono); color: var(--brand); content: "[" counter(st) "]";
+  left: -1mm;
+}
+ol.steps li { padding-left: 8mm; }
+
+/* ── Code ───────────────────────────────────────────────── */
+
+pre {
+  font-size: 7.2pt; line-height: 1.45;
+  background: var(--wash); border: 1px solid var(--rule);
+  padding: 2.6mm 3mm; color: var(--ink);
+}
+pre .c { color: var(--ink-mute); }
+pre .k { color: var(--brand); font-weight: 700; }
+pre .s { color: var(--ok); }
+code {
+  font-size: 0.9em; background: var(--wash); border: 1px solid var(--rule-soft);
+  padding: 0.2mm 0.9mm; color: var(--brand-deep);
+}
+
+/* ── Timeline ───────────────────────────────────────────── */
+
+.timeline li { border-left: 1px solid var(--rule); padding-bottom: 2.8mm; }
+.timeline li:last-child { border-left-color: transparent; }
+.timeline li::before { width: 5px; height: 5px; background: var(--brand); border: none; left: -3px; }
+.timeline li.done::before { background: var(--ok); }
+.timeline li.now::before { background: var(--warn); width: 7px; height: 7px; left: -4px; }
+.timeline .tl-h { font: 600 8.8pt var(--font-body); color: var(--ink); }
+.timeline .tl-d { font: 400 6.8pt var(--font-mono); color: var(--ink-mute); }
+.timeline .tl-b { font-size: 8.4pt; color: var(--ink-soft); margin-top: 0.5mm; }
+
+.appendix { font-size: 8pt; }
+.appendix h2.section { font-size: 12pt; }

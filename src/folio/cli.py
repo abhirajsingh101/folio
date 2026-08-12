@@ -36,6 +36,7 @@ def _parser() -> argparse.ArgumentParser:
     i = sub.add_parser("init", help="scaffold a new document")
     i.add_argument("dir", nargs="?", default=".", help="target directory (default: .)")
     i.add_argument("--force", action="store_true", help="overwrite existing files")
+    i.add_argument("--theme", help="design direction (see `folio themes`)")
 
     b = sub.add_parser("build", help="render a document to PDF")
     b.add_argument("file", help="source .html document")
@@ -48,6 +49,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     b.add_argument("-q", "--quiet", action="store_true")
 
+    sub.add_parser("themes", help="list the available design directions")
     sub.add_parser("components", help="print the component vocabulary")
     sub.add_parser("gotchas", help="print the renderer gotchas reference")
     sub.add_parser("css", help="print the path to the design system stylesheet")
@@ -68,6 +70,21 @@ def main(argv: list[str] | None = None) -> int:
         doctor.report(checks, can_render)
         return 0 if can_render else 1
 
+    if args.cmd == "themes":
+        from .assets import DEFAULT_THEME, theme_names
+
+        blurb = {
+            "report": "corporate and confident; serif body, soft filled surfaces",
+            "editorial": "magazine; large serif display, rules not fills, wide gutters",
+            "technical": "dense engineering memo; small sans, monospace labels, boxed tables",
+            "minimal": "Swiss; sans throughout, near-monochrome, space instead of borders",
+        }
+        for t in theme_names():
+            mark = "  (default)" if t == DEFAULT_THEME else ""
+            print(f"  {t:<11} {blurb.get(t, '')}{mark}")
+        print('\nSet with `folio init --theme <name>`, or <body data-theme="<name>">.')
+        return 0
+
     if args.cmd == "css":
         from .assets import css_path
 
@@ -82,10 +99,14 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "init":
+        from .assets import DEFAULT_THEME, theme_names
         from .build import init
 
+        theme = args.theme or DEFAULT_THEME
+        if theme not in theme_names():
+            sys.exit(f"unknown theme {theme!r} — choose from: {', '.join(theme_names())}")
         target = Path(args.dir).resolve()
-        init(target, force=args.force)
+        init(target, force=args.force, theme=theme)
         print(f"\nNext:  folio build {Path(args.dir) / 'document.html'}")
         return 0
 

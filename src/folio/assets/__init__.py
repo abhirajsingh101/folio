@@ -2,6 +2,10 @@
 
 Everything resolves relative to this module, so folio works identically from a
 source checkout, an editable install, a wheel, or a zipapp.
+
+The stylesheet is composed at build time from two layers: `base.css`, which is
+structure and never varies, and one theme from `themes/`, which is look. See
+base.css for the token contract between them.
 """
 
 from __future__ import annotations
@@ -10,6 +14,8 @@ from importlib.resources import files
 from pathlib import Path
 
 _ROOT = files(__package__)
+
+DEFAULT_THEME = "report"
 
 
 def asset_path(*parts: str) -> Path:
@@ -20,12 +26,37 @@ def asset_path(*parts: str) -> Path:
     return Path(str(p))
 
 
+def theme_names() -> list[str]:
+    """Every installed design direction, default first."""
+    found = sorted(p.stem for p in asset_path("themes").glob("*.css"))
+    if DEFAULT_THEME in found:
+        found.remove(DEFAULT_THEME)
+        found.insert(0, DEFAULT_THEME)
+    return found
+
+
+def theme_path(name: str) -> Path:
+    p = asset_path("themes", f"{name}.css")
+    if not p.exists():
+        raise ValueError(f"unknown theme {name!r} — choose from: {', '.join(theme_names())}")
+    return p
+
+
+def base_path() -> Path:
+    return asset_path("base.css")
+
+
 def css_path() -> Path:
-    return asset_path("folio.css")
+    """Kept for `folio css`; points at the structural layer."""
+    return base_path()
 
 
-def css_text() -> str:
-    return css_path().read_text(encoding="utf-8")
+def css_text(theme: str = DEFAULT_THEME) -> str:
+    """The full stylesheet: structure, then the chosen look."""
+    return (
+        f"/* ── folio base (structure) ── */\n{base_path().read_text(encoding='utf-8')}\n\n"
+        f"/* ── folio theme: {theme} ── */\n{theme_path(theme).read_text(encoding='utf-8')}"
+    )
 
 
 def template_text(name: str) -> str:
@@ -33,11 +64,10 @@ def template_text(name: str) -> str:
 
 
 def doc_text(name: str) -> str:
-    """Reference docs are shipped with the wheel so `folio components` works offline."""
+    """Reference docs ship with the wheel so `folio components` works offline."""
     packaged = asset_path("docs", name)
     if packaged.exists():
         return packaged.read_text(encoding="utf-8")
-    # source checkout: docs/ lives at the repo root
     repo = Path(__file__).resolve().parents[3] / "docs" / name
     if repo.exists():
         return repo.read_text(encoding="utf-8")

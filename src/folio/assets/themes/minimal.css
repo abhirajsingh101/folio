@@ -1,0 +1,208 @@
+/* ============================================================
+   minimal — Swiss.
+
+   Sans throughout, near-monochrome, no fills and almost no rules.
+   Structure comes from alignment and space: a wide top margin, a
+   single strong size step between levels, and one accent used at most
+   once or twice per page. The most restrained of the four, and the
+   least forgiving of sloppy content — there is nothing to hide behind.
+   ============================================================ */
+
+:root {
+  --brand: #1a1a1a;
+  --brand-deep: #000000;
+  --brand-tint: #f4f4f4;
+
+  --ink: #111111;
+  --ink-soft: #555555;
+  --ink-mute: #949494;
+  --rule: #dcdcdc;
+  --rule-soft: #ececec;
+  --wash: transparent;
+  --zebra: transparent;
+
+  --accent: #E8501E;             /* used sparingly — signal, never decoration */
+  --ok: #2b7a4b;   --warn: #9a6a12;   --err: #c2352b;
+
+  --font-body: "Inter", "Noto Sans KR", system-ui, sans-serif;
+  --fs-body: 9.6pt;
+  --lh-body: 1.62;
+  --radius: 0;
+  --page-margin-x: 22mm;
+  --page-margin-top: 30mm;
+}
+
+body { text-align: left; hyphens: none; }
+
+/* ── Cover: type on white, nothing else ─────────────────── */
+
+.cover {
+  background: var(--paper); color: var(--ink);
+  justify-content: flex-end; padding-bottom: 30mm;
+}
+.cover-brand {
+  position: absolute; top: 30mm; left: var(--page-margin-x);
+  font: 500 10pt var(--font-body); letter-spacing: -0.01em; color: var(--ink);
+}
+.cover-kicker {
+  font: 500 7.6pt var(--font-body); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--ink-mute); margin-bottom: 8mm;
+}
+.cover h1 {
+  font: 500 44pt/1.02 var(--font-body); letter-spacing: -0.04em;
+  color: var(--ink); margin-bottom: 7mm; max-width: 140mm;
+}
+.cover .sub {
+  font: 400 12pt/1.5 var(--font-body); color: var(--ink-soft);
+  max-width: 108mm; margin-bottom: 16mm;
+}
+.cover-rule { width: 18mm; height: 2px; background: var(--accent); margin-bottom: 8mm; }
+.cover-meta { font: 400 8.2pt var(--font-body); color: var(--ink); gap: 12mm; }
+.cover-meta .k {
+  font-size: 6.8pt; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-mute); margin-bottom: 1.6mm;
+}
+
+/* ── Contents ───────────────────────────────────────────── */
+
+.toc h2 {
+  font: 500 11pt var(--font-body); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-mute); margin: 0 0 10mm; padding: 0; border: 0;
+}
+.toc li { font: 400 12pt var(--font-body); padding: 3.4mm 0; border-bottom: 1px solid var(--rule-soft); }
+.toc li .num { font-size: 8pt; color: var(--ink-mute); min-width: 9mm; font-variant-numeric: tabular-nums; }
+.toc li .fill { border-bottom: none; }
+.toc li .ttl { color: var(--ink); letter-spacing: -0.015em; }
+.toc li a.pg { font-size: 9pt; color: var(--ink-mute); }
+
+/* ── Headings ───────────────────────────────────────────── */
+
+h2.section {
+  font: 500 22pt/1.14 var(--font-body); letter-spacing: -0.035em;
+  color: var(--ink); margin: 0 0 8mm;
+}
+h2.section .idx {
+  font: 500 7.4pt var(--font-body); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 4mm;
+}
+h3 { font: 500 11pt var(--font-body); letter-spacing: -0.018em; color: var(--ink); margin: 9mm 0 3mm; }
+h4 {
+  font: 500 7.4pt var(--font-body); letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-mute); margin: 7mm 0 2.4mm;
+}
+p.lead { font: 400 12.4pt/1.5 var(--font-body); color: var(--ink); margin-bottom: 1.3em; }
+
+/* ── Metric tiles: numbers in space ─────────────────────── */
+
+.metrics { gap: 6mm; margin: 9mm 0; }
+.metric { padding: 0; border: 0; }
+.metric .v { font: 500 26pt/1 var(--font-body); letter-spacing: -0.045em; color: var(--ink); }
+.metric .l {
+  font: 500 6.8pt var(--font-body); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink); margin-top: 3mm;
+}
+.metric .d { font: 400 7.6pt var(--font-body); color: var(--ink-mute); margin-top: 1mm; }
+
+/* ── Figures ────────────────────────────────────────────── */
+
+figure { margin: 9mm 0; }
+figcaption {
+  font: 400 7.8pt/1.5 var(--font-body); color: var(--ink-mute);
+  margin-top: 3.4mm; padding-top: 0; border-top: none; max-width: 120mm;
+}
+figcaption .fnum {
+  font-weight: 500; color: var(--ink); margin-right: 2mm;
+  letter-spacing: 0.1em; text-transform: uppercase; font-size: 7pt;
+}
+
+/* ── Tables: one rule under the head, nothing else ──────── */
+
+table { font-size: 8.6pt; }
+caption { font: 500 7.4pt var(--font-body); letter-spacing: 0.14em; text-transform: uppercase;
+          color: var(--ink-mute); padding-bottom: 3.4mm; }
+caption .tnum { color: var(--accent); margin-right: 2mm; }
+thead th {
+  font: 500 7pt var(--font-body); letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-mute); padding: 0 4mm 3mm 0; border-bottom: 1px solid var(--ink);
+}
+tbody td { padding: 2.8mm 4mm 2.8mm 0; border-bottom: 1px solid var(--rule-soft); color: var(--ink-soft); }
+tbody td:first-child { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+tfoot td { padding: 3mm 4mm 0 0; border-top: 1px solid var(--ink); color: var(--ink); font-weight: 500; }
+
+.pill {
+  font: 500 6.8pt var(--font-body); letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0; background: none !important; border: 0;
+}
+.pill.ok { color: var(--ok); }
+.pill.warn { color: var(--warn); }
+.pill.err { color: var(--err); }
+.pill.mute { color: var(--ink-mute); }
+.pill.p0 { color: var(--accent); }
+.pill.p1 { color: var(--ink); }
+
+/* ── Callouts: indent and a hairline ────────────────────── */
+
+.callout {
+  gap: 6mm; padding: 0 0 0 0; margin: 8mm 0;
+  background: none; border: 0; border-left: 1px solid var(--ink);
+  padding-left: 6mm; font-size: 9.6pt;
+}
+.callout .ico {
+  flex-basis: 18mm;
+  font: 500 6.8pt var(--font-body); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-mute); padding-top: 0.6mm;
+}
+.callout.risk { border-left-color: var(--accent); }
+.callout.risk .ico { color: var(--accent); }
+.callout.warn .ico { color: var(--warn); }
+.callout.ok .ico { color: var(--ok); }
+
+/* ── Pull quote ─────────────────────────────────────────── */
+
+.pullquote {
+  margin: 12mm 0; padding: 0; border: 0; max-width: 132mm;
+  font: 400 15pt/1.4 var(--font-body); letter-spacing: -0.024em; color: var(--ink);
+}
+.pullquote cite {
+  font: 500 6.8pt var(--font-body); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-mute); margin-top: 4mm;
+}
+
+/* ── Lists ──────────────────────────────────────────────── */
+
+ul.tick li, ol.steps li { margin-bottom: 2.4mm; }
+ul.tick li::before { content: "—"; color: var(--ink-mute); }
+ol.steps li { padding-left: 9mm; }
+ol.steps li::before {
+  top: 0; font: 500 9.6pt var(--font-body); color: var(--accent);
+  content: counter(st); text-align: left;
+}
+
+/* ── Code ───────────────────────────────────────────────── */
+
+pre {
+  font-size: 7.6pt; line-height: 1.55; background: var(--brand-tint);
+  border: 0; padding: 4mm; color: var(--ink);
+}
+pre .c { color: var(--ink-mute); }
+pre .k { color: var(--ink); font-weight: 700; }
+pre .s { color: var(--ink-soft); }
+code { font-size: 0.9em; background: var(--brand-tint); padding: 0.3mm 1mm; color: var(--ink); }
+
+/* ── Timeline ───────────────────────────────────────────── */
+
+.timeline li { border-left: 1px solid var(--rule); padding-bottom: 6mm; }
+.timeline li:last-child { border-left-color: transparent; }
+.timeline li::before {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--ink); border: none; left: -3px;
+}
+.timeline li.now::before { background: var(--accent); width: 7px; height: 7px; left: -4px; }
+.timeline .tl-h { font: 500 10pt var(--font-body); letter-spacing: -0.015em; color: var(--ink); }
+.timeline .tl-d {
+  font: 500 6.8pt var(--font-body); letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-mute); margin-top: 1mm;
+}
+.timeline .tl-b { font-size: 9.2pt; color: var(--ink-soft); margin-top: 1.6mm; }
+
+.appendix { font-size: 8.8pt; }
+.appendix h2.section { font-size: 17pt; }

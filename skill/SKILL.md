@@ -26,15 +26,30 @@ contents page whose numbers are real. Author in HTML with folio's classes.
 ## Workflow
 
 ```bash
-folio doctor                  # FIRST RUN ON A NEW MACHINE — reports what's missing
-folio init                    # scaffold document.html + charts.py
-folio build document.html     # → document.pdf + document.page.html
-folio components              # the component vocabulary — READ BEFORE AUTHORING
-folio gotchas                 # silent renderer failure modes
+folio doctor                     # FIRST RUN ON A NEW MACHINE — what's missing
+folio themes                     # the four design directions
+folio init --theme editorial     # scaffold document.html + charts.py
+folio build document.html        # → document.pdf + document.page.html
+folio components                 # the component vocabulary — READ FIRST
+folio gotchas                    # silent renderer failure modes
 ```
 
 `folio build` runs a sibling `charts.py` first, injects the stylesheet, then
 renders. The source document never links the stylesheet.
+
+## Choosing a direction
+
+Ask, or infer from the audience — do not always take the default.
+
+- `report` — leadership, clients, anything that should read as corporate.
+- `editorial` — a piece meant to be *read*: essays, annual reviews, research
+  write-ups. Long prose, few tables.
+- `technical` — engineers at a desk. Dense, table-heavy, many identifiers.
+  Fits noticeably more per page.
+- `minimal` — design-literate audiences, short high-signal documents. It is
+  the least forgiving: with no fills or borders, weak content shows.
+
+Set it on the document (`<body data-theme="…">`), never per element.
 
 ## Rules
 

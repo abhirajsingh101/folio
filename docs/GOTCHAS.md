@@ -71,6 +71,16 @@ If a page comes out mostly empty, the cause is almost always a non-splittable
 block that could not fit and jumped. Figures, callouts and pull quotes all
 behave this way by design — a split callout looks broken.
 
+### `var()` does not resolve inside `@page` margin boxes
+
+Custom properties are scoped to the element tree, and margin boxes sit
+outside it. A running header written as `color: var(--ink-mute)` silently
+falls back to black — verified against WeasyPrint 68, not assumed.
+
+This is why `base.css` uses literal colours in its `@page` block and nowhere
+else. A theme that genuinely needs different page furniture must restate the
+whole `@page` rule with its own literals.
+
 ---
 
 ## Things that are *not* bugs

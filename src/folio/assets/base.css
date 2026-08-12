@@ -1,0 +1,265 @@
+/* ============================================================
+   folio — base layer: STRUCTURE ONLY.
+
+   Everything here is mechanics that must not vary between design
+   directions: the box model of each component, page-break behaviour,
+   and the handful of renderer workarounds that took real debugging
+   (see `folio gotchas`).
+
+   Every *look* decision — type stack, scale, colour, cover treatment,
+   whether a surface is a fill or a rule — belongs in a theme file and
+   is expressed through the token contract below. A theme that has to
+   restate structure means the split is wrong; fix the split.
+   ============================================================ */
+
+:root {
+  /* ── Token contract. Themes override these; nothing else. ── */
+  --brand: #003F87;
+  --brand-deep: #002B6B;
+  --brand-tint: #eef3fa;
+
+  --ink: #1f2733;
+  --ink-soft: #475569;
+  --ink-mute: #7c8899;
+
+  --rule: #e2e8f0;
+  --rule-soft: #eef1f5;
+  --wash: #f7f9fc;
+  --zebra: #fafbfd;
+  --paper: #ffffff;
+
+  --ok: #2F855A;      --ok-bg: #e6f4ec;
+  --warn: #B7791F;    --warn-bg: #fdf3e0;
+  --err: #C53030;     --err-bg: #fdeaea;
+  --mute-bg: #eef1f5;
+
+  --font-body: "P052", "Palatino", "Bitstream Charter", Georgia, serif;
+  --font-ui: "Inter", "Noto Sans KR", "Noto Sans CJK KR", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --fs-body: 9.8pt;
+  --lh-body: 1.58;
+  --radius: 3px;
+
+  /* page geometry */
+  --page-margin-x: 18mm;
+  --page-margin-top: 20mm;
+  --page-margin-bottom: 18mm;
+}
+
+/* ── Page furniture ─────────────────────────────────────── */
+
+@page {
+  size: A4;
+  margin: var(--page-margin-top) var(--page-margin-x) var(--page-margin-bottom);
+
+  @top-left {
+    content: string(doctitle);
+    font: 500 7.4pt var(--font-ui);
+    color: #7c8899;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 5mm;
+  }
+  @top-right {
+    content: string(section);
+    font: 400 7.4pt var(--font-ui);
+    color: #7c8899;
+    letter-spacing: 0.04em;
+    margin-bottom: 5mm;
+  }
+  @bottom-right {
+    content: counter(page) " / " counter(pages);
+    font: 500 7.6pt var(--font-ui);
+    color: #7c8899;
+    font-variant-numeric: tabular-nums;
+    margin-top: 4mm;
+  }
+  @bottom-left {
+    content: string(footnote);
+    font: 400 7.2pt var(--font-ui);
+    color: #b3bcc8;
+    margin-top: 4mm;
+  }
+}
+
+@page cover {
+  margin: 0;
+  @top-left { content: none } @top-right { content: none }
+  @bottom-right { content: none } @bottom-left { content: none }
+}
+@page frontmatter {
+  @top-left { content: none } @top-right { content: none }
+  @bottom-right { content: counter(page, lower-roman); }
+}
+
+/* ── Base ───────────────────────────────────────────────── */
+
+* { box-sizing: border-box; }
+html { overflow-wrap: break-word; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink);
+  hyphens: auto;
+  text-align: justify;
+  /* the running head/foot read these off <body>; see build.py */
+  string-set: doctitle attr(data-title), footnote attr(data-footer);
+}
+
+p { margin: 0 0 0.62em; orphans: 3; widows: 3; }
+strong { font-weight: 700; color: var(--ink); }
+em { font-style: italic; }
+a { color: var(--brand); text-decoration: none; }
+
+/* ── Cover (structure; every theme repaints it) ─────────── */
+
+.cover {
+  page: cover;
+  break-after: page;
+  height: 297mm;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 var(--page-margin-x) 22mm;
+  text-align: left;
+}
+.cover h1, .cover .sub { text-align: left; margin: 0; }
+.cover-brand { position: absolute; top: 20mm; left: var(--page-margin-x); }
+.cover-meta { display: flex; gap: 14mm; }
+.cover-meta .k { display: block; }
+
+/* ── Contents ───────────────────────────────────────────── */
+
+.toc { page: frontmatter; break-after: page; }
+.toc ol { list-style: none; margin: 0; padding: 0; }
+.toc li { display: flex; align-items: baseline; gap: 3mm; }
+.toc li .fill { flex: 1; }
+.toc li a.pg {
+  font-variant-numeric: tabular-nums;
+  min-width: 5mm;
+  text-align: right;
+}
+/* page numbers resolve at render time — never typed by the author */
+.toc li a.pg::after { content: target-counter(attr(href), page); }
+
+/* ── Sections ───────────────────────────────────────────── */
+
+/* content() would swallow the SECTION 0N kicker into the running head,
+   so the title is carried explicitly on the element. */
+h2.section { string-set: section attr(data-section); break-after: avoid; text-align: left; }
+h2.section .idx { display: block; }
+.section-wrap { break-before: page; }
+.section-wrap.cont { break-before: auto; margin-top: 9mm; }
+h3, h4 { break-after: avoid; text-align: left; }
+
+/* ── Metric tiles ───────────────────────────────────────── */
+
+.metrics { display: flex; gap: 3mm; margin: 0 0 7mm; break-inside: avoid; }
+.metric { flex: 1; }
+.metric .v, .metric .l, .metric .d { display: block; }
+.metric .v { font-variant-numeric: tabular-nums; }
+
+/* ── Figures ────────────────────────────────────────────── */
+
+figure { margin: 6mm 0; break-inside: avoid; }
+figure img { width: 100%; display: block; }
+figcaption { text-align: left; }
+.fig-row { display: flex; gap: 6mm; break-inside: avoid; margin: 6mm 0; }
+.fig-row figure { flex: 1; margin: 0; }
+.bleed {
+  margin-left: calc(-1 * var(--page-margin-x));
+  margin-right: calc(-1 * var(--page-margin-x));
+  width: calc(100% + 2 * var(--page-margin-x));
+}
+.bleed figcaption { padding: 0 var(--page-margin-x); }
+
+/* ── Tables ─────────────────────────────────────────────── */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-ui);
+  margin: 4mm 0 3mm;
+  hyphens: none;                    /* else narrow cells give "hard-ware" */
+}
+thead { display: table-header-group; }   /* header repeats after a break */
+tbody tr { break-inside: avoid; }        /* only whole rows are atomic */
+caption { caption-side: top; text-align: left; break-after: avoid; }
+th { text-align: left; white-space: nowrap; }
+tbody td, tfoot td { text-align: left; vertical-align: top; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; white-space: nowrap; }
+
+/* ── Callouts ───────────────────────────────────────────── */
+
+.callout {
+  display: flex;
+  break-inside: avoid;
+  text-align: left;
+}
+.callout .ico { flex: 0 0 21mm; }
+/* without min-width:0 a flex child refuses to wrap and overruns the box */
+.callout .body { flex: 1 1 auto; min-width: 0; }
+.callout p { text-align: left; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ── Pull quote ─────────────────────────────────────────── */
+
+.pullquote { break-inside: avoid; text-align: left; }
+.pullquote cite { display: block; font-style: normal; }
+
+/* ── Lists ──────────────────────────────────────────────── */
+
+ul.tick, ol.steps { margin: 2mm 0 4mm; padding-left: 0; list-style: none; }
+ul.tick li, ol.steps li { position: relative; padding-left: 6mm; margin-bottom: 1.7mm; text-align: left; }
+ul.tick li::before { position: absolute; left: 1mm; }
+ol.steps { counter-reset: st; }
+ol.steps li::before { counter-increment: st; content: counter(st); position: absolute; left: 0; }
+
+/* ── Code ───────────────────────────────────────────────── */
+
+pre {
+  font-family: var(--font-mono);
+  margin: 4mm 0;
+  break-inside: avoid;
+  text-align: left;
+  white-space: pre-wrap;
+}
+code { font-family: var(--font-mono); }
+
+/* ── Timeline ───────────────────────────────────────────── */
+
+.timeline { margin: 5mm 0 6mm; padding-left: 0; list-style: none; }
+.timeline li {
+  position: relative;
+  padding-left: 9mm;
+  padding-bottom: 3.6mm;
+  margin-left: 2mm;
+  text-align: left;
+  break-inside: avoid;
+}
+.timeline li::before { content: ""; position: absolute; left: -3.2px; top: 1.3mm; }
+.timeline .tl-h, .timeline .tl-d { display: block; }
+
+/* ── Keep-together ──────────────────────────────────────── */
+
+/* Tables split by default, which is right for long ones. WeasyPrint
+   ignores widows/orphans on table rows, so this is the only control. */
+table.keep, figure.keep, .keep { break-inside: avoid; }
+
+/* ── Utility ────────────────────────────────────────────── */
+
+.two-col { column-count: 2; column-gap: 8mm; }
+.divider { height: 1px; background: var(--rule); margin: 7mm 0; border: 0; }
+
+/* ── CJK ────────────────────────────────────────────────── */
+
+/* Korean must break on word boundaries and never hyphenate. */
+:lang(ko), .ko { word-break: keep-all; hyphens: none; }
+:lang(ko) table, .ko table { word-break: keep-all; }

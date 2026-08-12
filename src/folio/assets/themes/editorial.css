@@ -1,0 +1,215 @@
+/* ============================================================
+   editorial — magazine / annual-report.
+
+   Built on scale contrast and white space rather than fills. There is
+   not a single filled surface in this theme: every boundary is a rule.
+   Large serif display against small sans labels; the cover is type
+   only. Wider gutters than `report`, and a slower vertical rhythm.
+   ============================================================ */
+
+:root {
+  --brand: #6E1D2B;              /* oxblood */
+  --brand-deep: #4A121C;
+  --brand-tint: #f6eef0;
+
+  --ink: #14161a;
+  --ink-soft: #43474e;
+  --ink-mute: #82878f;
+  --rule: #d8d5d0;
+  --rule-soft: #eceae6;
+  --wash: transparent;
+  --zebra: transparent;
+
+  --fs-body: 10.2pt;
+  --lh-body: 1.66;
+  --radius: 0;
+  --page-margin-x: 24mm;
+  --page-margin-top: 24mm;
+}
+
+/* ── Cover: typographic, no ornament ────────────────────── */
+
+.cover { background: var(--paper); color: var(--ink); justify-content: space-between; padding-top: 24mm; }
+.cover-brand {
+  position: static; font: 400 9pt var(--font-ui);
+  letter-spacing: 0.34em; text-transform: uppercase; color: var(--ink-mute);
+  padding-bottom: 4mm; border-bottom: 1px solid var(--ink);
+  margin-bottom: auto; width: 100%;
+}
+.cover-kicker {
+  font: 400 8pt var(--font-ui); letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--brand); margin-bottom: 10mm;
+}
+.cover h1 {
+  font: 400 52pt/0.98 var(--font-body); letter-spacing: -0.018em;
+  color: var(--ink); margin-bottom: 8mm; max-width: 150mm;
+}
+.cover .sub {
+  font: italic 400 13pt/1.5 var(--font-body); color: var(--ink-soft);
+  max-width: 116mm; margin-bottom: 14mm;
+}
+.cover-rule { width: 100%; height: 1px; background: var(--ink); margin-bottom: 6mm; }
+.cover-meta { font: 400 8.4pt var(--font-ui); color: var(--ink-soft); gap: 12mm; }
+.cover-meta .k {
+  font-size: 6.8pt; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-mute); margin-bottom: 1.6mm;
+}
+
+/* ── Contents ───────────────────────────────────────────── */
+
+.toc h2 {
+  font: 400 26pt var(--font-body); color: var(--ink);
+  margin: 0 0 9mm; padding-bottom: 4mm; border-bottom: 1px solid var(--ink);
+}
+.toc li { font: 400 11pt var(--font-body); padding: 3.2mm 0; border-bottom: 1px solid var(--rule-soft); }
+.toc li .num {
+  font: 400 8pt var(--font-ui); letter-spacing: 0.1em;
+  color: var(--brand); min-width: 9mm; padding-top: 1mm;
+}
+.toc li .fill { border-bottom: none; }
+.toc li .ttl { color: var(--ink); }
+.toc li a.pg { font: 400 9.5pt var(--font-body); color: var(--ink-mute); }
+
+/* ── Headings ───────────────────────────────────────────── */
+
+h2.section {
+  font: 400 27pt/1.1 var(--font-body); letter-spacing: -0.015em;
+  color: var(--ink); margin: 0 0 6mm; padding-bottom: 4mm;
+  border-bottom: 1px solid var(--ink);
+}
+h2.section .idx {
+  font: 400 7.6pt var(--font-ui); letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--brand); margin-bottom: 3.5mm;
+}
+h3 {
+  font: 600 8.4pt var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink); margin: 8mm 0 3mm;
+}
+h4 { font: italic 400 10.5pt var(--font-body); color: var(--ink-soft); margin: 6mm 0 2mm; }
+p.lead {
+  font: 400 13.4pt/1.5 var(--font-body); color: var(--ink); margin-bottom: 1.2em;
+}
+/* first paragraph after the lead opens with small caps */
+p.lead + p::first-line { font-variant: small-caps; letter-spacing: 0.02em; }
+
+/* ── Metric tiles: rules, not boxes ─────────────────────── */
+
+.metrics { gap: 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); margin: 7mm 0; }
+.metric { padding: 4mm 5mm 4mm 0; border-right: 1px solid var(--rule); }
+.metric:last-child { border-right: 0; }
+.metric .v { font: 400 22pt/1 var(--font-body); color: var(--ink); letter-spacing: -0.02em; }
+.metric .l {
+  font: 500 6.8pt var(--font-ui); letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--brand); margin-top: 2.4mm;
+}
+.metric .d { font: 400 7.6pt var(--font-ui); color: var(--ink-mute); margin-top: 1mm; }
+
+/* ── Figures ────────────────────────────────────────────── */
+
+figcaption {
+  font: 400 8pt/1.45 var(--font-ui); color: var(--ink-soft);
+  margin-top: 3mm; padding-top: 0; border-top: none;
+}
+figcaption .fnum {
+  font-weight: 600; color: var(--brand); margin-right: 2mm;
+  letter-spacing: 0.08em; text-transform: uppercase; font-size: 7.2pt;
+}
+
+/* ── Tables: hairlines only ─────────────────────────────── */
+
+table { font-size: 8.4pt; }
+caption { font: italic 400 9.5pt var(--font-body); color: var(--ink-soft); padding-bottom: 3mm; }
+caption .tnum {
+  font: 600 7pt var(--font-ui); color: var(--brand);
+  letter-spacing: 0.12em; text-transform: uppercase; margin-right: 2mm; font-style: normal;
+}
+thead th {
+  font: 500 6.9pt var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-mute); padding: 0 3mm 2.4mm 0; border-bottom: 1px solid var(--ink);
+}
+tbody td { padding: 2.4mm 3mm 2.4mm 0; border-bottom: 1px solid var(--rule-soft); color: var(--ink-soft); }
+tbody td:first-child { color: var(--ink); font-variant-numeric: tabular-nums; }
+tfoot td { padding: 2.6mm 3mm 0 0; border-top: 1px solid var(--ink); color: var(--ink); font-weight: 500; }
+
+.pill {
+  font: 500 6.8pt var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0 0 0 3.4mm; position: relative; background: none !important;
+}
+.pill::before {
+  content: ""; position: absolute; left: 0; top: 0.42em;
+  width: 4.5px; height: 4.5px; border-radius: 50%;
+}
+.pill.ok { color: var(--ok); }         .pill.ok::before { background: var(--ok); }
+.pill.warn { color: var(--warn); }     .pill.warn::before { background: var(--warn); }
+.pill.err { color: var(--err); }       .pill.err::before { background: var(--err); }
+.pill.mute { color: var(--ink-mute); } .pill.mute::before { background: var(--ink-mute); }
+.pill.p0 { color: var(--err); }        .pill.p0::before { background: var(--err); }
+.pill.p1 { color: var(--warn); }       .pill.p1::before { background: var(--warn); }
+
+/* ── Callouts: a rule and a label, no fill ──────────────── */
+
+.callout {
+  gap: 4mm; padding: 4mm 0; margin: 7mm 0;
+  border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule);
+  background: none; font-size: 9.6pt;
+}
+.callout .ico {
+  font: 500 6.9pt var(--font-ui); letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--brand); padding-top: 0.9mm;
+}
+.callout.warn .ico { color: var(--warn); }
+.callout.risk .ico { color: var(--err); }
+.callout.ok .ico { color: var(--ok); }
+.callout.risk { border-top-color: var(--err); }
+
+/* ── Pull quote: centred display ────────────────────────── */
+
+.pullquote {
+  margin: 10mm 0; padding: 0 14mm; border: none; text-align: center;
+  font: 400 17pt/1.36 var(--font-body); color: var(--ink); letter-spacing: -0.012em;
+}
+.pullquote cite {
+  font: 500 7pt var(--font-ui); letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-mute); margin-top: 5mm;
+}
+
+/* ── Lists ──────────────────────────────────────────────── */
+
+ul.tick li::before { content: "—"; color: var(--brand); }
+ol.steps li { padding-left: 8mm; }
+ol.steps li::before {
+  top: 0; font: 400 11pt var(--font-body); color: var(--brand);
+  content: counter(st) "."; text-align: left;
+}
+
+/* ── Code ───────────────────────────────────────────────── */
+
+pre {
+  font-size: 7.8pt; line-height: 1.55; background: none;
+  border: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  padding: 3.5mm 0; color: var(--ink);
+}
+pre .c { color: var(--ink-mute); font-style: italic; }
+pre .k { color: var(--brand); }
+pre .s { color: var(--ink-soft); }
+code { font-size: 0.88em; color: var(--brand); background: none; }
+
+/* ── Timeline ───────────────────────────────────────────── */
+
+.timeline li { border-left: 1px solid var(--rule); padding-bottom: 5mm; }
+.timeline li:last-child { border-left-color: transparent; }
+.timeline li::before {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--brand); border: none; left: -3px;
+}
+.timeline li.done::before { background: var(--ink); }
+.timeline li.now::before { background: var(--brand); width: 7px; height: 7px; left: -4px; }
+.timeline .tl-h { font: 500 10.5pt var(--font-body); color: var(--ink); }
+.timeline .tl-d {
+  font: 500 6.8pt var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-mute); margin-top: 0.6mm;
+}
+.timeline .tl-b { font-size: 9.2pt; color: var(--ink-soft); margin-top: 1.4mm; }
+
+.appendix { font-size: 9pt; }
+.appendix h2.section { font-size: 20pt; }

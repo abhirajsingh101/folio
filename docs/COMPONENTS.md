@@ -4,9 +4,30 @@ Every component below is defined in folio's stylesheet (`folio css`) and injecte
 time. Author documents in plain HTML using these classes; never hand-roll a
 one-off style, and never link the stylesheet yourself.
 
-To adjust a project's look, drop a `brand.css` next to the source file. It is
-appended after the kit stylesheet, so it always wins. Usually one line is
-enough:
+---
+
+## Pick a direction first
+
+folio ships four design directions. They are not colour variants — each is a
+different typographic system with its own page architecture.
+
+| theme | character |
+|---|---|
+| `report` | corporate; serif body, soft filled surfaces *(default)* |
+| `editorial` | magazine; large serif display, rules not fills, wide gutters |
+| `technical` | dense memo; small sans, monospace labels, boxed tables |
+| `minimal` | Swiss; sans throughout, near-monochrome, space not borders |
+
+The document declares its own:
+
+```html
+<body data-theme="editorial" data-title="…" data-footer="…">
+```
+
+Charts follow automatically — `theme.use()` reads the same declaration.
+
+Then tune with a `brand.css` beside the source. It is appended after
+everything, so it always wins; usually one line:
 
 ```css
 :root { --brand: #7A1F3D; --brand-deep: #4E1226; }

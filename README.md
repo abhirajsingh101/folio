@@ -11,15 +11,12 @@ Your agent can already write the words. It cannot make them look like this.
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![CI](https://github.com/abhirajsingh101/folio/actions/workflows/ci.yml/badge.svg)](https://github.com/abhirajsingh101/folio/actions/workflows/ci.yml)
 
-<img src="docs/gallery/cover.png" width="30%" alt="Cover page">
-<img src="docs/gallery/summary.png" width="30%" alt="Executive summary with metric tiles and chart">
-<img src="docs/gallery/tables.png" width="30%" alt="Data table with status pills">
+<img src="docs/gallery/themes-covers.png" width="100%" alt="The same report rendered in four design directions: report, editorial, technical, minimal">
 
-<img src="docs/gallery/figures.png" width="30%" alt="Two-up figures with captions">
-<img src="docs/gallery/path.png" width="30%" alt="Ranked backlog table and numbered steps">
-<img src="docs/gallery/contents.png" width="30%" alt="Table of contents with resolved page numbers">
+<img src="docs/gallery/themes-pages.png" width="100%" alt="The same page in four design directions, charts re-palettted to match">
 
-*Real output. No template shopping, no CSS written by hand.*
+*One document, four design directions. Same content, same markup —
+different typographic systems, and charts that re-palette to match.*
 
 </div>
 
@@ -41,6 +38,11 @@ real.
 folio gives your agent that vocabulary, backed by a design system it cannot
 drift from, and renders it with the one engine that actually implements CSS
 paged media.
+
+And it deliberately does **not** ship a single house style. One look used by
+everyone is just a nicer monoculture. You get four genuinely different
+typographic systems; picking one is a decision the document makes, not a
+default it inherits.
 
 ## Install
 
@@ -86,9 +88,20 @@ pacman -S mingw-w64-x86_64-pango
 ## Use it
 
 ```bash
-folio init                    # scaffold document.html + charts.py
-folio build document.html     # → document.pdf + document.page.html
+folio themes                        # the four design directions
+folio init --theme editorial        # scaffold document.html + charts.py
+folio build document.html           # → document.pdf + document.page.html
 ```
+
+| theme | what it is |
+|---|---|
+| `report` | corporate and confident; serif body, soft filled surfaces *(default)* |
+| `editorial` | magazine; large serif display, rules not fills, wide gutters |
+| `technical` | dense engineering memo; small sans, monospace labels, boxed tables |
+| `minimal` | Swiss; sans throughout, near-monochrome, space instead of borders |
+
+A document declares its own look — `<body data-theme="editorial">` — so the
+choice travels with the file and charts follow it automatically.
 
 One source gives you both the PDF for the record and a self-contained HTML
 page you can share as a link — the thing LaTeX and Typst structurally cannot do.
@@ -121,15 +134,16 @@ steps, pull quotes, code blocks.
 ```python
 from folio import theme
 
-plt = theme.use()                       # palette, fonts, grid, tabular figures
+plt = theme.use()                       # picks up the document's theme
 fig, ax = plt.subplots(figsize=(6.6, 2.5))
 ax.bar(labels, values, color=theme.BRAND, zorder=3)
 theme.grid(ax)
 theme.save(fig, "charts/velocity.svg")
 ```
 
-Vector output with text as outlines, so a figure renders identically no matter
-which fonts the machine has. `folio build` runs a sibling `charts.py`
+`theme.use()` reads the theme the document declared, so a figure is never the
+wrong colour for the page it lands on. Vector output with text as outlines, so
+it renders identically no matter which fonts the machine has. `folio build` runs a sibling `charts.py`
 automatically, so figures are never stale.
 
 ## Branding

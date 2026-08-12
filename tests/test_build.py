@@ -74,8 +74,8 @@ def test_brand_css_is_appended_after_kit(tmp_path):
     src = tmp_path / "doc.html"
     src.write_text("<p>x</p>", encoding="utf-8")
     (tmp_path / "brand.css").write_text(":root{--brand:#123456}", encoding="utf-8")
-    css = B._stylesheet(src)
-    assert css.index("--brand:        #003F87") < css.index("#123456")
+    css = B._stylesheet(src, "report")
+    assert css.index("#003F87") < css.index("#123456"), "brand.css must be appended last"
 
 
 def test_images_are_inlined_for_standalone_html(tmp_path):

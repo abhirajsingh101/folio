@@ -6,11 +6,23 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Four design directions** — `report`, `editorial`, `technical`, `minimal`.
+  Not colour variants: each is a distinct typographic system with its own page
+  architecture. Declared per document via `<body data-theme="…">` or
+  `folio init --theme`. `folio themes` lists them.
+- Chart palettes per theme. `theme.use()` reads the document's declaration
+  from the environment, so a figure is never the wrong colour for its page.
+- The stylesheet is now two layers: `base.css` (structure, never varies) and
+  `themes/*.css` (look). Tests enforce the split in both directions — base may
+  not paint, themes may not restate structure.
+
 ### Planned
 - `folio build --check` to flag under-filled pages, the most common authoring
   problem and one the tool can detect better than a human can eyeball.
 - A second document family (invoice / proposal) sharing the same tokens.
-- Optional bundled fonts so output is byte-identical across machines.
+- Bundled subset fonts so output is byte-identical across machines. Currently
+  the look degrades gracefully but is not identical everywhere.
 
 ## [0.1.0] — 2026-08-12
 
