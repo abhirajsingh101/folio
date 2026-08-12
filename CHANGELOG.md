@@ -220,6 +220,19 @@ every direction; the hierarchy is unchanged, and it is legible on paper.
   bundled: shipping every writing system would cost every user tens of
   megabytes so that a few can set Japanese.
 
+### Fixed — the first build on a bare install ended in a traceback
+`pip install folio-press` is deliberately core-only, so the charts extra is
+absent on a fresh machine. But `folio init` scaffolds a `charts.py` and prints
+`Next: folio build document.html`, and that build died inside folio's own
+scaffold with a bare `ModuleNotFoundError: No module named 'matplotlib'` —
+the tool's first impression, on the path it had just recommended.
+
+`theme.use()` now names the extra that carries it and points at `folio doctor`,
+which already reports the whole picture. Only matplotlib's own absence earns
+the hint: an ImportError raised *inside* matplotlib is a different fault, and
+telling that reader to install the charts extra sends them to reinstall the one
+thing they have.
+
 ### Changed
 - Install posture: `pipx install folio-press` is core-only. Charts, WeasyPrint
   and fonts are pulled in per need, guided by `doctor` and `fonts`.

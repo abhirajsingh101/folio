@@ -71,10 +71,21 @@ def use(theme: str | None = None, brand: str | None = None, base_size: float = 8
     Text is emitted as outlines (`svg.fonttype='path'`) so the figure renders
     identically no matter which fonts the PDF engine can see.
     """
-    import matplotlib
+    try:
+        import matplotlib
 
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ModuleNotFoundError as exc:  # charts are an extra, not a dependency
+        if not (exc.name or "").startswith("matplotlib"):
+            raise
+        raise ModuleNotFoundError(
+            "folio needs matplotlib to draw charts, and it is not installed.\n"
+            "  pip install 'folio-press[charts]'   — charts only\n"
+            "  pip install 'folio-press[all]'      — charts and WeasyPrint\n"
+            "Run `folio doctor` to see everything this machine is missing.",
+            name=exc.name,
+        ) from None  # the cause is "No module named 'matplotlib'" — it adds nothing
 
     global BRAND, BRAND_DEEP, RAMP, INK, MUTED, GRID, ACCENT
 

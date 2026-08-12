@@ -144,6 +144,64 @@ def test_a_bleeding_plate_reaches_both_page_edges(name):
     )
 
 
+def test_missing_matplotlib_names_the_extra(monkeypatch):
+    """The first thing a fresh install does is `folio init && folio build`.
+
+    matplotlib is deliberately an extra, so on a bare install that first build
+    dies inside the charts.py folio itself just scaffolded. A bare
+    `No module named 'matplotlib'` leaves the reader to guess which extra
+    carries it — and `pip install matplotlib` is the wrong lesson, because the
+    next missing piece is WeasyPrint. The message has to name the extra.
+    """
+    import builtins
+
+    from folio import theme
+
+    real_import = builtins.__import__
+
+    def without_matplotlib(name, *args, **kwargs):
+        if name == "matplotlib" or name.startswith("matplotlib."):
+            # CPython's import machinery always populates `.name`; so must this.
+            raise ModuleNotFoundError(f"No module named '{name}'", name=name)
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", without_matplotlib)
+
+    with pytest.raises(ModuleNotFoundError) as excinfo:
+        theme.use()
+
+    message = str(excinfo.value)
+    assert "folio-press[charts]" in message, f"no extra named in: {message}"
+    assert "folio doctor" in message, f"no diagnosis offered in: {message}"
+
+
+def test_a_broken_matplotlib_is_not_reported_as_a_missing_one(monkeypatch):
+    """Only matplotlib's own absence earns the install hint.
+
+    matplotlib importing but failing on a dependency of its own is a different
+    fault, and telling that reader to install the charts extra sends them to
+    reinstall the one thing they already have.
+    """
+    import builtins
+
+    from folio import theme
+
+    real_import = builtins.__import__
+
+    def with_a_broken_numpy(name, *args, **kwargs):
+        if name == "matplotlib" or name.startswith("matplotlib."):
+            raise ModuleNotFoundError("No module named 'numpy'", name="numpy")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", with_a_broken_numpy)
+
+    with pytest.raises(ModuleNotFoundError) as excinfo:
+        theme.use()
+
+    assert "folio-press[charts]" not in str(excinfo.value)
+    assert excinfo.value.name == "numpy"
+
+
 def test_chart_text_colours_clear_aa():
     """Chart labels are text, and unmeasurable from the document.
 
