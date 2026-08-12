@@ -1,8 +1,10 @@
 """Figures for this document. `folio build` runs this automatically.
 
 Everything lands in charts/ as SVG, themed to match the page. Size figures in
-real inches at their final printed width so label sizes come out right:
-full column ~6.6in, half column ~3.25in. Never scale a figure in CSS.
+real inches at the width they will print, so the labels come out at the size
+they were authored: roughly 6.4-7.0in full column and 3.1-3.4in half, per
+theme (`folio components` has the table). Never scale a figure in CSS — the
+labels scale with it, and `folio check` reports it as `figure-rescaled`.
 """
 
 from pathlib import Path

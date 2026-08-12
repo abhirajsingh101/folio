@@ -307,12 +307,10 @@ so this is the only control available — see GOTCHAS.
 Write a `charts.py` beside the document; `folio build` runs it first.
 
 ```python
-import sys; from pathlib import Path
-sys.path.insert(0, str(Path.home() / ".local/share/folio/lib"))
-import theme
+from folio import theme
 
-plt = theme.use()                      # applies palette + fonts
-fig, ax = plt.subplots(figsize=(6.6, 2.5))
+plt = theme.use()                      # applies palette + fonts for the theme
+fig, ax = plt.subplots(figsize=(7.01, 2.5))
 ax.bar(labels, values, color=theme.BRAND, zorder=3)
 theme.grid(ax)
 theme.save(fig, "charts/fig-example.svg")
@@ -321,9 +319,11 @@ theme.save(fig, "charts/fig-example.svg")
 Colours: `theme.BRAND` `BRAND_DEEP` `RAMP` (5-step) `SUCCESS` `WARNING`
 `ERROR` `INK` `MUTED` `GRID`.
 
-**Size in real inches at final printed width** — full column `6.6`, half
-column `3.25`. Never scale a figure in CSS; the labels shrink with it.
-Output is SVG with text as outlines, so it renders identically everywhere.
+**Size in real inches at the width it will print** — see the per-theme table
+under Figures above; there is no single number, because column width follows
+each theme's page margins. Never scale a figure in CSS: the labels scale with
+it, and `folio check` reports it as `figure-rescaled`. Output is SVG with text
+as outlines, so it renders identically everywhere.
 
 ---
 

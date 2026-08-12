@@ -403,16 +403,24 @@ def _check_orphan_heading(root, n, frame) -> list[Finding]:
 
 
 def _check_text_overlap(root, n) -> list[Finding]:
-    """Two pieces of text occupying the same space is never intentional."""
+    """Two pieces of text occupying the same space is never intentional.
+
+    Two *lines* of the same piece of text are a different matter. Display type
+    is routinely set below 1.1 line-height — folio's own `technical` cover uses
+    1.06 — where consecutive line boxes overlap while the glyphs do not. Pairs
+    from one element are therefore skipped: they are one thing, correctly set.
+    """
     rects = []
     for box in _walk(root):
         if _is_text(box):
             r = _rect(box)
             if r and r[2] > r[0] and r[3] > r[1]:
-                rects.append((r, getattr(box, "element_tag", "?")))
+                rects.append((r, getattr(box, "element_tag", "?"), getattr(box, "element", None)))
     out, reported = [], set()
-    for i, (a, ta) in enumerate(rects):
-        for b, tb in rects[i + 1 :]:
+    for i, (a, ta, ea) in enumerate(rects):
+        for b, tb, eb in rects[i + 1 :]:
+            if ea is not None and ea is eb:
+                continue  # same element, wrapped across lines
             ox = min(a[2], b[2]) - max(a[0], b[0])
             oy = min(a[3], b[3]) - max(a[1], b[1])
             # require a real 2-D intersection, not touching edges

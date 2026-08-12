@@ -59,6 +59,18 @@ def test_overlapping_text_is_an_error():
     assert "text-overlap" in rules(doc(body))
 
 
+def test_tight_leading_inside_one_heading_is_not_an_overlap():
+    """Two line boxes of the same heading are one thing, not a collision.
+
+    Display type is routinely set below 1.1 line-height — folio's own
+    `technical` cover uses 1.06 — where the glyph boxes overlap and the glyphs
+    do not. Reported as an error, it blocks a document that is set correctly.
+    """
+    body = "<h1>Teaching a document kit to check its own work</h1>"
+    extra = "h1{font:600 30pt/1.06 sans-serif;width:60mm}"
+    assert "text-overlap" not in rules(doc(body, extra))
+
+
 def test_thin_page_is_flagged():
     """A block that could not fit jumps and leaves a near-empty page."""
     body = (
