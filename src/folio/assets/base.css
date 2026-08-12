@@ -183,6 +183,17 @@ figcaption { text-align: start; }
 }
 .bleed figcaption { padding: 0 var(--page-margin-x); }
 
+/* ── Plates ─────────────────────────────────────────────── */
+
+/* A plate is atmosphere: cover art, a section opener, a texture. It is NOT a
+   figure — it carries no number, is never referenced from the text, and must
+   never be used for anything a reader could mistake for evidence. `folio
+   check` enforces the boundary in both directions. Combine with `.bleed` to
+   run it to the page edges. */
+.plate { break-inside: avoid; }
+.plate img { width: 100%; display: block; }
+.plate .credit { display: block; }
+
 /* ── Tables ─────────────────────────────────────────────── */
 
 table {

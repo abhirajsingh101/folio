@@ -140,6 +140,49 @@ Full-bleed: add `class="bleed"` to the `<figure>`.
 
 Caption the *conclusion*, not the axes.
 
+Every figure needs a number. A figure is a claim: numbered, captioned, and
+referenced from the text. If an image is not that, it is a plate.
+
+## Plates
+
+Decorative imagery — cover art, a section opener, a texture. **Never
+evidence.**
+
+```html
+<div class="plate bleed">
+  <img src="art/opener.png" alt="Abstract dark blue strata">
+  <span class="credit">Generated illustration</span>
+</div>
+```
+
+A plate carries no figure number and is never referenced from the text. That
+distinction is the whole point of the component, and `folio check` enforces it
+both ways: a plate with a `fnum` is flagged, and so is a `<figure>` without
+one.
+
+The failure this prevents is subtle. A fabricated chart is obvious to
+everyone. A decorative illustration captioned `Fig. 3` is not — it wears the
+same grammar as a measurement, so the reader files it as sourced without ever
+deciding to.
+
+Rules for what may go in a plate:
+
+- **Never anything a reader could take as data or record.** Real numbers go in
+  a real table or a real chart, always.
+- **No text inside the image.** Generated text comes out malformed, and a
+  diagram with garbled labels is worse than no diagram. Diagrams are SVG, same
+  path as charts.
+- **Nothing evidentiary** — no photo of a real place, person, or screen. That
+  is a factual claim about the world.
+- `alt` is required. `alt=""` is allowed and means "purely decorative"; it is
+  a decision, not an omission.
+- **Full-bleed art must be a raster or a flat-fill SVG.** A gradient inside an
+  SVG silently fails to paint inside `.bleed` — see `folio gotchas`.
+
+Plates suit `editorial` and covers. `minimal` is built on having nothing to
+hide behind and `technical` is built on density — in both, an illustration is
+usually the wrong answer.
+
 ## Tables
 
 ```html

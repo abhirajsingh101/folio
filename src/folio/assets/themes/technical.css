@@ -118,6 +118,13 @@ figcaption {
 }
 figcaption .fnum { font: 500 7.4pt var(--font-mono); color: var(--brand); margin-right: 1.6mm; }
 
+/* ── Plates: decorative imagery, never evidence ─────────── */
+
+.plate { margin: 5mm 0; }
+.plate .credit {
+  font: 400 6.6pt var(--font-mono); color: var(--ink-mute); margin-top: 1.6mm;
+}
+
 /* ── Tables: dense, boxed, monospace figures ────────────── */
 
 table { font-size: 7.8pt; border: 1px solid var(--rule); }

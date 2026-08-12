@@ -71,6 +71,34 @@ If a page comes out mostly empty, the cause is almost always a non-splittable
 block that could not fit and jumped. Figures, callouts and pull quotes all
 behave this way by design — a split callout looks broken.
 
+### A gradient inside an SVG does not paint in a `.bleed` container
+
+Put an SVG that fills a shape with `url(#someGradient)` inside `class="bleed"`
+and the shape renders as nothing. No error, no warning — the box is laid out
+at the right size and stays empty, so the page looks like it has a mysterious
+gap. Strokes and flat fills in the same file paint normally, which makes it
+read as "the image half-loaded" rather than "the gradient failed".
+
+Measured on WeasyPrint 68, holding everything else constant:
+
+| container | asset | result |
+|---|---|---|
+| `.plate` | gradient SVG | paints |
+| `figure` | gradient SVG | paints |
+| `.plate bleed` | gradient SVG | **blank** |
+| `figure bleed` | gradient SVG | **blank** |
+| `.plate bleed` | PNG | paints |
+| `figure bleed` | flat-fill SVG | paints |
+
+So the trigger is the combination — `.bleed` plus a gradient inside the SVG —
+not either one alone. `.bleed` sets `width: calc(100% + 2 * var(--page-margin-x))`
+with negative margins, and the gradient reference does not survive it.
+
+**Full-bleed art must be a raster (PNG) or a flat-fill SVG.** This matters for
+charts as much as for plates: `figure class="bleed"` is a documented pattern,
+charts are SVG, and a full-bleed chart that used a gradient fill would vanish
+silently. Charts from `folio.theme` use flat fills, so they are unaffected.
+
 ### `var()` in an `@page` margin box only sees properties declared on `:root`
 
 A running header written as `color: var(--ink-mute)` works — but only if the

@@ -10,11 +10,17 @@ time.
 
 from __future__ import annotations
 
+import base64
 from pathlib import Path
 
 import pytest
 
 from folio.check import WARN, inspect
+
+# A real image, so WeasyPrint lays out a real replaced box. SVG rather than a
+# 1×1 raster, which would trip the upscale rule and muddy these tests.
+_SVG = b'<svg xmlns="http://www.w3.org/2000/svg" width="120" height="70"></svg>'
+IMG = "data:image/svg+xml;base64," + base64.b64encode(_SVG).decode()
 
 pytest.importorskip("weasyprint", reason="conformance is read off the layout tree")
 
@@ -144,6 +150,58 @@ def test_a_size_used_once_at_its_own_step_is_silent():
     """A cover number is legitimately unique — rarity alone is not drift."""
     body = '<p style="font-size:9pt">body</p><p style="font-size:34pt">34</p>'
     assert not findings(doc(body), "type-drift")
+
+
+# ── evidence vs decoration ────────────────────────────────────────────────
+
+
+def test_a_plate_carrying_a_figure_number_is_flagged():
+    """A decorative image numbered `Fig. 3` borrows the authority of evidence.
+
+    This is the failure worth catching: not a fabricated chart, which is
+    obvious, but an illustration wearing the same grammar as a measurement, so
+    the reader files it as sourced.
+    """
+    body = (
+        f'<div class="plate"><img src="{IMG}" alt="cover art">'
+        '<span class="fnum">Fig. 3</span></div>'
+    )
+    found = findings(doc(body), "image-role")
+    assert found
+    assert found[0].severity == WARN
+
+
+def test_a_figure_without_a_number_is_flagged():
+    """The mirror image: if it is evidence, number it; if not, it is a plate."""
+    body = f'<figure><img src="{IMG}" alt="chart"><figcaption>Throughput</figcaption></figure>'
+    assert findings(doc(body), "image-role")
+
+
+def test_a_numbered_figure_is_silent():
+    body = (
+        f'<figure><img src="{IMG}" alt="chart">'
+        '<figcaption><span class="fnum">Fig. 1</span>Deploys doubled after July.'
+        "</figcaption></figure>"
+    )
+    assert not findings(doc(body), "image-role")
+
+
+def test_a_plain_plate_is_silent():
+    body = f'<div class="plate"><img src="{IMG}" alt="a dark textural opener"></div>'
+    assert not findings(doc(body), "image-role")
+
+
+def test_an_image_with_no_alt_is_flagged():
+    body = f'<div class="plate"><img src="{IMG}"></div>'
+    found = findings(doc(body), "image-alt")
+    assert found
+    assert found[0].hint
+
+
+def test_an_explicitly_decorative_image_is_silent():
+    """alt="" is HTML's way of saying 'skip this', which is a real decision."""
+    body = f'<div class="plate"><img src="{IMG}" alt=""></div>'
+    assert not findings(doc(body), "image-alt")
 
 
 # ── hand-rolled style ─────────────────────────────────────────────────────

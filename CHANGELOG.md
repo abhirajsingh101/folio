@@ -33,6 +33,28 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
   guessing. Running headers and footers are measured as well, since margin
   boxes sit outside the content frame and never get a second look.
 
+### Added — plates
+- **`.plate`** — decorative imagery: cover art, a section opener, a texture.
+  Deliberately *not* a `<figure>`: no number, never referenced from the text.
+  Styled in all four themes, with an optional `.credit` line.
+- **`image-role`** enforces the boundary in both directions — a plate carrying
+  a figure number is flagged, and so is a `<figure>` without one. The failure
+  this prevents is subtle: a fabricated chart is obvious, but a decorative
+  illustration captioned `Fig. 3` wears the same grammar as a measurement, so
+  the reader files it as sourced without ever deciding to.
+- **`image-alt`** — an `<img>` with no `alt`. `alt=""` passes: it declares the
+  image purely decorative, which is a decision rather than an omission.
+
+### Fixed — a silent renderer failure found while testing plates
+A gradient inside an SVG does not paint when the container is `.bleed`. The
+box is laid out at full size and stays empty — no error, and strokes in the
+same file still render, so it reads as a half-loaded image. It is the
+combination that breaks: gradient SVG in `.plate` or `figure` is fine, PNG or
+flat-fill SVG in `.bleed` is fine. This is pre-existing and applies to
+`figure class="bleed"` too, which matters because charts are SVG. Documented
+in `folio gotchas` with the measured table; charts from `folio.theme` use flat
+fills and are unaffected.
+
 ### Added — the look pass
 - **`folio build --check` now renders the pages** to `<name>.pages/`, one PNG
   per page, and prints the directory. Looking is the only pass that catches a

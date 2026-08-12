@@ -545,6 +545,74 @@ def _check_heading_levels(ordered) -> list[Finding]:
     return out
 
 
+def _has_class(el, name: str) -> bool:
+    return name in (el.attrib.get("class") or "").split()
+
+
+def _contains_class(el, name: str) -> bool:
+    try:
+        return any(node is not el and _has_class(node, name) for node in el.iter())
+    except (AttributeError, TypeError):  # pragma: no cover - defensive
+        return False
+
+
+def _check_image_role(ordered) -> list[Finding]:
+    """Evidence and decoration must not share a grammar.
+
+    A `<figure>` is a claim: it is numbered, captioned and referenced from the
+    text. A `.plate` is atmosphere — cover art, a section opener, a texture.
+    The dangerous case is not a fabricated chart, which anyone spots, but a
+    decorative image wearing `Fig. 3`, because the reader files it as sourced
+    without ever deciding to. So the boundary is enforced in both directions:
+    a plate may not carry a number, and a figure must.
+    """
+    out = []
+    for page, el in ordered:
+        tag = str(getattr(el, "tag", "")).lower()
+        if _has_class(el, "plate"):
+            if _contains_class(el, "fnum"):
+                out.append(
+                    Finding(
+                        "image-role",
+                        WARN,
+                        page,
+                        "a plate carries a figure number",
+                        "a plate is decoration — drop the number, or make it a "
+                        "<figure> and reference it from the text",
+                    )
+                )
+        elif tag == "figure" and not _contains_class(el, "fnum"):
+            out.append(
+                Finding(
+                    "image-role",
+                    WARN,
+                    page,
+                    "<figure> has no figure number",
+                    'number it with <span class="fnum">Fig. N</span>, or make it '
+                    'a <div class="plate"> if it is decoration rather than evidence',
+                )
+            )
+    return out
+
+
+def _check_image_alt(ordered) -> list[Finding]:
+    """An image nobody described is an image nobody decided the purpose of."""
+    out = []
+    for page, el in ordered:
+        if str(getattr(el, "tag", "")).lower() != "img" or "alt" in el.attrib:
+            continue
+        out.append(
+            Finding(
+                "image-alt",
+                WARN,
+                page,
+                "<img> has no alt text",
+                'say what it shows; alt="" declares it purely decorative',
+            )
+        )
+    return out
+
+
 def _collect_type_sizes(pages) -> dict[float, tuple[int, int, str]]:
     """Type size in pt → (text boxes using it, page it first appears, element)."""
     sizes: dict[float, tuple[int, int, str]] = {}
@@ -666,6 +734,8 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
     ordered = list(_elements_in_order(pages))
     findings += _check_heading_levels(ordered)
     findings += _check_inline_style(ordered)
+    findings += _check_image_role(ordered)
+    findings += _check_image_alt(ordered)
     findings += _check_type_drift(pages)
 
     order = {ERROR: 0, WARN: 1}

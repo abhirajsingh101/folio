@@ -33,6 +33,7 @@ def test_theme_restyles_every_component(name):
         ".toc",
         "h2.section",
         ".metric",
+        ".plate",
         "figcaption",
         "thead th",
         ".pill",

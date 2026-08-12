@@ -117,6 +117,13 @@ figcaption .fnum {
   letter-spacing: 0.08em; text-transform: uppercase; font-size: 7.2pt;
 }
 
+/* ── Plates: decorative imagery, never evidence ─────────── */
+
+.plate { margin: 10mm 0; }
+.plate .credit {
+  font: italic 400 7.6pt var(--font-body); color: var(--ink-mute); margin-top: 3mm;
+}
+
 /* ── Tables: hairlines only ─────────────────────────────── */
 
 table { font-size: 8.4pt; }
