@@ -75,6 +75,14 @@ jobs:
         run: python -m folio doctor
         continue-on-error: true
 
+      # Regression: CJK and status marks could not be printed on a cp1252
+      # console, so folio could not report on a non-Latin document at all.
+      - name: Non-Latin output survives the console encoding
+        shell: bash
+        run: |
+          printf '<p>\u3053\u308c\u306f\u65e5\u672c\u8a9e\u306e\u6587\u66f8\u3067\u3059\u3002</p>' > /tmp/ja.html
+          python -m folio fonts /tmp/ja.html || true
+
       - name: Tests
         run: pytest -q
 

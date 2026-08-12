@@ -136,3 +136,16 @@ def test_unknowable_font_list_is_a_warning_not_a_failure(monkeypatch):
 def test_every_platform_has_font_install_guidance():
     for key, cmd in doctor.FONT_INSTALL.items():
         assert cmd.strip(), f"{key} has no font guidance"
+
+
+def test_cli_output_survives_a_legacy_codepage(tmp_path, capsys):
+    """Windows consoles are cp1252; folio prints arrows, marks and CJK."""
+    from folio.cli import _force_utf8_output
+
+    _force_utf8_output()  # must not raise, on any platform
+    src = tmp_path / "doc.html"
+    src.write_text(SAMPLES["ja"], encoding="utf-8")
+    from folio.cli import main
+
+    assert main(["fonts", str(src)]) in (0, 1)
+    assert "Japanese" in capsys.readouterr().out

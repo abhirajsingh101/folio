@@ -59,7 +59,24 @@ def _parser() -> argparse.ArgumentParser:
     return p
 
 
+def _force_utf8_output() -> None:
+    """Windows consoles default to a legacy codepage (cp1252).
+
+    folio prints script names, status marks and non-Latin text, none of which
+    survive that. Without this a Korean or Japanese document cannot even be
+    reported on, let alone built.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (ValueError, OSError):  # pragma: no cover - exotic streams
+                pass
+
+
 def main(argv: list[str] | None = None) -> int:
+    _force_utf8_output()
     args = _parser().parse_args(argv)
 
     if args.cmd is None:
