@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Meridian — Q3 Engineering Report</title>
+</head>
+<body data-title="Meridian · Q3 Engineering Report" data-footer="internal">
+
+<!-- ════════ COVER ════════ -->
+<section class="cover">
+  <div class="cover-brand">meridian</div>
+  <div class="cover-kicker">Quarterly Engineering Report</div>
+  <h1>Platform&nbsp;Q3</h1>
+  <p class="sub">Twenty-seven of forty-three services off the monolith, p99
+     latency down 44%, and the two decisions that decide Q4.</p>
+  <div class="cover-rule"></div>
+  <div class="cover-meta">
+    <div><span class="k">Period</span>2026.07.01 – 2026.09.30</div>
+    <div><span class="k">Programme</span>Monolith decomposition</div>
+    <div><span class="k">Author</span>Platform Engineering</div>
+    <div><span class="k">Status</span>On track</div>
+  </div>
+</section>
+
+<!-- ════════ CONTENTS ════════ -->
+<section class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><span class="num">01</span><span class="ttl">Executive summary</span><span class="fill"></span><a class="pg" href="#s1"></a></li>
+    <li><span class="num">02</span><span class="ttl">Where the platform stands</span><span class="fill"></span><a class="pg" href="#s2"></a></li>
+    <li><span class="num">03</span><span class="ttl">Migration status</span><span class="fill"></span><a class="pg" href="#s3"></a></li>
+    <li><span class="num">04</span><span class="ttl">The path to Q4</span><span class="fill"></span><a class="pg" href="#s4"></a></li>
+    <li><span class="num">05</span><span class="ttl">Risks</span><span class="fill"></span><a class="pg" href="#s5"></a></li>
+    <li><span class="num">A</span><span class="ttl">Appendix — service inventory</span><span class="fill"></span><a class="pg" href="#sa"></a></li>
+  </ol>
+</section>
+
+<!-- ════════ 1 ════════ -->
+<div class="section-wrap">
+<h2 class="section" id="s1" data-section="Executive summary">
+  <span class="idx">SECTION 01</span>Executive summary</h2>
+
+<p class="lead">Q3 was the quarter the decomposition stopped being a plan. Twenty-seven
+of forty-three services now run independently of the monolith, deploy frequency
+more than doubled, and p99 latency fell 44% against the Q2 baseline.</p>
+
+<div class="metrics">
+  <div class="metric"><span class="v">27<span style="font-size:.55em">/43</span></span><span class="l">Services migrated</span><span class="d">up from 11 in Q2</span></div>
+  <div class="metric"><span class="v">2,694</span><span class="l">Deploys</span><span class="d">+118% quarter on quarter</span></div>
+  <div class="metric"><span class="v">231<span style="font-size:.55em">ms</span></span><span class="l">p99 latency</span><span class="d">from 412ms</span></div>
+  <div class="metric"><span class="v">99.97%</span><span class="l">Availability</span><span class="d">two minor incidents</span></div>
+</div>
+
+<p>Three things drove the quarter. The <strong>dual-write cutover</strong> in
+July removed the last synchronous dependency on the monolith's write path,
+which unblocked eight services at once. The <strong>shared platform SDK</strong>
+cut the median migration from eleven days to four. And retiring the legacy
+scheduler removed the single largest source of tail latency.</p>
+
+<figure>
+  <img src="charts/fig-deploys.svg" alt="Deploy frequency by month">
+  <figcaption><span class="fnum">Fig. 1</span>Deploy frequency by month. The
+  step change in July follows the dual-write cutover, which let teams ship
+  without coordinating a monolith release.</figcaption>
+</figure>
+
+<div class="callout ok">
+  <span class="ico">On track</span>
+  <div class="body"><p>The programme is one service ahead of the Q3 commitment
+  and holds a two-week buffer into Q4. No milestone slipped.</p></div>
+</div>
+</div>
+
+<!-- ════════ 2 ════════ -->
+<div class="section-wrap">
+<h2 class="section" id="s2" data-section="Where the platform stands">
+  <span class="idx">SECTION 02</span>Where the platform stands</h2>
+
+<p>Forty-three services were in scope at the start of the programme. Two were
+deprecated outright rather than migrated — the correct outcome, and one worth
+looking for more of.</p>
+
+<div class="fig-row">
+  <figure>
+    <img src="charts/fig-burnup.svg" alt="Cumulative services migrated">
+    <figcaption><span class="fnum">Fig. 2</span>Cumulative migrations. The
+    dotted line is the 43-service scope.</figcaption>
+  </figure>
+  <figure>
+    <img src="charts/fig-latency.svg" alt="Latency distribution before and after">
+    <figcaption><span class="fnum">Fig. 3</span>Request latency before and
+    after cutover. Dashed lines mark p99.</figcaption>
+  </figure>
+</div>
+
+<h3>Programme timeline</h3>
+
+<ul class="timeline">
+  <li class="done"><span class="tl-h">Foundation · shared SDK and CI templates</span>
+    <span class="tl-d">2026.04 – 2026.05</span>
+    <div class="tl-b">Service scaffold, tracing, and a single deploy pipeline
+    every team inherits.</div></li>
+  <li class="done"><span class="tl-h">Read-path extraction</span>
+    <span class="tl-d">2026.05 – 2026.06 · 11 services</span>
+    <div class="tl-b">Low-risk reads moved first to build confidence and shake
+    out the SDK.</div></li>
+  <li class="done"><span class="tl-h">Dual-write cutover</span>
+    <span class="tl-d">2026.07 · 8 services unblocked</span>
+    <div class="tl-b">Removed the last synchronous write dependency on the
+    monolith.</div></li>
+  <li class="now"><span class="tl-h">Write-path extraction</span>
+    <span class="tl-d">in progress · 9 services in flight</span>
+    <div class="tl-b">The remaining hard cases, all with transactional
+    coupling.</div></li>
+</ul>
+
+<table class="keep">
+  <caption><span class="tnum">Table 1</span>Platform inventory</caption>
+  <thead>
+    <tr><th>Layer</th><th>Component</th><th class="num">Count</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Services</td><td>Independently deployable</td><td class="num">27</td><td>Own pipeline and on-call</td></tr>
+    <tr><td>Services</td><td>Still monolith-coupled</td><td class="num">14</td><td>9 in flight, 5 not started</td></tr>
+    <tr><td>Data</td><td>Owned datastores</td><td class="num">19</td><td>Up from 6 at Q2</td></tr>
+    <tr><td>Quality</td><td>Contract tests</td><td class="num">1,184</td><td>Gate every deploy</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ════════ 3 ════════ -->
+<div class="section-wrap">
+<h2 class="section" id="s3" data-section="Migration status">
+  <span class="idx">SECTION 03</span>Migration status</h2>
+
+<p>The headline number hides an asymmetry: the twenty-seven migrated services
+carry roughly <strong>34% of production traffic</strong>. Two more were
+deprecated outright. The fourteen that remain are the high-volume ones, so the
+second half of this programme is harder than the first.</p>
+
+<h3>The fourteen remaining</h3>
+
+<table>
+  <caption><span class="tnum">Table 2</span>Services not yet independent</caption>
+  <thead>
+    <tr><th class="num">#</th><th>Service</th><th>Status</th><th>Blocker</th><th class="num">Traffic</th><th>Owner</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="num">1</td><td>checkout-orchestrator</td><td><span class="pill warn">In flight</span></td><td>Transactional coupling</td><td class="num">18%</td><td>Payments</td></tr>
+    <tr><td class="num">2</td><td>inventory-ledger</td><td><span class="pill warn">In flight</span></td><td>Shared write lock</td><td class="num">14%</td><td>Supply</td></tr>
+    <tr><td class="num">3</td><td>pricing-engine</td><td><span class="pill warn">In flight</span></td><td>Cache invalidation</td><td class="num">11%</td><td>Commerce</td></tr>
+    <tr><td class="num">4</td><td>identity-bridge</td><td><span class="pill warn">In flight</span></td><td>Session affinity</td><td class="num">9%</td><td>Platform</td></tr>
+    <tr><td class="num">5</td><td>notification-fanout</td><td><span class="pill warn">In flight</span></td><td>Ordering guarantees</td><td class="num">4%</td><td>Growth</td></tr>
+    <tr><td class="num">6</td><td>search-indexer</td><td><span class="pill warn">In flight</span></td><td>Backfill window</td><td class="num">3%</td><td>Discovery</td></tr>
+    <tr><td class="num">7</td><td>audit-log-writer</td><td><span class="pill warn">In flight</span></td><td>Retention policy</td><td class="num">2%</td><td>Platform</td></tr>
+    <tr><td class="num">8</td><td>report-builder</td><td><span class="pill warn">In flight</span></td><td>Long-running jobs</td><td class="num">1%</td><td>Analytics</td></tr>
+    <tr><td class="num">9</td><td>webhook-dispatcher</td><td><span class="pill warn">In flight</span></td><td>Retry semantics</td><td class="num">1%</td><td>Integrations</td></tr>
+    <tr><td class="num">10</td><td>settlement-batch</td><td><span class="pill err">Not started</span></td><td>Regulatory review</td><td class="num">2%</td><td>Payments</td></tr>
+    <tr><td class="num">11</td><td>tax-calculator</td><td><span class="pill err">Not started</span></td><td>Vendor contract</td><td class="num">1%</td><td>Payments</td></tr>
+    <tr><td class="num">12</td><td>legacy-import</td><td><span class="pill err">Not started</span></td><td>No owner</td><td class="num">&lt;1%</td><td><span class="pill mute">Unassigned</span></td></tr>
+    <tr><td class="num">13</td><td>partner-sync</td><td><span class="pill err">Not started</span></td><td>No owner</td><td class="num">&lt;1%</td><td><span class="pill mute">Unassigned</span></td></tr>
+    <tr><td class="num">14</td><td>admin-console</td><td><span class="pill err">Not started</span></td><td>Deprecation candidate</td><td class="num">&lt;1%</td><td>Platform</td></tr>
+  </tbody>
+</table>
+
+<figure>
+  <img src="charts/fig-migration.svg" alt="Migration status by service">
+  <figcaption><span class="fnum">Fig. 4</span>Service migration status across
+  two quarter-end snapshots. "In flight" means the service has a live branch
+  and an owner, not merely a ticket.</figcaption>
+</figure>
+
+<div class="callout warn">
+  <span class="ico">Caveat</span>
+  <div class="body"><p>Counting services overstates progress. By traffic share
+  the programme is closer to one third complete. Q4 planning should be weighted
+  by request volume, not service count.</p></div>
+</div>
+
+<blockquote class="pullquote">
+  Two services have no owner and less than one percent of traffic between them.
+  The cheapest migration is the one you decide not to do.
+  <cite>— Platform review, 2026.09.18</cite>
+</blockquote>
+</div>
+
+<!-- ════════ 4 ════════ -->
+<div class="section-wrap">
+<h2 class="section" id="s4" data-section="The path to Q4">
+  <span class="idx">SECTION 04</span>The path to Q4</h2>
+
+<p>Q4 is sequenced around one structural constraint: four of the nine in-flight
+services share the same write lock on the orders table. They cannot be cut over
+independently, and no amount of parallel staffing changes that.</p>
+
+<div class="callout risk">
+  <span class="ico">Keystone</span>
+  <div class="body"><p><strong>The orders write lock.</strong>
+  <code>checkout-orchestrator</code>, <code>inventory-ledger</code>,
+  <code>pricing-engine</code> and <code>settlement-batch</code> all contend on
+  it. Partitioning it is the single prerequisite for 45% of remaining traffic,
+  so it is sequenced first regardless of individual priority.</p></div>
+</div>
+
+<table>
+  <caption><span class="tnum">Table 3</span>Q4 sequencing</caption>
+  <thead>
+    <tr><th class="num">#</th><th>Workstream</th><th>Priority</th><th>Depends on</th><th>Rationale</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="num">1</td><td>Partition the orders write lock</td><td><span class="pill p0">P0</span></td><td>—</td><td>Keystone; unblocks 45% of traffic</td></tr>
+    <tr><td class="num">2</td><td>checkout-orchestrator cutover</td><td><span class="pill p0">P0</span></td><td>1</td><td>Largest single traffic share</td></tr>
+    <tr><td class="num">3</td><td>Assign or retire the two orphans</td><td><span class="pill p1">P1</span></td><td>—</td><td>Independent; likely a deletion</td></tr>
+    <tr><td class="num">4</td><td>inventory-ledger + pricing-engine</td><td><span class="pill p1">P1</span></td><td>1</td><td>Parallel once the lock is split</td></tr>
+    <tr><td class="num">5</td><td>Traffic-weighted reporting</td><td><span class="pill p1">P1</span></td><td>—</td><td>Stop reporting on service count</td></tr>
+  </tbody>
+</table>
+
+<h3>Sequencing</h3>
+
+<ol class="steps">
+  <li><strong>Split the lock first.</strong> Partitioning by tenant is the
+  smallest change that decouples all four contenders; a full event-sourcing
+  rewrite is not required and should not be attempted this quarter.</li>
+  <li><strong>Run the orphan review in parallel.</strong> Nothing depends on it,
+  and the expected outcome is two deletions rather than two migrations.</li>
+  <li><strong>Cut over by traffic, not by ease.</strong> Taking
+  <code>checkout-orchestrator</code> first is unpleasant and correct.</li>
+  <li><strong>Change the metric.</strong> Report traffic share from Q4 onward;
+  service count has stopped being informative.</li>
+</ol>
+
+<h4>Migration contract</h4>
+<pre><span class="c">// every service must satisfy these before it is called migrated</span>
+<span class="k">interface</span> MigrationContract {
+  ownership:  <span class="s">'named team, on-call rotation, runbook'</span>;
+  data:       <span class="s">'owns its datastore, no cross-service writes'</span>;
+  deploy:     <span class="s">'ships without a monolith release'</span>;
+  contract:   <span class="s">'consumer tests green in CI, versioned API'</span>;
+  observability: <span class="s">'traces, SLO, dashboard, alert routing'</span>;
+  rollback:   <span class="s">'dual-read verified, cutover reversible for 14 days'</span>;
+}</pre>
+</div>
+
+<!-- ════════ 5 ════════ -->
+<div class="section-wrap">
+<h2 class="section" id="s5" data-section="Risks"><span class="idx">SECTION 05</span>Risks</h2>
+
+<div class="callout risk">
+  <span class="ico">Risk</span>
+  <div class="body"><p><strong>Single-threaded keystone.</strong> The lock
+  partition has one engineer with deep context. If that person is unavailable
+  for two weeks, Q4 slips wholesale. Mitigation: a second engineer pairs on it
+  from week one, at a real cost to workstream 4.</p></div>
+</div>
+
+<div class="callout warn">
+  <span class="ico">Watch</span>
+  <div class="body"><p><strong>Contract test flake.</strong> Suite runtime grew
+  38% this quarter and three tests now fail intermittently. Teams have started
+  re-running rather than investigating, which is how a gate stops being a
+  gate.</p></div>
+</div>
+
+<div class="callout info">
+  <span class="ico">Note</span>
+  <div class="body"><p><strong>Deliberately out of scope.</strong> The reporting
+  database and the internal admin console are not being migrated. Both are
+  scheduled for replacement in H1 and migrating them would be wasted work.</p></div>
+</div>
+
+<hr class="divider">
+
+<h3>What "done" means for Q4</h3>
+<ul class="tick">
+  <li>Orders write lock partitioned, with all four contenders cutting over independently.</li>
+  <li>At least 60% of production traffic served by migrated services.</li>
+  <li>No service in the programme without a named owner.</li>
+  <li>Every migrated service satisfies all six clauses of the migration contract.</li>
+</ul>
+</div>
+
+<!-- ════════ APPENDIX ════════ -->
+<div class="section-wrap appendix">
+<h2 class="section" id="sa" data-section="Appendix — service inventory">
+  <span class="idx">APPENDIX A</span>Service inventory</h2>
+
+<table>
+  <caption><span class="tnum">Table 4</span>Migrated services by domain</caption>
+  <thead>
+    <tr><th>Domain</th><th class="num">Migrated</th><th class="num">Remaining</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Commerce</td><td class="num">8</td><td class="num">3</td><td>Pricing is the hard one</td></tr>
+    <tr><td>Payments</td><td class="num">4</td><td class="num">3</td><td>Regulatory review gates two</td></tr>
+    <tr><td>Platform</td><td class="num">7</td><td class="num">3</td><td>Includes the SDK itself</td></tr>
+    <tr><td>Growth</td><td class="num">5</td><td class="num">1</td><td>Effectively complete</td></tr>
+    <tr><td>Analytics</td><td class="num">3</td><td class="num">2</td><td>Both low traffic</td></tr>
+  </tbody>
+</table>
+
+<h4>Source</h4>
+<ul class="tick">
+  <li>Service registry export, 2026.09.30</li>
+  <li>Traffic shares from the edge load balancer, 30-day mean</li>
+  <li>Deploy counts from the CI pipeline, excluding rollbacks</li>
+</ul>
+</div>
+
+</body>
+</html>

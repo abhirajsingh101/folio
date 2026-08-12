@@ -1,0 +1,75 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "folio-press"
+version = "0.1.0"
+description = "Print-ready documents from HTML — one design system, no AI slop."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Abhiraj Singh" }]
+keywords = [
+  "pdf", "report", "document", "html-to-pdf", "weasyprint",
+  "typesetting", "design-system", "claude-skill", "agent-skill", "invoice",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Printing",
+  "Topic :: Text Processing :: Markup :: HTML",
+]
+
+# Deliberately minimal. WeasyPrint needs native libraries that pip cannot
+# provide, so it is an extra rather than a hard dependency: `folio doctor`
+# diagnoses what is missing, and the Chromium renderer is a fallback that
+# needs no native libs at all. A broken install should still be a working
+# install.
+dependencies = []
+
+[project.optional-dependencies]
+weasyprint = ["weasyprint>=60"]
+charts = ["matplotlib>=3.7"]
+all = ["weasyprint>=60", "matplotlib>=3.7"]
+dev = ["pytest>=7", "pypdf>=4", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://github.com/abhirajsingh101/folio"
+Documentation = "https://github.com/abhirajsingh101/folio#readme"
+Source = "https://github.com/abhirajsingh101/folio"
+Issues = "https://github.com/abhirajsingh101/folio/issues"
+
+[project.scripts]
+folio = "folio.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/folio"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"docs/COMPONENTS.md" = "folio/assets/docs/COMPONENTS.md"
+"docs/GOTCHAS.md" = "folio/assets/docs/GOTCHAS.md"
+
+[tool.hatch.build.targets.sdist]
+include = ["src/folio", "docs", "skill", "tests", "README.md", "LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+# Scaffold templates are user-facing example code, held to readability
+# rather than lint strictness.
+extend-exclude = ["src/folio/assets/templates"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
