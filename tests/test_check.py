@@ -13,6 +13,12 @@ pytest.importorskip("weasyprint", reason="check measures WeasyPrint's layout tre
 
 PAGE = "@page{size:A4;margin:20mm}"
 
+# Pagination fixtures must not depend on the platform's default font. Pinning
+# size and line-height, and leaving tens of millimetres of slack in whether a
+# block fits, is what keeps them from passing on Linux and failing on macOS —
+# which is exactly how the first version of these two got through review.
+FLAT = "font-size:10pt;line-height:1;margin-top:0"
+
 
 def rules(html: str) -> set[str]:
     return {f.rule for f in inspect(html, Path("/tmp"))}
@@ -80,9 +86,9 @@ def test_thin_page_is_flagged():
     deliberately silent.
     """
     body = (
-        '<p style="margin-bottom:40mm">a short opening paragraph</p>'
+        f'<p style="{FLAT};margin-bottom:60mm">a short opening paragraph</p>'
         '<div style="height:230mm;break-inside:avoid">a block too tall to fit here</div>'
-        "<p>trailing text</p>"
+        f'<p style="{FLAT}">trailing text</p>'
     )
     assert "thin-page" in rules(doc(body))
 
@@ -95,10 +101,11 @@ def test_a_block_that_jumps_mid_section_is_still_flagged():
     that actually begins here authorises the short page before it.
     """
     body = (
-        "<p>one</p>"
-        '<div style="break-before:page"><h2>Section</h2>'
+        f'<p style="{FLAT}">one</p>'
+        '<div style="break-before:page">'
+        f'<p style="{FLAT};margin-bottom:60mm">section opens</p>'
         '<div style="height:230mm;break-inside:avoid"></div>'
-        "<p>tail</p></div>"
+        f'<p style="{FLAT}">tail</p></div>'
     )
     assert "thin-page" in rules(doc(body))
 
