@@ -6,38 +6,7 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Added — `half-bleed`, the first rule that measures where a block sits
-0.4.0's Planned section recorded that everything the look pass caught was
-compositional: a component in the wrong place, with every measurement around it
-legal. Three defects, and one of them is measurable.
-
-`.bleed` works by cancelling the page margin sideways — negative left and right
-margins, and as much again in width. There is no equivalent upwards, because
-content is laid out inside the page box and the top margin is not content's to
-enter. So a bleed placed first on a page opens *below* that margin: a band that
-reaches both side edges of the paper and stops 20–34mm short of the top one,
-with the running header floating in the gap. Three edges reach the paper and
-one does not, which reads as a misprint.
-
-- **`half-bleed`** — a full-bleed block with nothing printed above it on the
-  page. The detail gives the strip: "a full-bleed `<div>` opens 34mm below the
-  page's top edge". Two remedies, and the choice is about the document: move it
-  into the prose, where a band between paragraphs is the job `.bleed` exists
-  for, or drop `bleed` and let it sit inset. Never try to pull it up.
-- Verified against the defect as it actually shipped — the exhibition guide's
-  halftone plate, put back at the head of its page — and silent across all nine
-  examples and six scaffolds in all four directions, which is 60 renders.
-- The cover is the exception and is built differently on purpose:
-  `.cover::before` and `img.cover-plate` are absolutely positioned at `top: 0`,
-  outside the flow, which is how they reach the edge at all. Recorded in
-  `folio gotchas` beside the other `.bleed` trap.
-
-Measuring it needed a second rect. `_rect` reads `position_x` — the *margin*
-edge — alongside `width`, the content width: near enough for a box with no
-margins and wrong by the margin for one that has them. A bleed **is** a
-negative margin, so it was the one case that mix could not measure, and the
-first version of the rule silently found nothing. `_border_rect` measures the
-box as it is painted.
+## [0.5.0] — 2026-08-13
 
 ### Fixed — every Korean document folio built was set in a Chinese face
 `scripts.py` opens with "folio does not assume Latin", and folio really does
@@ -114,42 +83,6 @@ own typography is drawn in and nothing else; script coverage is
 `check_document_fonts`, which answers per document and knows every name a face
 goes by.
 
-### Added — a stylesheet that does not parse now says so itself
-A comment closed one paragraph early, leaving prose sitting bare inside
-`:root {}`. CSS recovers from that by discarding to the next semicolon, which
-took the font tokens with it — so headings came out at the browser default
-size, and the only thing that noticed was a test about *heading hierarchy*,
-two layers from the cause and with nothing in its message about CSS.
-
-Every theme's composed stylesheet is now parsed with tinycss2, descending into
-each rule's declarations, and any error fails with the file's own line number
-and reason: `59: Stop token reached before {} block`. Nothing else in the repo
-was checking that the CSS it ships is valid CSS.
-
-### Fixed — one stranded heading arrived as three warnings
-`_border_rect` was written for `half-bleed`; checking whether the older rules
-needed it turned up a different defect in `orphan-heading`.
-
-A heading is a block box holding a line box holding a text box, and all three
-carry the element's tag. The rule walked boxes, so every stranded heading was
-reported three times: a page with two of them produced six findings, and the
-summary line counted six defects. Identity is the element now, as it already
-was for the rules that walk the document rather than a page.
-
-Deduplicating is what made the measurement matter. Reporting once means
-reporting the outermost box, and *that* box's `_rect` top is the margin edge —
-so the room beneath a heading would have included the theme's own
-`margin-top`, space no reader sees. The line box had been masking it by
-matching too, and reporting the right number alongside two wrong ones. Both
-halves are held by tests: one that fails on three findings, one that fails on
-the margin edge.
-
-The first guess was wrong and is worth recording: the block-box skew looked
-like a live under-reporting bug, and it was not one — the line box was already
-landing on the correct number. There is no change to what the rule reports on
-any shipped document; all nine examples and six scaffolds are silent on it in
-all four directions, before and after.
-
 ### Changed — italic is withdrawn in the scripts that do not have one
 Italic is a Latin invention. Hangul, kana, Han, Arabic, Hebrew, Devanagari,
 Bengali, Tamil and Thai never developed an equivalent, so a slant in them is a
@@ -181,6 +114,75 @@ WeasyPrint compresses its object streams, so the font names are not in the
 bytes and the assertion could never fail. It reads the computed style off the
 layout tree now.
 
+### Added — `half-bleed`, the first rule that measures where a block sits
+0.4.0's Planned section recorded that everything the look pass caught was
+compositional: a component in the wrong place, with every measurement around it
+legal. Three defects, and one of them is measurable.
+
+`.bleed` works by cancelling the page margin sideways — negative left and right
+margins, and as much again in width. There is no equivalent upwards, because
+content is laid out inside the page box and the top margin is not content's to
+enter. So a bleed placed first on a page opens *below* that margin: a band that
+reaches both side edges of the paper and stops 20–34mm short of the top one,
+with the running header floating in the gap. Three edges reach the paper and
+one does not, which reads as a misprint.
+
+- **`half-bleed`** — a full-bleed block with nothing printed above it on the
+  page. The detail gives the strip: "a full-bleed `<div>` opens 34mm below the
+  page's top edge". Two remedies, and the choice is about the document: move it
+  into the prose, where a band between paragraphs is the job `.bleed` exists
+  for, or drop `bleed` and let it sit inset. Never try to pull it up.
+- Verified against the defect as it actually shipped — the exhibition guide's
+  halftone plate, put back at the head of its page — and silent across all nine
+  examples and six scaffolds in all four directions, which is 60 renders.
+- The cover is the exception and is built differently on purpose:
+  `.cover::before` and `img.cover-plate` are absolutely positioned at `top: 0`,
+  outside the flow, which is how they reach the edge at all. Recorded in
+  `folio gotchas` beside the other `.bleed` trap.
+
+Measuring it needed a second rect. `_rect` reads `position_x` — the *margin*
+edge — alongside `width`, the content width: near enough for a box with no
+margins and wrong by the margin for one that has them. A bleed **is** a
+negative margin, so it was the one case that mix could not measure, and the
+first version of the rule silently found nothing. `_border_rect` measures the
+box as it is painted.
+
+### Fixed — one stranded heading arrived as three warnings
+`_border_rect` was written for `half-bleed`; checking whether the older rules
+needed it turned up a different defect in `orphan-heading`.
+
+A heading is a block box holding a line box holding a text box, and all three
+carry the element's tag. The rule walked boxes, so every stranded heading was
+reported three times: a page with two of them produced six findings, and the
+summary line counted six defects. Identity is the element now, as it already
+was for the rules that walk the document rather than a page.
+
+Deduplicating is what made the measurement matter. Reporting once means
+reporting the outermost box, and *that* box's `_rect` top is the margin edge —
+so the room beneath a heading would have included the theme's own
+`margin-top`, space no reader sees. The line box had been masking it by
+matching too, and reporting the right number alongside two wrong ones. Both
+halves are held by tests: one that fails on three findings, one that fails on
+the margin edge.
+
+The first guess was wrong and is worth recording: the block-box skew looked
+like a live under-reporting bug, and it was not one — the line box was already
+landing on the correct number. There is no change to what the rule reports on
+any shipped document; all nine examples and six scaffolds are silent on it in
+all four directions, before and after.
+
+### Added — a stylesheet that does not parse now says so itself
+A comment closed one paragraph early, leaving prose sitting bare inside
+`:root {}`. CSS recovers from that by discarding to the next semicolon, which
+took the font tokens with it — so headings came out at the browser default
+size, and the only thing that noticed was a test about *heading hierarchy*,
+two layers from the cause and with nothing in its message about CSS.
+
+Every theme's composed stylesheet is now parsed with tinycss2, descending into
+each rule's declarations, and any error fails with the file's own line number
+and reason: `59: Stop token reached before {} block`. Nothing else in the repo
+was checking that the CSS it ships is valid CSS.
+
 ### Added — a test that a rule nobody documented cannot ship
 `folio check` prints a rule name; what the name means and which of two remedies
 applies lives in SKILL.md. There was nothing holding those together, and
@@ -193,6 +195,32 @@ of writing it: **eight rules were described in prose but never named** —
 `image-upscaled`, `image-role`, `image-alt`. An agent reading `! p4 tiny-text`
 could not search its way to the explanation. Pass 2 now names each rule beside
 the defect it describes.
+
+### Planned
+- **`folio check` cannot see a font, and this release is the argument for
+  fixing that.** Four defects were found this cycle — a Chinese face setting
+  every Korean document, a proportional face setting code on machines without
+  JetBrains Mono, a synthesised slant on Hangul, and a stylesheet that stopped
+  parsing mid-block — and not one was visible to the checker. Every one was
+  found by reading fonts back out of a rendered PDF. The layout tree carries
+  the computed `font_family` of every box and folio already knows which
+  families cover which script, so the rule is writeable: *text in script X
+  whose stack names no family that covers X*. It would have caught the
+  headline fix in this release on the day it was introduced.
+- **Optional `folio fonts --install <script>`** to fetch a single Noto family
+  into a user font directory, for machines with no package manager. Carried
+  from 0.3.0, and cheaper now that `check_document_fonts` is the single place
+  that knows what a script needs.
+- **Byte-identical output across machines.** Currently the look degrades
+  gracefully but is not pinned; solving it without bundling everything means
+  optional per-script subsets. Carried from 0.3.0. The before/after pixel
+  comparison written for this release — all eleven examples rendered and
+  hashed against the previous commit — is the harness that work would use.
+- **The `essay` row is the last of the skill's seven without a scaffold**, and
+  it routes to `report --theme editorial`. The fit is close, which is why it
+  keeps coming last. Carried from 0.4.0.
+- `tests/test_layout.py`, for the class where a component reserves more space
+  than its content fills, still holds the single `.cols` case that created it.
 
 ## [0.4.0] — 2026-08-13
 
