@@ -29,9 +29,10 @@ case study and an operations runbook. Every page is a real build from
 
 <img src="docs/gallery/themes-pages.png" width="100%" alt="The same interior page in four design directions, charts re-paletted to match">
 
-*One document, four design directions. Same content, same markup —
-different typographic systems, and charts that re-palette to match.
-Two of the four take a cover image; the other two are built not to.*
+*One document, four design directions — same content, same markup. The type
+changes, fills give way to rules, and the charts re-palette with them: navy,
+oxblood, near-black, teal. Two of the four take a cover image; the other two
+are built not to.*
 
 </div>
 

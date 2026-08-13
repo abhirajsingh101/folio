@@ -6,6 +6,26 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed — the theme gallery showed one palette four times
+The two theme strips were shot by injecting a different stylesheet into an
+already-rendered document. That restyles the type and leaves the figures alone,
+so all four panels carried the palette of whichever direction the example was
+last built in: four typographic systems under four identical blue charts,
+directly beneath a caption promising that charts re-palette to match. They do —
+`report` navy, `editorial` oxblood, `minimal` near-black, `technical` teal. The
+shot did not.
+
+Worse on the covers: `editorial` wore `report`'s plate, and `technical` and
+`minimal` — which doctrine gives no cover image at all — showed a sliver of it
+inside a 6mm bar and a 3mm rule.
+
+`docs/gallery/shoot.py` now builds the example four times rather than restyling
+it once, because `folio build` is what runs `charts.py` with FOLIO_THEME set,
+and it makes the plate a property of the direction. It also stopped assuming
+page numbers are unpadded: the same document is 9 pages in `report` and 12 in
+`editorial`, so page 3 is `p-3.png` in one and `p-03.png` in the other, and the
+strip had been silently shooting whatever it found.
+
 ### Fixed — `.cols` reserved space it never filled
 A flex item's automatic minimum size is content-based, and with a raster inside
 one WeasyPrint resolves it from the image's **intrinsic pixels** rather than
