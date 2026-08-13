@@ -477,14 +477,31 @@ def _check_tiny_text(root, n) -> list[Finding]:
 
 
 def _check_orphan_heading(root, n, frame) -> list[Finding]:
-    """A heading at the foot of a page with its content overleaf."""
+    """A heading at the foot of a page with its content overleaf.
+
+    Identity is the element, not the box: a heading is a block box holding a
+    line box holding a text box, and all three carry its tag, so walking boxes
+    reported one stranded heading three times over.
+
+    Reporting the outermost box is what makes the measurement matter. Its
+    `_rect` top is the *margin* edge, and every theme gives headings a top
+    margin, so the room beneath would include space the reader never sees —
+    masked until now by the line box, which has no margin and happened to
+    report the right number alongside the wrong ones.
+    """
     bottom = frame[3]
     out = []
+    seen = set()
     for box in _walk(root):
         tag = getattr(box, "element_tag", None)
         if tag not in ("h1", "h2", "h3", "h4"):
             continue
-        r = _rect(box)
+        el = getattr(box, "element", None)
+        key = id(el) if el is not None else id(box)
+        if key in seen:
+            continue
+        seen.add(key)
+        r = _border_rect(box)
         if not r:
             continue
         room = (bottom - r[3]) / MM

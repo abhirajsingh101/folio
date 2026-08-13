@@ -167,6 +167,38 @@ def test_orphan_heading_is_flagged():
     assert "orphan-heading" in rules(doc(body))
 
 
+def test_one_stranded_heading_is_reported_once():
+    """A heading matched three boxes, so one defect arrived as three warnings.
+
+    `<h3>` is a block box holding a line box holding a text box, and all three
+    carry the element's tag. The rule walked every box that looked like a
+    heading, so a page with two stranded headings reported six findings and the
+    summary line counted them as six defects.
+    """
+    body = '<p style="margin-bottom:230mm">filler</p><h3>Stranded heading</h3>'
+    found = [f for f in inspect(doc(body), Path("/tmp")) if f.rule == "orphan-heading"]
+    assert len(found) == 1, [str(f) for f in found]
+
+
+def test_a_heading_is_measured_from_its_ink_not_its_margin():
+    """What deduplicating exposed: the block box is not where the type prints.
+
+    Reporting once means reporting the outermost box, and *that* box's `_rect`
+    top is the margin edge — so a heading carrying `margin-top` claims its foot
+    that much higher than it prints, counting space the reader never sees as
+    room. The line box used to mask this by matching too, which is the only
+    reason the old rule landed on the right number.
+
+    Here the ink ends 13mm from the foot and the margin edge 25mm from it:
+    stranded to a reader either way.
+    """
+    body = (
+        '<p style="margin-bottom:227mm">filler</p>'
+        '<h3 style="margin-top:12mm;margin-bottom:0">Stranded heading</h3>'
+    )
+    assert "orphan-heading" in rules_on(doc(body, NO_BODY_MARGIN), 1)
+
+
 # ── things that must NOT be flagged ───────────────────────────────────────
 
 

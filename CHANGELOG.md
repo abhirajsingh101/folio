@@ -39,6 +39,30 @@ negative margin, so it was the one case that mix could not measure, and the
 first version of the rule silently found nothing. `_border_rect` measures the
 box as it is painted.
 
+### Fixed — one stranded heading arrived as three warnings
+`_border_rect` was written for `half-bleed`; checking whether the older rules
+needed it turned up a different defect in `orphan-heading`.
+
+A heading is a block box holding a line box holding a text box, and all three
+carry the element's tag. The rule walked boxes, so every stranded heading was
+reported three times: a page with two of them produced six findings, and the
+summary line counted six defects. Identity is the element now, as it already
+was for the rules that walk the document rather than a page.
+
+Deduplicating is what made the measurement matter. Reporting once means
+reporting the outermost box, and *that* box's `_rect` top is the margin edge —
+so the room beneath a heading would have included the theme's own
+`margin-top`, space no reader sees. The line box had been masking it by
+matching too, and reporting the right number alongside two wrong ones. Both
+halves are held by tests: one that fails on three findings, one that fails on
+the margin edge.
+
+The first guess was wrong and is worth recording: the block-box skew looked
+like a live under-reporting bug, and it was not one — the line box was already
+landing on the correct number. There is no change to what the rule reports on
+any shipped document; all nine examples and six scaffolds are silent on it in
+all four directions, before and after.
+
 ### Added — a test that a rule nobody documented cannot ship
 `folio check` prints a rule name; what the name means and which of two remedies
 applies lives in SKILL.md. There was nothing holding those together, and
