@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import pytest
 
@@ -31,6 +32,7 @@ def test_theme_restyles_every_component(name):
     for sel in (
         ".cover",
         ".cover::before",
+        ".eyebrow",
         ".toc",
         "h2.section",
         ".metric",
@@ -146,6 +148,71 @@ def test_a_bleeding_plate_reaches_both_page_edges(name):
     assert abs(right - page.width) / MM < 1, (
         f"{name}: plate ends {right / MM:.1f}mm on a {page.width / MM:.0f}mm page"
     )
+
+
+@pytest.mark.parametrize("name", THEMES)
+def test_the_cover_band_survives_the_rtl_mirror(name):
+    """Nothing rendered RTL, so an RTL-only regression could not be seen.
+
+    The mirror layer used to offset two decorative circles the split-band
+    redesign deleted. The offsets outlived them and re-anchored the band to
+    `left: -60mm; right: auto`, collapsing it — every Arabic, Hebrew, Persian
+    and Urdu cover lost its band entirely and every test still passed.
+    """
+    weasyprint = pytest.importorskip("weasyprint")
+    from folio.check import MM, _walk
+
+    def band(rtl: bool) -> tuple[float, float]:
+        """The band's own box — `.cover` is 210mm either way and proves nothing."""
+        html = (
+            f'<!DOCTYPE html><html lang="ar" dir="rtl"><head>'
+            f"<style>{css_text(name, rtl=rtl)}</style></head>"
+            '<body><section class="cover"><h1>عنوان</h1></section><p>x</p></body></html>'
+        )
+        page = weasyprint.HTML(string=html).render().pages[0]
+        box = next(
+            b
+            for b in _walk(page._page_box)
+            if str(getattr(b, "element_tag", "")).endswith("::before")
+        )
+        return box.position_x / MM, box.border_width() / MM
+
+    (ltr_x, ltr_w), (rtl_x, rtl_w) = band(False), band(True)
+    assert abs(ltr_x) < 1 and abs(ltr_w - 210) < 1, (
+        f"{name}: LTR band at {ltr_x:.0f}mm × {ltr_w:.0f}mm"
+    )
+    assert abs(rtl_x - ltr_x) < 1 and abs(rtl_w - ltr_w) < 1, (
+        f"{name}: RTL band is {rtl_w:.0f}mm at x={rtl_x:.0f}mm, "
+        f"against LTR {ltr_w:.0f}mm at x={ltr_x:.0f}mm"
+    )
+
+
+@pytest.mark.parametrize("name", THEMES)
+def test_theme_styles_every_documented_callout_tone(name):
+    """A tone is a component, and base.css paints none of them.
+
+    `test_theme_restyles_every_component` checks `.callout` and stops there, so
+    a theme could style the box and skip a tone — which is exactly what
+    happened: `.callout.info` was unstyled in `editorial` and `minimal` while
+    the shipped example used it, so in half the themes that block rendered as a
+    plain callout and nothing said so.
+    """
+    css = theme_path(name).read_text(encoding="utf-8")
+    documented = ("info", "ok", "warn", "risk")
+    for tone in documented:
+        assert f".callout.{tone}" in css, f"{name} never styles .callout.{tone}"
+
+
+def test_the_documented_callout_tones_match_the_docs():
+    """Guards the list above against COMPONENTS.md drifting away from it."""
+    root = Path(__file__).resolve().parents[1]
+    components = root / "docs" / "COMPONENTS.md"
+    if not components.exists():  # pragma: no cover - installed without sources
+        pytest.skip("docs not present")
+    line = next(
+        ln for ln in components.read_text(encoding="utf-8").splitlines() if ln.startswith("Tones:")
+    )
+    assert set(re.findall(r"`(\w+)`", line)) == {"info", "ok", "warn", "risk"}, line
 
 
 def test_missing_matplotlib_names_the_extra(monkeypatch):

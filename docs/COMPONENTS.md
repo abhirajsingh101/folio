@@ -98,7 +98,20 @@ The `href` must match the section's `id`.
 it must be the bare title, without the kicker. Add `cont` to the wrapper
 (`class="section-wrap cont"`) to continue on the same page instead.
 
-Inside: `<h3>` for subsections, `<h4>` for uppercase eyebrow labels.
+Inside: `<h3>` for subsections, `<h4>` for a fourth level where you genuinely
+have one.
+
+For a *label* — "Bill to", "Attendees", "Payment terms" — use `.eyebrow`, not a
+heading:
+
+```html
+<p class="eyebrow">Bill to</p>
+```
+
+A heading level is structure that screen readers and the shareable HTML page
+both consume, so `<h4>` directly under `<h2>` claims an `<h3>` that does not
+exist and `folio check` reports it. `.eyebrow` carries the same uppercase
+label treatment in every theme without inventing a level.
 
 ## Lead paragraph
 

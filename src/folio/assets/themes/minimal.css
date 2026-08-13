@@ -91,7 +91,7 @@ h2.section .idx {
   color: var(--accent); margin-bottom: 4mm;
 }
 h3 { font: 500 11pt var(--font-body); letter-spacing: -0.018em; color: var(--ink); margin: 9mm 0 3mm; }
-h4 {
+h4, .eyebrow {
   font: 500 7.4pt var(--font-body); letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--ink-mute); margin: 7mm 0 2.4mm;
 }
@@ -169,6 +169,7 @@ tfoot td { padding: 3mm 4mm 0 0; border-top: 1px solid var(--ink); color: var(--
 }
 .callout.risk { border-left-color: var(--accent); }
 .callout.risk .ico { color: var(--accent); }
+.callout.info .ico { color: var(--ink-mute); }
 .callout.warn .ico { color: var(--warn); }
 .callout.ok .ico { color: var(--ok); }
 

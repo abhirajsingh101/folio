@@ -52,6 +52,20 @@ def test_descending_one_level_at_a_time_is_silent():
     assert not findings(doc("<h2>A</h2><h3>B</h3><h4>C</h4>"), "heading-skip")
 
 
+def test_a_label_is_not_a_heading_level():
+    """The gap that made short documents unbuildable.
+
+    An invoice, a set of minutes or a one-pager labels its blocks — "Bill to",
+    "Payment", "Attendees" — directly under the section heading. Those are
+    labels, not a fourth level of structure, and marking them up as `<h4>`
+    claimed an `<h3>` that does not exist: the checker was right and the
+    documentation was wrong. `.eyebrow` is the label, so heading levels stay
+    honest and the document still passes.
+    """
+    body = '<h2>Invoice 2026-014</h2><p class="eyebrow">Bill to</p><p>Northwind Trading.</p>'
+    assert not findings(doc(body), "heading-skip")
+
+
 def test_climbing_back_up_is_silent():
     """h4 → h2 closes two levels; only descending can skip."""
     body = "<h2>A</h2><h3>B</h3><h4>C</h4><h2>D</h2><h3>E</h3>"

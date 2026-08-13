@@ -7,8 +7,10 @@
 That is the entire point of the project. A one-off style in one document is how
 a design system stops meaning anything — the next person copies it, and within
 a month there is no system. If you need something that does not exist, add it
-to `src/folio/assets/folio.css` *and* document it in `docs/COMPONENTS.md` in
-the same pull request.
+its structure to `src/folio/assets/base.css`, its look to *every* one of
+`src/folio/assets/themes/*.css`, *and* document it in `docs/COMPONENTS.md` in
+the same pull request. base.css may not paint and a theme may not define
+structure; both directions are enforced by `tests/test_themes.py`.
 
 Before adding: check `folio components` carefully. Most "missing" components
 already exist under a different name.

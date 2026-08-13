@@ -17,10 +17,14 @@
 
 /* ── Cover ──────────────────────────────────────────────── */
 
-.cover-brand { left: auto; right: var(--page-margin-x); }
-.cover::before, .cover::after { right: auto; }
-.cover::before { left: -60mm; }
-.cover::after { left: -30mm; }
+/* Nothing on the cover needs mirroring any more.
+   `.cover-brand` is pinned to both margins in base.css, so it is symmetric and
+   `text-align: start` turns it round on its own — the mechanism this file's
+   header says is the one that works.
+   The band is full-bleed and symmetric for the same reason. What used to live
+   here offset two decorative circles that the split-band redesign deleted; the
+   offsets survived it and collapsed the band to nothing in every RTL document,
+   because no test renders RTL. */
 
 /* ── Accent rules: every left border becomes a right border ─ */
 

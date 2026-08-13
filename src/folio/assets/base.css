@@ -165,7 +165,14 @@ img.cover-plate {
   display: block;
 }
 .cover h1, .cover .sub { text-align: start; margin: 0; }
-.cover-brand { position: absolute; top: 20mm; left: var(--page-margin-x); }
+/* Pinned to both margins, not just the left. A box anchored on one edge has to
+   be mirrored for RTL; one anchored on both is already symmetric and
+   `text-align: start` turns the text round by itself. That is what lets
+   rtl.css carry no cover rules at all. */
+.cover-brand {
+  position: absolute; top: 20mm;
+  left: var(--page-margin-x); right: var(--page-margin-x);
+}
 .cover-meta { display: flex; gap: 14mm; }
 .cover-meta .k { display: block; }
 

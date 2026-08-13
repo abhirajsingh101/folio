@@ -72,7 +72,7 @@ h2.section .idx {
   color: var(--brand); margin-bottom: 2.2mm;
 }
 h3 { font: 600 10.6pt var(--font-ui); letter-spacing: -0.008em; color: var(--ink); margin: 6mm 0 2.4mm; }
-h4 {
+h4, .eyebrow {
   font: 600 8.4pt var(--font-ui); letter-spacing: 0.09em; text-transform: uppercase;
   color: var(--ink-mute); margin: 5mm 0 2mm;
 }

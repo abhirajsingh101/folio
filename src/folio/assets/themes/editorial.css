@@ -103,7 +103,7 @@ h3 {
   font: 600 8.4pt var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--ink); margin: 8mm 0 3mm;
 }
-h4 { font: italic 400 10.5pt var(--font-body); color: var(--ink-soft); margin: 6mm 0 2mm; }
+h4, .eyebrow { font: italic 400 10.5pt var(--font-body); color: var(--ink-soft); margin: 6mm 0 2mm; }
 p.lead {
   font: 400 13.4pt/1.5 var(--font-body); color: var(--ink); margin-bottom: 1.2em;
 }
@@ -184,6 +184,7 @@ tfoot td { padding: 2.6mm 3mm 0 0; border-top: 1px solid var(--ink); color: var(
   font: 500 6.9pt var(--font-ui); letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--brand); padding-top: 0.9mm;
 }
+.callout.info .ico { color: var(--brand); }
 .callout.warn .ico { color: var(--warn); }
 .callout.risk .ico { color: var(--err); }
 .callout.ok .ico { color: var(--ok); }
