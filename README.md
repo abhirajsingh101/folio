@@ -117,6 +117,8 @@ folio build document.html           # → document.pdf + document.page.html
 | `proposal` | cover · scope · price · signature — a proposal, quote or SOW |
 | `invoice` | one sheet, no furniture — line items, totals, payment terms |
 | `runbook` | control block · numbered steps · verification — an SOP or playbook |
+| `case-study` | headline · metrics · narrative · quote — proof, and no cover |
+| `letter` | one sheet, no furniture — letterhead, subject, sign-off |
 
 Each scaffold arrives in the direction that suits it — an invoice in `minimal`,
 a runbook in `technical` — and `--theme` overrides the pairing:

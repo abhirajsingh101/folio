@@ -6,6 +6,27 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — `letter` and `case-study` scaffolds
+Six of the skill's seven routing rows now start from a scaffold of their own.
+The two that did not were being routed to the nearest thing with instructions
+to delete half of it — "start from the invoice and strip the table" is not a
+starting point, it is a chore with a chance of leaving a table in.
+
+- **`letter`** — `minimal`, one sheet, no furniture. Letterhead, subject as the
+  title, to/from, references, and a sign-off. The placeholders are the advice:
+  say why you are writing in the first sentence, and close on a specific next
+  step, because a formal letter is skim-read for exactly those two things.
+- **`case-study`** — `editorial`, no cover, because a case study opens on the
+  result and a title page in front of two pages is front matter nobody asked
+  for. Headline, metric tiles with a baseline each, the situation, what was
+  done, **what went wrong**, and the client's own words at the end.
+
+Both are clean under `folio check` in all four directions, not only the one
+they ship with. The last combination to clear was the case study in
+`technical`, whose density left a 21% tail; it gained the handover list it was
+missing — which is the case-study section readers actually look for, so the
+rule found a content gap rather than a layout one.
+
 ### Added — `page-widow`, and the end of a known blind spot
 0.2.0 shipped `thin-page` with a caveat recorded against it: a page is excused
 when the page after it begins with an authored break, which is right for a

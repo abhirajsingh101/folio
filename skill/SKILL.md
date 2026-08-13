@@ -52,9 +52,9 @@ with a cover page is wrong no matter how good the cover is.
 | Proposal, quote, statement of work, bid | `init --template proposal` | cover · contents · scope · pricing · signature | `report` or `editorial` | full |
 | Invoice, estimate, credit note | `init --template invoice` | single sheet, no cover | `minimal` or `technical` | `data-furniture="none"` |
 | Runbook, SOP, procedure, playbook | `init --template runbook` | doc-control head · numbered steps · warnings | `technical` | full |
-| Letter, one-pager, brief, memo | `init --template invoice`, strip the table | single sheet, no cover | `minimal` | `data-furniture="none"` |
-| Case study, customer story | `init --template report`, drop the contents | headline · metrics · narrative · quote | `editorial` | full |
-| Essay, annual review, long read | `init --template report` | cover · contents · prose | `editorial` | full |
+| Letter, one-pager, brief, memo | `init --template letter` | single sheet, no cover | `minimal` | `data-furniture="none"` |
+| Case study, customer story | `init --template case-study` | headline · metrics · narrative · quote | `editorial` | full |
+| Essay, annual review, long read | `init --template report --theme editorial` | cover · contents · prose | `editorial` | full |
 
 The scaffold is a starting shape, not a form to fill in: delete every block the
 document does not need, and never leave a placeholder value in place. Read
