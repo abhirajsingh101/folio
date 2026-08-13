@@ -132,8 +132,22 @@ contents pages suppress all of it automatically.
 </section>
 ```
 
-Full-bleed gradient built from `--brand-deep` → `--brand`, with two layered
-circles. Up to four `cover-meta` cells fit on one row.
+A bleeding band across the head of the page with the type below it on solid
+ground. Each theme sizes the band — `report` 158mm, `editorial` 118mm,
+`technical` a 6mm brand bar, `minimal` a 3mm rule — so the same markup gives
+four covers. Up to four `cover-meta` cells fit on one row.
+
+Optionally an image covers the band:
+
+```html
+<img class="cover-plate" src="art/cover.jpg" alt="Abstract dark blue strata">
+```
+
+**Type never sits on the band.** `low-contrast` declines to measure anything
+over an image, so a title reversed out of a plate would ship illegible with a
+green build; keeping the type on solid ground is what preserves the check.
+`report` and `editorial` are the two directions doctrine allows a plate on —
+see `folio imagery`.
 
 ## Contents
 
