@@ -16,11 +16,13 @@ Your agent can already write the words. It cannot make them look like this.
 *Cover and interior from one HTML file. The cover plate is generated —
 `folio imagery` says when that is worth doing, and when it is not.*
 
-<img src="docs/gallery/documents.png" width="100%" alt="Four documents side by side: a proposal with a navy cover, an editorial case study opening on a headline and metric tiles, a one-sheet invoice, and a dense technical runbook">
+<img src="docs/gallery/documents.png" width="100%" alt="Eight documents in two rows. Top: a quarterly report, a consultancy proposal, an art exhibition guide with a risograph cover, and a water quality survey with a cyanotype cover. Bottom: a case study, an invoice, a bakery menu, and a technical runbook">
 
-*Not just reports. A proposal, a case study, an invoice and a runbook — each
-one `folio init --template <type>`, each in the direction that suits it. Every
-page here is a real build from [`examples/`](examples/), not a mock-up.*
+*Eight documents, one design system. An engineering report, a consultancy
+proposal, a gallery's exhibition guide, a catchment survey — then a case study,
+an invoice, a bakery's seasonal card and an operations runbook. Top row takes a
+cover; the bottom row is built without one. Every page is a real build from
+[`examples/`](examples/), not a mock-up.*
 
 <img src="docs/gallery/themes-covers.png" width="100%" alt="The same cover in four design directions: report, editorial, technical, minimal">
 

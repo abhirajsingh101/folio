@@ -6,6 +6,43 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — three examples from outside software, and the imagery to carry them
+Every example in the repo was a software engineering document: a platform
+report, a migration proposal, the invoice for it, its runbook, its case study.
+One world, five documents, and a landing page that quietly said folio is for
+consultancies. It is a print design system; the narrowness was in the examples,
+not the tool.
+
+- **`examples/exhibition`** — an art gallery's exhibition guide. `editorial`,
+  a risograph cover plate, a halftone band inside the curator's essay, works
+  listed by room. This is the document type where a plate genuinely earns its
+  place, and where it is most likely to be mistaken for a work in the show, so
+  both plates are credited as generated in the colophon.
+- **`examples/survey`** — a river catchment water quality survey. `report`, a
+  cyanotype photogram cover, two charts, a site table with status pills. The
+  register is the point: a survey states its method and its limits *before* its
+  findings, and says plainly what a monthly grab sample cannot tell you.
+- **`examples/menu`** — a bakery's seasonal card. `minimal`, one sheet, no
+  furniture, a letterpress texture strip as a masthead. The shortest and least
+  prose-shaped document in the set.
+
+All four plates were generated through the path `folio imagery` prescribes —
+`codex exec` with the `imagegen` skill, prompted for a **medium and a process**
+rather than a concept, in each document's own palette, flat and matte, no text
+and no people. Together they add 1.0 MB: generated as PNG at 11 MB, shipped as
+JPEG, which is the same trade the first two plates made.
+
+The gallery now shows all eight documents in one image — four that take a
+cover, four built without one.
+
+Three defects came out of the look pass, none of which `folio check` can see:
+a full-bleed plate at the head of a sheet cannot reach into the page's top
+margin, so it lands with a white strip above it and reads as a mistake (inset
+instead); a band above a table pushed the last room's works onto a page of its
+own (the plate moved into the essay, where breaking up prose is the job it was
+made for); and an image credit under a signature block reads as part of the
+signature (it goes above).
+
 ### Added — `letter` and `case-study` scaffolds
 Six of the skill's seven routing rows now start from a scaffold of their own.
 The two that did not were being routed to the nearest thing with instructions

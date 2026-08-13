@@ -26,7 +26,7 @@ def fig_windows():
     theme.grid(ax)
     ax.set_ylabel("releases held")
     ax.set_ylim(0, 13)
-    for b, v in zip(bars, held):
+    for b, v in zip(bars, held, strict=True):
         ax.text(
             b.get_x() + b.get_width() / 2,
             v + 0.35,

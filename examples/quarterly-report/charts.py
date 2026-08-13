@@ -1,6 +1,7 @@
 """Figures for the example report. All data is invented."""
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 
 from folio import theme
 
@@ -21,7 +22,7 @@ def fig_deploys():
     theme.grid(ax)
     ax.set_ylabel("deploys")
     ax.set_ylim(0, 820)
-    for b, v in zip(bars, values):
+    for b, v in zip(bars, values, strict=True):
         ax.text(b.get_x() + b.get_width() / 2, v + 18, f"{v:,}", ha="center",
                 va="bottom", fontsize=7.5, color=theme.INK, fontweight="600")
     ax.text(0.995, 0.93, "Sep partial", transform=ax.transAxes, ha="right",
@@ -41,7 +42,7 @@ def fig_migration():
     fig, ax = plt.subplots(figsize=(6.6, 1.85))
     for row, (label, data) in enumerate([("end of Q3", q3), ("end of Q2", q2)]):
         left = 0
-        for v, c in zip(data, colors):
+        for v, c in zip(data, colors, strict=True):
             ax.barh(row, v, left=left, color=c, height=0.52, zorder=3)
             if v >= 3:
                 ax.text(left + v / 2, row, str(v), ha="center", va="center",
