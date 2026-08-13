@@ -37,9 +37,22 @@
   --err: #C53030;     --err-bg: #fdeaea;
   --mute-bg: #eef1f5;
 
-  --font-body: "P052", "Palatino", "Bitstream Charter", Georgia, serif;
-  --font-ui: "Inter", "Noto Sans KR", "Noto Sans CJK KR", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* Faces for whatever script the document is actually in, spliced into the
+     stacks below just before the generic. `folio build` fills these in from
+     the scripts it detects; a Latin document leaves them as the generic, which
+     is why they are declared here rather than assumed.
+
+     Never set these by hand. A stack falls through per glyph, so the Latin
+     faces above them keep setting Latin — these only catch the glyphs Inter
+     and P052 do not have. Left to the generic alone, fontconfig picks the
+     fallback, and for Korean it commonly picks a Chinese face: legible,
+     wrong, and invisible to every rule in `folio check`. */
+  --script-sans: sans-serif;
+  --script-serif: serif;
+
+  --font-body: "P052", "Palatino", "Bitstream Charter", Georgia, var(--script-serif), serif;
+  --font-ui: "Inter", "Noto Sans KR", "Noto Sans CJK KR", var(--script-sans), system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, var(--script-sans), monospace;
 
   --fs-body: 9.8pt;
   --lh-body: 1.58;

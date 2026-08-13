@@ -335,6 +335,16 @@ for Arabic and Hebrew. Two cases need you:
   bundles no fonts; if a script has no font it renders as boxes, and this is
   the command that says so.
 
+The faces themselves are chosen for you: `folio build` puts the families that
+cover the detected scripts into the stylesheet, a serif companion for the
+serif themes and a sans one for the sans themes, so a Korean report is set in
+Noto Serif CJK KR and a Korean invoice in Noto Sans CJK KR. **Do not name a
+CJK face by hand** — a stack that ends at a bare `serif` leaves the choice to
+fontconfig, which for Korean commonly answers with a *Chinese* face: legible,
+wrong, and invisible to `folio check`, because fonts are not geometry. If a
+document genuinely needs a specific face, name it in `brand.css`, which is
+appended last and wins.
+
 ## Not for
 
 **Slide decks and video.** Different medium, different tool.

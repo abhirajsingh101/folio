@@ -147,3 +147,23 @@ def test_every_extra_folio_recommends_is_one_it_declares():
 def test_fonts_never_fatal():
     """Missing fonts degrade gracefully, so they must never block rendering."""
     assert doctor.check_fonts().status != doctor.FAIL
+
+
+def test_the_system_check_does_not_warn_about_a_script_it_cannot_know(monkeypatch):
+    """It named one CJK family, and named the wrong one at that.
+
+    The system check ran before folio has seen a document, so it cannot know
+    which scripts will be set — yet it asked for `Noto Sans KR` specifically
+    and enumerated fonts itself instead of going through
+    `installed_families`. On a Linux machine, where that face is packaged as
+    `Noto Sans CJK KR`, first-run `folio doctor` warned about a font that was
+    installed, for a script the document might not even use. Script coverage
+    is `check_document_fonts`'s job, and it answers per document.
+    """
+    monkeypatch.setattr(
+        doctor,
+        "installed_families",
+        lambda: {"inter", "jetbrains mono", "p052", "noto sans cjk kr"},
+    )
+    check = doctor.check_fonts()
+    assert check.status == doctor.OK, check.detail

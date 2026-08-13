@@ -106,6 +106,43 @@ def test_rtl_langs_are_the_four_major_ones():
     assert RTL_LANGS == {"ar", "he", "fa", "ur"}
 
 
+# ── the detected script decides the fonts ─────────────────────────────────
+
+
+def test_a_korean_document_asks_for_korean_faces():
+    """The gap this closes: folio knew, reported, and then did not act.
+
+    `detect` found Korean, `folio fonts` listed the families that cover it, and
+    the stylesheet handed WeasyPrint a body stack of P052, Palatino, Georgia,
+    serif — not one of which has a Hangul glyph. Every theme therefore set
+    Korean body text in whatever fontconfig reached for, which on this machine
+    is a *Chinese* face, in a document whose UI type was already correctly in
+    Noto Sans CJK KR. Two faces, one document, and no rule can see it: fonts
+    are not geometry.
+    """
+    from folio.scripts import detect, script_font_css
+
+    css = script_font_css(detect(SAMPLES["ko"]))
+    assert "Noto Sans CJK KR" in css, "the packaged name Linux actually ships is missing"
+    assert "Noto Serif CJK KR" in css, "a serif theme needs a serif companion, not a sans one"
+
+
+def test_a_latin_document_overrides_nothing():
+    """A Latin document must be byte-identical to what it was before."""
+    from folio.scripts import detect, script_font_css
+
+    assert script_font_css(detect(SAMPLES["en"])) == ""
+
+
+@pytest.mark.parametrize("lang", ["ja", "zh", "ar", "he", "th", "hi", "bn"])
+def test_every_non_latin_script_gets_a_face_named(lang):
+    """Korean is the one that was measured; the gap was never Korean-specific."""
+    from folio.scripts import detect, script_font_css
+
+    css = script_font_css(detect(SAMPLES[lang]))
+    assert "Noto" in css, f"{lang} names no font family"
+
+
 # ── font coverage reporting ───────────────────────────────────────────────
 
 

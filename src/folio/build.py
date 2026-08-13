@@ -18,7 +18,7 @@ from pathlib import Path
 
 from .assets import DEFAULT_TEMPLATE, DEFAULT_THEME, css_text, template_files, theme_names
 from .renderers import Renderer, pick
-from .scripts import Profile
+from .scripts import Profile, script_font_css
 from .scripts import detect as detect_scripts
 
 SKELETON = """<!DOCTYPE html>
@@ -56,8 +56,19 @@ def detect_theme(html: str) -> str:
     return name
 
 
-def _stylesheet(src: Path, theme: str, rtl: bool = False) -> str:
-    css = css_text(theme, rtl=rtl)
+def _stylesheet(src: Path, theme: str, prof: Profile | None = None) -> str:
+    """Kit, then the document's own scripts, then the project's brand.
+
+    Order is the whole point: each layer must be able to override the one
+    before it. Script faces sit between the two because a document does not
+    choose its writing system, while a `brand.css` that names a face has
+    chosen deliberately and must win.
+    """
+    css = css_text(theme, rtl=bool(prof and prof.is_rtl))
+    if prof is not None:
+        script_css = script_font_css(prof)
+        if script_css:
+            css += f"\n\n{script_css}"
     brand = src.parent / "brand.css"
     if brand.exists():
         css += f"\n\n/* ── project brand.css ── */\n{brand.read_text(encoding='utf-8')}"
@@ -137,7 +148,7 @@ def prepare(src: Path) -> tuple[str, str]:
     theme = detect_theme(raw)
     prof = detect_scripts(raw)
     run_charts(src, quiet=True, theme=theme)
-    return _inject(_wrap(raw, src, prof), _stylesheet(src, theme, rtl=prof.is_rtl)), theme
+    return _inject(_wrap(raw, src, prof), _stylesheet(src, theme, prof)), theme
 
 
 def build(
@@ -158,7 +169,7 @@ def build(
     prof = detect_scripts(raw)
     run_charts(src, quiet, theme)
 
-    doc = _inject(_wrap(raw, src, prof), _stylesheet(src, theme, rtl=prof.is_rtl))
+    doc = _inject(_wrap(raw, src, prof), _stylesheet(src, theme, prof))
     if not quiet:
         print(f"  theme     {theme}")
         print(f"  scripts   {prof.describe()}")

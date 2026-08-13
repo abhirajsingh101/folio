@@ -299,3 +299,21 @@ def test_the_version_is_declared_once():
         f"folio.__version__ is {folio.__version__}, pyproject says {declared}"
     )
     assert re.fullmatch(r"\d+\.\d+\.\d+", declared)
+
+
+def test_a_korean_document_is_built_with_korean_faces(tmp_path):
+    """End to end: the detected script has to reach the stylesheet.
+
+    Asserted on the standalone page, which carries the same CSS the PDF was
+    set with, because what a font stack *resolves* to depends on the machine
+    and what it *asks for* does not.
+
+    Asserted on the serif companion, because `--font-ui` has named
+    `Noto Sans CJK KR` all along — it was the *body* stack that had no Hangul
+    in it, so the sans name alone passes without anything being fixed.
+    """
+    src = tmp_path / "doc.html"
+    src.write_text("<p>액추에이터 특성을 측정하고 분석한 보고서입니다.</p>", encoding="utf-8")
+    res = B.build(src, quiet=True)
+    page = res.page.read_text(encoding="utf-8")
+    assert "Noto Serif CJK KR" in page

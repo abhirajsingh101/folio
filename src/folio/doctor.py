@@ -180,24 +180,31 @@ def check_matplotlib() -> Check:
     return Check("Charts (matplotlib)", OK, "")
 
 
+KIT_FACES = ("Inter", "JetBrains Mono", "P052")
+"""The faces the kit's own typography is drawn in — Latin, and Latin only.
+
+No script face belongs here. This check runs before folio has seen a
+document, so it cannot know which writing systems will be set; naming one CJK
+family made first-run `folio doctor` warn about a script the user may never
+write, and about a face that was in fact installed under the name Linux
+packages it as. Coverage for the scripts a document *actually* uses is
+`check_document_fonts`, which answers per document and knows every name a face
+goes by.
+"""
+
+
 def check_fonts() -> Check:
     """Best effort. Missing fonts degrade gracefully, so this is never fatal."""
-    wanted = {"Inter": False, "JetBrains Mono": False, "P052": False, "Noto Sans KR": False}
-    fc = shutil.which("fc-list")
-    if fc:
-        try:
-            out = subprocess.run(
-                [fc, ":", "family"], capture_output=True, text=True, timeout=10
-            ).stdout
-            for name in wanted:
-                wanted[name] = name.lower() in out.lower()
-        except Exception:
-            pass
+    have = installed_families()
+    wanted = dict.fromkeys(KIT_FACES, False)
+    if have is not None:
+        for name in wanted:
+            wanted[name] = name.lower() in have
     elif _system() == "macos":
         for name in wanted:  # macOS has Palatino/Helvetica equivalents built in
             wanted[name] = name == "P052"
     missing = [n for n, found in wanted.items() if not found]
-    if not fc and _system() != "macos":
+    if have is None and _system() != "macos":
         return Check(
             "Fonts",
             WARN,

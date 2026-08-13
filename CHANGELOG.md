@@ -39,6 +39,59 @@ negative margin, so it was the one case that mix could not measure, and the
 first version of the rule silently found nothing. `_border_rect` measures the
 box as it is painted.
 
+### Fixed — every Korean document folio built was set in a Chinese face
+`scripts.py` opens with "folio does not assume Latin", and folio really does
+detect the writing system, set `lang` and `dir` from it, apply the right
+line-breaking, and report which families cover it. Then it handed WeasyPrint a
+stylesheet whose body stack was `"P052", "Palatino", "Bitstream Charter",
+Georgia, serif` — not one of which has a Hangul glyph. The knowledge existed
+and was never applied.
+
+What that produced, measured on a machine with the Noto CJK families
+installed, by building the same Korean document in all four directions and
+reading the embedded fonts back out of the PDFs:
+
+| direction | before | after |
+|---|---|---|
+| `report` | WenQuanYi Zen Hei + Noto Sans CJK KR | Noto **Serif** CJK KR + Noto Sans CJK KR |
+| `editorial` | WenQuanYi Zen Hei (+ synthesised oblique) | Noto **Serif** CJK KR |
+| `minimal` | WenQuanYi Zen Hei | Noto Sans CJK KR |
+| `technical` | WenQuanYi Zen Hei | Noto Sans CJK KR |
+
+WenQuanYi Zen Hei is a **Chinese** face. Hangul renders in it, so nothing
+failed and nothing was reported — the document was simply set in the wrong
+typeface, next to labels and tables that were correctly in Noto Sans CJK KR.
+Two faces, one document, and no rule in `folio check` can see it: every rule
+there measures geometry, and a document in the wrong face has correct
+geometry.
+
+Two causes, both now fixed:
+
+- **A bare generic ends the stack, so fontconfig chose.** `serif` for Korean
+  is whatever the machine feels like. `folio build` now emits the families for
+  the scripts it detects, spliced into the stacks as `--script-sans` /
+  `--script-serif` just before the generic. The Latin faces stay first and keep
+  setting Latin — a stack falls through per glyph — so this only catches what
+  Inter and P052 do not have.
+- **Only one of the two names a face goes by was ever listed.**
+  `Noto Sans KR` is the Google Fonts name; the identical face is packaged as
+  `Noto Sans CJK KR` by Linux distributions, and a machine typically has
+  exactly one of them. `SCRIPT_INFO` now carries both, for eleven scripts.
+
+`SCRIPT_INFO` also gained a **serif** list per script, because half the themes
+set body copy in a serif and a serif document with a sans Korean face in it is
+still two documents. The injected block sits between the kit and `brand.css`:
+a document does not choose its writing system, but a `brand.css` that names a
+face has chosen deliberately and must win.
+
+Also fixed, from the same root: `folio doctor`'s **system** font check ran its
+own `fc-list` and asked for `Noto Sans KR` by name, so on a Linux machine with
+the CJK package installed it warned about a font that was present, for a
+script the document might not even use. It checks the three faces the kit's
+own typography is drawn in and nothing else; script coverage is
+`check_document_fonts`, which answers per document and knows every name a face
+goes by.
+
 ### Fixed — one stranded heading arrived as three warnings
 `_border_rect` was written for `half-bleed`; checking whether the older rules
 needed it turned up a different defect in `orphan-heading`.
@@ -62,6 +115,17 @@ like a live under-reporting bug, and it was not one — the line box was already
 landing on the correct number. There is no change to what the rule reports on
 any shipped document; all nine examples and six scaffolds are silent on it in
 all four directions, before and after.
+
+### Planned
+- **CJK has no italic, and folio still asks for one.** `editorial` italicises
+  captions, eyebrows and pull-quote attributions; in a Korean document
+  WeasyPrint synthesises a slant on the Hangul, which is a rendering artefact
+  rather than emphasis. `font-synthesis: none` does not help — measured on
+  WeasyPrint 68, the oblique appears with and without it. `font-style: normal`
+  under `:lang(ko)` in the injected script block would work and would win the
+  cascade, but it also un-slants Latin book titles inside the same document,
+  and CSS cannot tell the two apart. A real trade-off, so it is recorded here
+  rather than decided quietly inside a font fix.
 
 ### Added — a test that a rule nobody documented cannot ship
 `folio check` prints a rule name; what the name means and which of two remedies

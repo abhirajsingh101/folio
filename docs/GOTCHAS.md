@@ -92,6 +92,34 @@ If a page comes out mostly empty, the cause is almost always a non-splittable
 block that could not fit and jumped. Figures, callouts and pull quotes all
 behave this way by design — a split callout looks broken.
 
+### A bare generic at the end of a font stack picks the wrong script's face
+
+`font-family: "P052", Georgia, serif` is a complete, correct stack for Latin
+and a trap for everything else. Latin glyphs match P052; Hangul, kana and Han
+match nothing in the list and fall through to `serif`, at which point
+**fontconfig** decides, not you. On a typical Linux machine `serif` for Korean
+text resolves to WenQuanYi Zen Hei — a *Chinese* face. Hangul renders, so
+nothing fails; it is simply set in the wrong typeface, and in a document whose
+labels and tables were correctly in Noto Sans CJK KR, that is two faces in one
+document.
+
+`folio check` cannot see this. Every rule there measures geometry, and a
+document set in the wrong face has perfectly correct geometry.
+
+`folio build` now splices the families for the scripts it detects into the
+stacks (`--script-sans` / `--script-serif`), so this is handled — but if you
+write a stack by hand, in `brand.css` or anywhere else, name the script's face
+before the generic. Two names, not one: `Noto Sans KR` is the Google Fonts
+name and `Noto Sans CJK KR` is what the same face is called when a
+distribution packages it, and a machine typically has exactly one of them.
+
+**A related one folio cannot fix: CJK has no italic.** Ask for one and
+WeasyPrint synthesises a slant, which is a rendering artefact rather than
+emphasis. `font-synthesis: none` does not help — measured on WeasyPrint 68,
+the oblique is synthesised with and without it. Setting `font-style: normal`
+under `:lang(ko)` would work, but it also un-slants Latin book titles inside
+the same document, so folio leaves the call to the author.
+
 ### `.bleed` cannot bleed off the top of a page
 
 `.bleed` works by cancelling the page margin: negative left and right margins,

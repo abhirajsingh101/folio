@@ -34,20 +34,45 @@ SCRIPT_RANGES: list[tuple[str, str]] = [
 ]
 _COMPILED = [(name, re.compile(rx)) for name, rx in SCRIPT_RANGES]
 
-# script -> (lang, human name, font families that cover it)
-SCRIPT_INFO: dict[str, tuple[str, str, list[str]]] = {
-    "hangul": ("ko", "Korean", ["Noto Sans KR", "Noto Sans CJK KR"]),
-    "kana": ("ja", "Japanese", ["Noto Sans JP", "Noto Sans CJK JP"]),
-    "han": ("zh", "Chinese", ["Noto Sans SC", "Noto Sans CJK SC"]),
-    "arabic": ("ar", "Arabic", ["Noto Sans Arabic", "Noto Naskh Arabic"]),
-    "hebrew": ("he", "Hebrew", ["Noto Sans Hebrew"]),
-    "devanagari": ("hi", "Devanagari", ["Noto Sans Devanagari"]),
-    "bengali": ("bn", "Bengali", ["Noto Sans Bengali"]),
-    "tamil": ("ta", "Tamil", ["Noto Sans Tamil"]),
-    "thai": ("th", "Thai", ["Noto Sans Thai"]),
-    "cyrillic": ("ru", "Cyrillic", ["Inter", "Noto Sans"]),
-    "greek": ("el", "Greek", ["Inter", "Noto Sans"]),
-    "latin": ("en", "Latin", ["Inter", "P052", "DejaVu Sans"]),
+# script -> (lang, human name, sans families, serif families)
+#
+# Two lists, because half the themes set body copy in a serif and a serif
+# document with a sans Korean face in it is two documents. Each list is
+# ordered: the Google Fonts name first, then the name the same face carries
+# when a Linux distribution packages it — `Noto Sans KR` and `Noto Sans CJK KR`
+# are the same design, and a machine typically has exactly one of the two.
+# Missing that second name is what put a Chinese fallback face into every
+# Korean document folio built.
+SCRIPT_INFO: dict[str, tuple[str, str, list[str], list[str]]] = {
+    "hangul": (
+        "ko",
+        "Korean",
+        ["Noto Sans KR", "Noto Sans CJK KR"],
+        ["Noto Serif KR", "Noto Serif CJK KR"],
+    ),
+    "kana": (
+        "ja",
+        "Japanese",
+        ["Noto Sans JP", "Noto Sans CJK JP"],
+        ["Noto Serif JP", "Noto Serif CJK JP"],
+    ),
+    "han": (
+        "zh",
+        "Chinese",
+        ["Noto Sans SC", "Noto Sans CJK SC"],
+        ["Noto Serif SC", "Noto Serif CJK SC"],
+    ),
+    # Naskh is the traditional calligraphic hand, which is what pairs with a
+    # serif; Noto Sans Arabic is the modern grotesque that pairs with a sans.
+    "arabic": ("ar", "Arabic", ["Noto Sans Arabic"], ["Noto Naskh Arabic"]),
+    "hebrew": ("he", "Hebrew", ["Noto Sans Hebrew"], ["Noto Serif Hebrew"]),
+    "devanagari": ("hi", "Devanagari", ["Noto Sans Devanagari"], ["Noto Serif Devanagari"]),
+    "bengali": ("bn", "Bengali", ["Noto Sans Bengali"], ["Noto Serif Bengali"]),
+    "tamil": ("ta", "Tamil", ["Noto Sans Tamil"], ["Noto Serif Tamil"]),
+    "thai": ("th", "Thai", ["Noto Sans Thai"], ["Noto Serif Thai"]),
+    "cyrillic": ("ru", "Cyrillic", ["Inter", "Noto Sans"], ["Noto Serif"]),
+    "greek": ("el", "Greek", ["Inter", "Noto Sans"], ["Noto Serif"]),
+    "latin": ("en", "Latin", ["Inter", "P052", "DejaVu Sans"], ["P052", "DejaVu Serif"]),
 }
 
 # A non-Latin script takes over only if it carries a real share of the text,
@@ -71,8 +96,14 @@ class Profile:
 
     @property
     def fonts_needed(self) -> dict[str, list[str]]:
-        """script name -> font families that would cover it."""
-        return {s: SCRIPT_INFO[s][2] for s in self.scripts if s in SCRIPT_INFO}
+        """script name -> font families that would cover it.
+
+        Sans and serif together: the question this answers is whether the text
+        renders as boxes, and either face prevents that. Which of the two a
+        given passage *should* use is a separate matter, settled by
+        `script_font_css`.
+        """
+        return {s: SCRIPT_INFO[s][2] + SCRIPT_INFO[s][3] for s in self.scripts if s in SCRIPT_INFO}
 
     def describe(self) -> str:
         names = [SCRIPT_INFO[s][1] for s in self.scripts if s in SCRIPT_INFO]
@@ -135,3 +166,49 @@ def detect(html: str) -> Profile:
         else ("rtl" if lang.split("-")[0] in RTL_LANGS else "ltr")
     )
     return Profile(scripts=ranked, lang=lang, direction=direction)
+
+
+def script_font_css(profile: Profile) -> str:
+    """The stylesheet a document's own scripts ask for. Empty for Latin.
+
+    A font stack falls through per glyph, so the Latin faces stay first and
+    keep setting Latin: what a document needs is a face for the glyphs Inter
+    and P052 do not have, inserted *before* the generic that fontconfig would
+    otherwise resolve on its own. Left to fontconfig, `serif` for Korean text
+    on a Linux machine resolves to whatever it likes — commonly a Chinese face,
+    which is legible and wrong, and wrong in a way no layout rule can see.
+
+    Emitted as two custom properties rather than whole stacks so each theme
+    keeps its own Latin typography: `base.css` and the themes splice
+    `var(--script-sans)` / `var(--script-serif)` into their stacks, and this
+    fills them in.
+    """
+    scripts = [s for s in profile.scripts if s != "latin" and s in SCRIPT_INFO]
+    if not scripts:
+        return ""
+    sans: list[str] = []
+    serif: list[str] = []
+    for s in scripts:
+        for family in SCRIPT_INFO[s][2]:
+            if family not in sans:
+                sans.append(family)
+        for family in SCRIPT_INFO[s][3]:
+            if family not in serif:
+                serif.append(family)
+    names = ", ".join(SCRIPT_INFO[s][1] for s in scripts)
+    return (
+        f"/* ── Faces for the scripts in this document: {names} ── */\n"
+        ":root {\n"
+        f"  --script-sans: {_families(sans)};\n"
+        f"  --script-serif: {_families(serif)};\n"
+        "}"
+    )
+
+
+def _families(names: list[str]) -> str:
+    """Quoted, comma-separated — a font-family list, minus the generic.
+
+    The generic stays in the theme's own stack, which is what these are spliced
+    into, so a script that has no face installed still falls through to it.
+    """
+    return ", ".join(f'"{name}"' for name in names)

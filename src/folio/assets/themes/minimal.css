@@ -24,7 +24,7 @@
   --accent: #C64014;             /* used sparingly — signal, never decoration */
   --ok: #2b7a4b;   --warn: #946611;   --err: #c2352b;
 
-  --font-body: "Inter", "Noto Sans KR", system-ui, sans-serif;
+  --font-body: "Inter", "Noto Sans KR", "Noto Sans CJK KR", var(--script-sans), system-ui, sans-serif;
   --fs-body: 9.6pt;
   --lh-body: 1.62;
   --radius: 0;
