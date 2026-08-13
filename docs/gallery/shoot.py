@@ -75,27 +75,27 @@ def grid(rows: list[list[Path]], out: Path, *, width: int, margin: int) -> None:
 
 
 if __name__ == "__main__":
-    quarterly, proposal = pages("quarterly-report"), pages("proposal")
     exhibition, survey = pages("exhibition"), pages("survey")
-    case_study, invoice = pages("case-study"), pages("invoice")
-    menu, runbook = pages("menu"), pages("runbook")
+    lookbook, architecture = pages("lookbook"), pages("architecture")
+    programme, menu = pages("programme"), pages("menu")
+    case_study, runbook = pages("case-study"), pages("runbook")
 
-    # Eight documents, first page of each. Top row takes a cover, bottom row
-    # is built without one — which is the distinction that decides a document's
-    # shape long before the theme does. Small on purpose: at this size what
-    # reads is the shape, not the words.
+    # Eight documents from eight fields, one page each — the quarterly report
+    # is the hero above, so it sits this one out. Ordered for contrast rather
+    # than by type: at this size what reads is the shape and the ink, not the
+    # words, and two documents that look alike waste a cell.
     grid(
         [
             [
-                quarterly / "p-1.png",
-                proposal / "p-1.png",
                 exhibition / "p-1.png",
                 survey / "p-1.png",
+                lookbook / "p-2.png",
+                architecture / "p-1.png",
             ],
             [
-                case_study / "p-1.png",
-                invoice / "p-1.png",
+                programme / "p-1.png",
                 menu / "p-1.png",
+                case_study / "p-1.png",
                 runbook / "p-1.png",
             ],
         ],
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     # Two interiors, large enough to read. The pages carrying the most
     # components, from the two directions furthest apart.
     strip(
-        [proposal / "p-3.png", runbook / "p-1.png"],
+        [survey / "p-3.png", runbook / "p-1.png"],
         OUT / "interiors.png",
         width=799,
         margin=54,

@@ -16,13 +16,14 @@ Your agent can already write the words. It cannot make them look like this.
 *Cover and interior from one HTML file. The cover plate is generated —
 `folio imagery` says when that is worth doing, and when it is not.*
 
-<img src="docs/gallery/documents.png" width="100%" alt="Eight documents in two rows. Top: a quarterly report, a consultancy proposal, an art exhibition guide with a risograph cover, and a water quality survey with a cyanotype cover. Bottom: a case study, an invoice, a bakery menu, and a technical runbook">
+<img src="docs/gallery/documents.png" width="100%" alt="Eight documents in two rows. Top: an exhibition guide with a risograph cover, a water survey with a cyanotype cover, a fashion line sheet with cloth swatches, an architectural finishes schedule with concrete and brass. Bottom: a concert programme with a lithograph plate, a bakery menu, a case study, and a technical runbook">
 
-*Eight documents, one design system. An engineering report, a consultancy
-proposal, a gallery's exhibition guide, a catchment survey — then a case study,
-an invoice, a bakery's seasonal card and an operations runbook. Top row takes a
-cover; the bottom row is built without one. Every page is a real build from
-[`examples/`](examples/), not a mock-up.*
+*Eight fields, one design system. A gallery's exhibition guide, a river
+catchment survey, a fashion label's line sheet, an architect's finishes
+schedule — then a concert programme, a bakery's seasonal card, a consultancy
+case study and an operations runbook. Every page is a real build from
+[`examples/`](examples/), and every plate was generated through the path
+`folio imagery` prescribes.*
 
 <img src="docs/gallery/themes-covers.png" width="100%" alt="The same cover in four design directions: report, editorial, technical, minimal">
 

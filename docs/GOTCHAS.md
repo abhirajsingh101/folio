@@ -15,6 +15,27 @@ wrapping. This is why callouts wrap their prose in `<div class="body">` with
 
 **Symptom:** callout text bleeding over the box edge.
 
+### Flex children reserve empty space without `min-height: 0`
+
+The mirror image of the rule above, and much harder to spot. A flex item's
+automatic minimum size is content-based, and with a raster inside one it is
+resolved from the image's **intrinsic pixels** rather than the width it is
+actually drawn at. A `.cols` column holding a `.plate` over a wrapped
+paragraph reserved 170mm — the full measure — for 100mm of content, and the
+next block was pushed down past a third of a page of white.
+
+It needs both ingredients: a large raster *and* text that wraps. A thumbnail
+does not trigger it, an SVG has no intrinsic pixels so it cannot, and with a
+one-line caption the column measures correctly. That combination is why it
+survived every other example in this repo and only appeared once a document
+put cloth swatches beside real prose.
+
+**Symptom:** a two-up block that ends, then a large gap, then the next
+paragraph. Nothing overflows, nothing overlaps, no rule in `folio check` can
+see it — only the rendered page can. Fixed in `base.css` with
+`.cols > * { min-width: 0; min-height: 0 }`, and held by
+`tests/test_layout.py`.
+
 ### `break-inside: avoid` on a long table pushes it whole to the next page
 
 A 12-row table with `break-inside: avoid` will not split; it jumps to the

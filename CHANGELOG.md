@@ -6,6 +6,46 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed — `.cols` reserved space it never filled
+A flex item's automatic minimum size is content-based, and with a raster inside
+one WeasyPrint resolves it from the image's **intrinsic pixels** rather than
+the width it is drawn at. A `.cols` column holding a `.plate` over a wrapped
+paragraph reserved 170mm — the full measure — for 100mm of content, and pushed
+the next block down past a third of a page of white.
+
+It needs both a large raster and text that wraps, which is why it survived
+every example in this repo until one put cloth swatches beside real prose.
+Nothing overflowed, nothing overlapped, nothing was illegible: no rule in
+`folio check` could see it, and it was found by looking at the page.
+
+`base.css` now sets `min-height: 0` beside the `min-width: 0` that was already
+there for the mirror-image reason — the same hygiene on the other axis. Held by
+`tests/test_layout.py`, a new file for the class of defect where a component
+occupies more space than its content, and documented in `folio gotchas`.
+
+### Changed — examples pruned for variety, three fields added
+Eight examples had become five documents from one world plus three, and the
+landing page showed three navy covers in a row. The set is chosen for contrast
+now, not for coverage:
+
+- **Removed `examples/proposal` and `examples/invoice`.** Both were a third
+  software-consultancy document with a look already on the page — a navy cover
+  beside two other navy covers, and a white table sheet beside another. The
+  `proposal` and `invoice` *scaffolds* are unchanged; it is the showcase that
+  needed pruning, not the vocabulary.
+- **`examples/architecture`** — a practice's finishes and materials schedule.
+  `technical`, dense and tabular, with two generated material studies (board
+  -marked concrete, unlacquered brass) and a callout stating that approval is
+  against the physical sample panel and never against a print.
+- **`examples/programme`** — a concert programme. `minimal`, one sheet, a
+  single-ink lithograph plate, a running order with durations, and a back page
+  of players and practicalities.
+- **`examples/lookbook`** — a fashion label's collection notes. `editorial`,
+  two cloth studies, an argument for the constraint, then the line sheet.
+
+Nine examples across nine fields, and the gallery now shows eight of them in
+one image — the quarterly report is the hero above it.
+
 ### Added — three examples from outside software, and the imagery to carry them
 Every example in the repo was a software engineering document: a platform
 report, a migration proposal, the invoice for it, its runbook, its case study.

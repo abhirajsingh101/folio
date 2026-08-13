@@ -197,7 +197,13 @@ img.cover-plate {
    rail beside it — which is NOT the same thing as `.two-col`, a single block
    flowed into two equal columns. */
 .cols { display: flex; gap: 9mm; margin: 6mm 0; }
-.cols > * { flex: 1 1 0; min-width: 0; }
+/* `min-height: 0` for the same reason as `min-width: 0`, on the other axis. A
+   flex item's automatic minimum is content-based, and with a raster inside one
+   it is resolved from the image's intrinsic pixels rather than the width it is
+   drawn at: a column of a plate over wrapped prose reserved 170mm for 100mm of
+   content. Nothing overflowed and nothing overlapped, so no rule could see it —
+   only the page could. */
+.cols > * { flex: 1 1 0; min-width: 0; min-height: 0; }
 .cols.rail > :first-child { flex: 2 1 0; }
 
 /* ── Signature: an acceptance block that must not split ───────── */
