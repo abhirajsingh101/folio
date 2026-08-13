@@ -35,6 +35,73 @@ everything, so it always wins; usually one line:
 
 ---
 
+## Document head
+
+A title block for a document that does not spend a page on a cover — an
+invoice, a letter, a one-pager, a brief.
+
+```html
+<div class="doc-head">
+  <p class="eyebrow">Invoice</p>
+  <h1>2026-014</h1>
+  <p class="sub">Monolith decomposition, September retainer.</p>
+</div>
+```
+
+`<h1>` is styled in every theme now, so it outranks `h2.section` whether or not
+you use the wrapper. It previously fell to the browser default, which rendered
+it *smaller* than the sections beneath it in two of the four themes.
+
+## Facts
+
+A labelled key/value grid: bill-to and remit-to on an invoice, the at-a-glance
+panel on a case study, document control on an SOP. Wrap each pair so the label
+sits over its value.
+
+```html
+<dl class="facts">
+  <div><dt>Invoice</dt><dd>2026-014</dd></div>
+  <div><dt>Issued</dt><dd>2026.08.13</dd></div>
+  <div><dt>Due</dt><dd>2026.09.12</dd></div>
+</dl>
+```
+
+## Columns
+
+`.cols` is two equal halves. `.cols.rail` is a main measure with a narrower
+rail beside it — the pattern real reports and briefs use, and not the same
+thing as `.two-col`, which flows one block into two equal columns.
+
+```html
+<div class="cols">
+  <div><p class="eyebrow">From</p>…</div>
+  <div><p class="eyebrow">Bill to</p>…</div>
+</div>
+
+<div class="cols rail">
+  <div>…the argument…</div>
+  <aside>…at a glance…</aside>
+</div>
+```
+
+## Signature
+
+An acceptance block. It will not split across a page.
+
+```html
+<div class="signature">
+  <div><span class="line"></span><span class="who">For Meridian Ltd</span>
+       <span class="role">Authorised signatory</span></div>
+  <div><span class="line"></span><span class="who">Date</span></div>
+</div>
+```
+
+## Totals
+
+A `<tfoot>` rules only its **last** row, so a Subtotal / Tax / Total block
+reads as one figure the reader is looking for rather than three of equal
+weight. Put the grand total last.
+
 ## Page furniture (automatic)
 
 Set once on `<body>`; the running header, footer, and page numbers follow.

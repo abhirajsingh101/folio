@@ -174,6 +174,36 @@ img.cover-plate {
   display: block;
 }
 .cover h1, .cover .sub { text-align: start; margin: 0; }
+
+/* ── Document head: a title block for a document with no cover ──
+   An invoice, a letter, a one-pager and a brief all open on the page they
+   start on. Before this the only styled title was `.cover h1`, so a
+   cover-less document fell to the UA default — measurably *smaller* than
+   `h2.section` in two themes, i.e. an inverted hierarchy. */
+.doc-head { margin-bottom: 9mm; }
+.doc-head h1, .doc-head .sub { margin: 0; text-align: start; }
+
+/* ── Facts: a labelled key/value grid ───────────────────────────
+   Bill-to and remit-to on an invoice, the at-a-glance panel on a case study,
+   document control on an SOP. Pairs are wrapped so the label sits over its
+   value; `<div>` inside `<dl>` is valid and keeps the semantics. */
+.facts { display: flex; flex-wrap: wrap; gap: 5mm 10mm; margin: 6mm 0; }
+.facts > div { min-width: 30mm; }
+.facts dt, .facts dd { display: block; margin: 0; }
+
+/* ── Columns: two-up, or a main column with a side rail ─────────
+   `.cols` is equal halves (bill-from / bill-to). `.cols.rail` is the
+   asymmetric pair every real exemplar uses — a main measure with a narrow
+   rail beside it — which is NOT the same thing as `.two-col`, a single block
+   flowed into two equal columns. */
+.cols { display: flex; gap: 9mm; margin: 6mm 0; }
+.cols > * { flex: 1 1 0; min-width: 0; }
+.cols.rail > :first-child { flex: 2 1 0; }
+
+/* ── Signature: an acceptance block that must not split ───────── */
+.signature { display: flex; gap: 12mm; margin-top: 14mm; break-inside: avoid; }
+.signature > div { flex: 1 1 0; }
+.signature .line, .signature .who, .signature .role { display: block; }
 /* Pinned to both margins, not just the left. A box anchored on one edge has to
    be mirrored for RTL; one anchored on both is already symmetric and
    `text-align: start` turns the text round by itself. That is what lets

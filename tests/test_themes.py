@@ -32,7 +32,10 @@ def test_theme_restyles_every_component(name):
     for sel in (
         ".cover",
         ".cover::before",
+        ".doc-head",
         ".eyebrow",
+        ".facts",
+        ".signature",
         ".toc",
         "h2.section",
         ".metric",
@@ -397,3 +400,64 @@ def test_furniture_none_strips_every_running_element(name):
     assert margin_text(""), f"{name}: the default page lost its furniture"
     bare = margin_text('data-furniture="none"')
     assert bare == [], f"{name}: furniture survived data-furniture=none — {bare}"
+
+
+@pytest.mark.parametrize("name", THEMES)
+def test_a_document_title_outranks_a_section_heading(name):
+    """`<h1>` outside `.cover` was never styled, so it fell to the UA default.
+
+    Measured before the fix: 19.2pt in `minimal`, where `h2.section` is 22pt —
+    the document title rendered *smaller* than the sections beneath it. Any
+    document without a cover page shipped an inverted hierarchy.
+    """
+    weasyprint = pytest.importorskip("weasyprint")
+    from folio.check import _walk
+
+    html = (
+        f"<!DOCTYPE html><html><head><style>{css_text(name)}</style></head>"
+        '<body><div class="doc-head"><h1>Document title</h1></div>'
+        '<h2 class="section">A section</h2><p>body</p></body></html>'
+    )
+    page = weasyprint.HTML(string=html).render().pages[0]
+    size = {}
+    for box in _walk(page._page_box):
+        tag = getattr(box, "element_tag", None)
+        if tag in ("h1", "h2") and tag not in size:
+            size[tag] = box.style["font_size"]
+    assert size.get("h1") and size.get("h2"), f"{name}: headings did not lay out"
+    assert size["h1"] > size["h2"], (
+        f"{name}: h1 is {size['h1']:.1f}px against h2.section {size['h2']:.1f}px — inverted"
+    )
+
+
+@pytest.mark.parametrize("name", THEMES)
+def test_only_the_last_totals_row_carries_a_rule(name):
+    """A Subtotal / Tax / Total block drew three stacked hairlines.
+
+    Every theme put `border-top` on every `tfoot` row unconditionally, so the
+    amount due carried no more weight than the subtotal — the difference
+    between a finished invoice and an unfinished one.
+    """
+    weasyprint = pytest.importorskip("weasyprint")
+    from folio.check import _walk
+
+    html = (
+        f"<!DOCTYPE html><html><head><style>{css_text(name)}</style></head>"
+        "<body><table><thead><tr><th>Item</th><th>Amount</th></tr></thead>"
+        "<tbody><tr><td>Work</td><td>1000</td></tr></tbody>"
+        "<tfoot>"
+        "<tr><td>Subtotal</td><td>1000</td></tr>"
+        "<tr><td>VAT</td><td>200</td></tr>"
+        "<tr class='total'><td>Total</td><td>1200</td></tr>"
+        "</tfoot></table></body></html>"
+    )
+    page = weasyprint.HTML(string=html).render().pages[0]
+    ruled = []
+    for box in _walk(page._page_box):
+        el = getattr(box, "element", None)
+        if el is not None and str(getattr(el, "tag", "")) == "td":
+            width = box.style["border_top_width"]
+            if width:
+                ruled.append((el.text or "").strip())
+    assert "Subtotal" not in ruled, f"{name}: the subtotal row is still ruled — {ruled}"
+    assert "Total" in ruled, f"{name}: the grand total carries no rule — {ruled}"

@@ -141,7 +141,8 @@ tbody td { padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule-soft); color:
 tbody tr:nth-child(even) { background: var(--zebra); }
 tbody td:first-child { color: var(--ink); font-family: var(--font-mono); font-weight: 500; }
 td.num, th.num { font-family: var(--font-mono); }
-tfoot td { padding: 1.8mm 2mm; border-top: 1px solid var(--ink); font-weight: 600; color: var(--ink); }
+tfoot td { padding: 1.8mm 2mm; border-top: 0; font-weight: 600; color: var(--ink); }
+tfoot tr:last-child td { border-top: 1px solid var(--ink); font-size: 9pt; padding-top: 2.4mm; }
 
 .pill {
   font: 500 6.2pt var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase;
@@ -217,3 +218,22 @@ code {
 
 .appendix { font-size: 8pt; }
 .appendix h2.section { font-size: 12pt; }
+
+/* ── Cover-less title, facts, columns, signature ────────── */
+
+h1 { font: 600 19pt/1.12 var(--font-body); letter-spacing: -0.028em; color: var(--ink); margin: 0 0 2.6mm; }
+.doc-head { border-bottom: 2px solid var(--brand); padding-bottom: 3mm; }
+.doc-head .sub { font-size: 9.6pt; color: var(--ink-soft); margin-top: 1.6mm; }
+.facts dt {
+  font: 500 6.4pt var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-mute); margin-bottom: 1mm;
+}
+.facts dd { font: 400 8.2pt var(--font-mono); color: var(--ink); }
+.cols { gap: 7mm; }
+.cols.rail > :last-child { border-left: 1px solid var(--rule); padding-left: 5mm; }
+.signature .line { border-bottom: 1px solid var(--ink); height: 11mm; }
+.signature .who { font: 500 8pt var(--font-mono); color: var(--ink); margin-top: 1.6mm; }
+.signature .role {
+  font: 400 6.4pt var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-mute); margin-top: 0.8mm;
+}
