@@ -461,3 +461,27 @@ def test_only_the_last_totals_row_carries_a_rule(name):
                 ruled.append((el.text or "").strip())
     assert "Subtotal" not in ruled, f"{name}: the subtotal row is still ruled — {ruled}"
     assert "Total" in ruled, f"{name}: the grand total carries no rule — {ruled}"
+
+
+@pytest.mark.parametrize("name", THEMES)
+def test_every_stylesheet_parses_without_errors(name):
+    """Stray text inside a rule is silently fatal for everything after it.
+
+    A comment closed one paragraph early left prose sitting bare inside
+    `:root {}`. CSS recovers by discarding to the next semicolon, which took
+    the font tokens with it, and the only thing that noticed was a heading
+    that came out at the default size — two layers away from the cause, in a
+    test about hierarchy. A stylesheet that does not parse should say so
+    itself.
+    """
+    import tinycss2
+
+    css = css_text(name)
+    errors = []
+    for rule in tinycss2.parse_stylesheet(css, skip_whitespace=True, skip_comments=True):
+        if rule.type == "error":
+            errors.append(f"{rule.source_line}: {rule.message}")
+        for node in tinycss2.parse_blocks_contents(getattr(rule, "content", None) or []):
+            if node.type == "error":
+                errors.append(f"{node.source_line}: {node.message}")
+    assert not errors, f"{name}: " + "; ".join(errors[:5])

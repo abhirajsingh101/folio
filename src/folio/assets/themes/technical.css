@@ -21,7 +21,7 @@
   --wash: #f4f6f7;
   --zebra: #f8f9fa;
 
-  --font-body: "Inter", "Noto Sans KR", "Noto Sans CJK KR", var(--script-sans), system-ui, sans-serif;
+  --font-body: "Inter", "Noto Sans KR", "Noto Sans CJK KR", system-ui, var(--script-sans), sans-serif;
   --fs-body: 8.9pt;
   --lh-body: 1.46;
   --radius: 0;

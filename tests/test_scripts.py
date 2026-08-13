@@ -127,6 +127,70 @@ def test_a_korean_document_asks_for_korean_faces():
     assert "Noto Serif CJK KR" in css, "a serif theme needs a serif companion, not a sans one"
 
 
+def _resolved(css: str, prop: str) -> str:
+    """A declaration with its `var()` references replaced by their defaults.
+
+    What a stack falls through to is a property of the resolved chain, not of
+    the line as written — a `var()` can quietly introduce a face from a
+    different classification, and the declaration still reads correctly.
+    """
+    import re
+
+    decl = re.search(rf"{prop}:([^;]+);", css).group(1)
+    for _ in range(4):  # nested, but shallow
+        refs = re.findall(r"var\((--[\w-]+)\)", decl)
+        if not refs:
+            break
+        for ref in refs:
+            value = re.search(rf"{ref}:([^;]+);", css).group(1).strip()
+            decl = decl.replace(f"var({ref})", value)
+    return decl
+
+
+def test_the_mono_stack_never_falls_through_to_a_proportional_face():
+    """The regression the script splice introduced, caught on its own machine.
+
+    `--font-mono` was given `var(--script-sans)` so a Korean comment inside a
+    code block would find a face. For a Latin document that variable holds
+    `sans-serif`, which sat *before* `monospace` in the chain — so a machine
+    without JetBrains Mono set its code in a proportional face, and every
+    column in a `technical` table lost its alignment. Invisible here, because
+    this machine has JetBrains Mono and never reaches the fallback.
+    """
+    resolved = _resolved(css_text(), "--font-mono")
+    assert "sans-serif" not in resolved, resolved
+    assert "monospace" in resolved
+
+
+@pytest.mark.parametrize("theme", ["report", "editorial", "minimal", "technical"])
+def test_the_script_splice_never_pre_empts_the_platform_generic(theme):
+    """A Latin document must resolve to the stack it had before any of this.
+
+    The splice is inert for Latin only if each variable defaults to the generic
+    of its own classification *and* sits after the platform generic. Put it
+    first and `sans-serif` wins ahead of `system-ui`, which on macOS is the
+    difference between Helvetica and San Francisco — a change to every Latin
+    document, made silently, while adding support for a script it does not use.
+    """
+    css = css_text(theme)
+    for prop, platform, generic in (
+        ("--font-ui", "system-ui", "sans-serif"),
+        ("--font-mono", "ui-monospace", "monospace"),
+    ):
+        resolved = _resolved(css, prop)
+        assert platform in resolved, f"{theme}/{prop} lost its platform generic"
+        assert resolved.index(platform) < resolved.index(generic), (
+            f"{theme}/{prop}: {generic} pre-empts {platform} — {resolved}"
+        )
+
+
+def test_a_korean_document_gets_a_monospaced_korean_face():
+    """A code block in a Korean document still has to hold its grid."""
+    from folio.scripts import detect, script_font_css
+
+    assert "Noto Sans Mono CJK KR" in script_font_css(detect(SAMPLES["ko"]))
+
+
 def test_a_latin_document_overrides_nothing():
     """A Latin document must be byte-identical to what it was before."""
     from folio.scripts import detect, script_font_css

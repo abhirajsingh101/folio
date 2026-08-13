@@ -75,6 +75,28 @@ SCRIPT_INFO: dict[str, tuple[str, str, list[str], list[str]]] = {
     "latin": ("en", "Latin", ["Inter", "P052", "DejaVu Sans"], ["P052", "DejaVu Serif"]),
 }
 
+# The three scripts with a monospaced face of their own. Everything else uses
+# its sans inside a code block — a proportional face in `pre` is not ideal, but
+# it is what exists, and CJK is where the grid actually matters, because the
+# glyphs are full-width and a proportional CJK face still breaks the column.
+MONO_FAMILIES: dict[str, list[str]] = {
+    "hangul": ["Noto Sans Mono CJK KR"],
+    "kana": ["Noto Sans Mono CJK JP"],
+    "han": ["Noto Sans Mono CJK SC"],
+}
+
+
+def mono_families(script: str) -> list[str]:
+    """Faces for this script inside a code block, most specific first.
+
+    One accessor rather than a fifth column in `SCRIPT_INFO`: eight of the
+    eleven scripts would have repeated their sans list verbatim, and two copies
+    of one list is how the doctor's font check drifted away from this table in
+    the first place.
+    """
+    return MONO_FAMILIES.get(script, []) + SCRIPT_INFO[script][2]
+
+
 # A non-Latin script takes over only if it carries a real share of the text,
 # not a stray glyph. Latin fragments inside CJK documents are the norm —
 # product names, identifiers, units — so share matters more than raw count.
@@ -188,6 +210,7 @@ def script_font_css(profile: Profile) -> str:
         return ""
     sans: list[str] = []
     serif: list[str] = []
+    mono: list[str] = []
     for s in scripts:
         for family in SCRIPT_INFO[s][2]:
             if family not in sans:
@@ -195,12 +218,16 @@ def script_font_css(profile: Profile) -> str:
         for family in SCRIPT_INFO[s][3]:
             if family not in serif:
                 serif.append(family)
+        for family in mono_families(s):
+            if family not in mono:
+                mono.append(family)
     names = ", ".join(SCRIPT_INFO[s][1] for s in scripts)
     return (
         f"/* ── Faces for the scripts in this document: {names} ── */\n"
         ":root {\n"
         f"  --script-sans: {_families(sans)};\n"
         f"  --script-serif: {_families(serif)};\n"
+        f"  --script-mono: {_families(mono)};\n"
         "}"
     )
 

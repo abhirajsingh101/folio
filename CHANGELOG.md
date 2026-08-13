@@ -78,6 +78,28 @@ Two causes, both now fixed:
   `Noto Sans CJK KR` by Linux distributions, and a machine typically has
   exactly one of them. `SCRIPT_INFO` now carries both, for eleven scripts.
 
+Two rules govern the splice, and both were learned the hard way while writing
+it — each default is **the generic of its own classification**, and each splice
+sits **after the platform generic** and before the final one:
+
+- A first draft gave `--font-mono` the *sans* variable, so that a Korean
+  comment in a code block would find a face. For a Latin document that
+  variable holds `sans-serif`, which then sat ahead of `monospace`: on any
+  machine without JetBrains Mono, code would have been set in a proportional
+  face and every column in a `technical` table would have lost its alignment.
+  Invisible on the machine it was written on, which has JetBrains Mono and
+  never reaches the fallback. There is a `--script-mono` now, defaulting to
+  `monospace`, carrying `Noto Sans Mono CJK KR` and its siblings.
+- Placing the splice *first* put `sans-serif` ahead of `system-ui`, which on
+  macOS is the difference between Helvetica and San Francisco — a change to
+  every Latin document, made silently, while adding support for a script it
+  does not use.
+
+With both rules, a Latin document resolves to exactly the stack it had before.
+A test asserts that per theme, on the resolved chain rather than the line as
+written, because a `var()` can introduce a face from another classification
+while the declaration still reads correctly.
+
 `SCRIPT_INFO` also gained a **serif** list per script, because half the themes
 set body copy in a serif and a serif document with a sans Korean face in it is
 still two documents. The injected block sits between the kit and `brand.css`:
@@ -91,6 +113,18 @@ script the document might not even use. It checks the three faces the kit's
 own typography is drawn in and nothing else; script coverage is
 `check_document_fonts`, which answers per document and knows every name a face
 goes by.
+
+### Added — a stylesheet that does not parse now says so itself
+A comment closed one paragraph early, leaving prose sitting bare inside
+`:root {}`. CSS recovers from that by discarding to the next semicolon, which
+took the font tokens with it — so headings came out at the browser default
+size, and the only thing that noticed was a test about *heading hierarchy*,
+two layers from the cause and with nothing in its message about CSS.
+
+Every theme's composed stylesheet is now parsed with tinycss2, descending into
+each rule's declarations, and any error fails with the file's own line number
+and reason: `59: Stop token reached before {} block`. Nothing else in the repo
+was checking that the CSS it ships is valid CSS.
 
 ### Fixed — one stranded heading arrived as three warnings
 `_border_rect` was written for `half-bleed`; checking whether the older rules

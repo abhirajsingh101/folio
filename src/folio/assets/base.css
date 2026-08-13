@@ -46,13 +46,21 @@
      faces above them keep setting Latin — these only catch the glyphs Inter
      and P052 do not have. Left to the generic alone, fontconfig picks the
      fallback, and for Korean it commonly picks a Chinese face: legible,
-     wrong, and invisible to every rule in `folio check`. */
+     wrong, and invisible to every rule in `folio check`.
+
+     Each default is the generic of its own classification, and each splice
+     sits *after* the platform generic and before the final one. Both matter:
+     a default of `sans-serif` inside `--font-mono` sent code to a proportional
+     face on any machine without JetBrains Mono, and a splice placed ahead of
+     `system-ui` pre-empted the platform's own UI face. With these two rules a
+     Latin document resolves to exactly the stack it had before. */
   --script-sans: sans-serif;
   --script-serif: serif;
+  --script-mono: monospace;
 
   --font-body: "P052", "Palatino", "Bitstream Charter", Georgia, var(--script-serif), serif;
-  --font-ui: "Inter", "Noto Sans KR", "Noto Sans CJK KR", var(--script-sans), system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, var(--script-sans), monospace;
+  --font-ui: "Inter", "Noto Sans KR", "Noto Sans CJK KR", system-ui, var(--script-sans), sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, var(--script-mono), monospace;
 
   --fs-body: 9.8pt;
   --lh-body: 1.58;
