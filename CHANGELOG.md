@@ -42,6 +42,87 @@ reading the pages. Bank details are now lines rather than a `.facts` grid, and
 the currency is stated once in the column head instead of taking a fourth fact
 that wrapped to a row of its own.
 
+### Added — five components every non-report document needed
+Each is structure in `base.css` and look in all four themes, so the layer
+contract holds.
+
+- **`.doc-head`** — a title block for a document with no cover. `<h1>` outside
+  `.cover` was never styled and fell to the UA default: 19.2pt in `minimal`
+  against a 22pt `h2.section`, so the document title rendered *smaller* than
+  the sections under it. Every cover-less document shipped an inverted
+  hierarchy. Now 1.26–1.38× its sections in all four.
+- **`.facts`** — a labelled key/value grid. Bill-to on an invoice, the
+  at-a-glance panel on a case study, document control on an SOP. Seven of
+  eight researched document types need it and folio had nowhere to put it.
+- **`.cols` / `.cols.rail`** — two-up, and a main measure with a rail. The
+  asymmetric form is what real briefs and reports use; `.two-col` is a
+  different thing (one block flowed into two equal columns) and was the only
+  option.
+- **`.signature`** — an acceptance block that cannot split across a page.
+  Proposals, SOWs, quotes, SOPs and handbooks all need one.
+- **Totals** — `tfoot` ruled *every* row, so Subtotal / VAT / Total drew three
+  stacked hairlines with the amount due carrying no more weight than the
+  subtotal. Only the last row is ruled now, and it steps up in size and colour.
+
+Found while adding them, by the reference document rather than by review: the
+new bare `h1` rule out-specified the white that `report`'s cover title
+inherits, painting ink on navy at **1.1:1**. `low-contrast` caught it before it
+left the working tree — the argument for keeping that document in the suite.
+
+### Added — the skill routes, plans, and gates
+`folio check` measures containers. The other half of what makes a document read
+as machine-made is behaviour, which no stylesheet touches: a model that
+narrates having produced a document it never wrote, or drops half the content
+and reports success.
+
+- **A routing table** — shape, theme and furniture per document type, plus the
+  ambiguities worth resolving before building ("a report" from a consultant is
+  a client deliverable; "just a quick" anything means one page, no cover).
+- **A plan step** — type, reader, register, evidence, in four lines before any
+  HTML. Register is the one that gets skipped and the one that shows.
+- **An Iron Law** — a green `--check` and a look at the pages, both established
+  in the message that claims the document is finished, with the file confirmed
+  on disk. Plus the rationalisation table, because "it rendered, so it's done"
+  is the thought that ships a broken PDF.
+- **A named slop list** — what AI-generated documents look like, item by item,
+  each drawn from a real reader complaint.
+- **`tests/test_skill.py`** holds the prose to the argparse surface: every
+  command and flag the skill names must resolve. It immediately caught the
+  commit that added it promising a `--furniture none` flag that did not exist.
+  A stale reference does not error — the agent improvises around it.
+
+### Fixed — four defects that blocked every document type but a report
+- **`heading-skip` fired on the labels the docs told you to write.**
+  COMPONENTS.md said to use `<h4>` for uppercase labels; the checker counted it
+  as a fourth level, so `<h2>Invoice</h2><h4>Bill to</h4>` warned in all four
+  themes — and because conformance treats the rule as a hard failure, no short
+  labelled document could enter the repo at all. Fixed on the side the audit
+  did not expect: a heading level is structure that screen readers and the
+  shareable HTML page both consume, so the checker was right and the
+  documentation was wrong. `.eyebrow` is the label now, carrying each theme's
+  existing h4 treatment, so nothing changes visually.
+- **`.callout.info` was unstyled in `editorial` and `minimal`.** The shipped
+  example uses it, so in half the themes that block rendered as a plain
+  callout — including in the gallery. The theme test checked `.callout` and
+  stopped, so a theme could style the box and skip a tone; every documented
+  tone is now checked in every theme, tied back to COMPONENTS.md.
+- **`assets/folio.css` was 575 orphan lines** that nothing read, while
+  CONTRIBUTING told contributors to add new components to it. Deleted, and the
+  guide now names the real two-layer split.
+- **The RTL cover band was gone.** `rtl.css` still mirrored the ghost circles
+  the split-band redesign deleted, and the surviving offsets re-anchored the
+  band to `left: -60mm`, collapsing it: every Arabic, Hebrew, Persian and Urdu
+  cover rendered flat, with every test passing because nothing in the suite
+  rendered RTL. Fixed at the cause — `.cover-brand` is pinned to both margins,
+  so it is symmetric and `text-align: start` turns it round by itself — and
+  `rtl.css` now carries no cover rules at all.
+
+### Fixed — `folio components` described a cover that was retired
+The Cover entry still promised the gradient and two layered circles the split
+band replaced. It is the reference an agent reads before authoring, so stale
+copy there is read as current. Now the band, its per-theme heights,
+`img.cover-plate`, and why type never sits on it.
+
 ## [0.2.0] — 2026-08-12
 
 ### Added
