@@ -11,12 +11,18 @@ Your agent can already write the words. It cannot make them look like this.
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![CI](https://github.com/abhirajsingh101/folio/actions/workflows/ci.yml/badge.svg)](https://github.com/abhirajsingh101/folio/actions/workflows/ci.yml)
 
-<img src="docs/gallery/themes-covers.png" width="100%" alt="The same report rendered in four design directions: report, editorial, technical, minimal">
+<img src="docs/gallery/hero.png" width="100%" alt="A quarterly engineering report: the cover, with a two-ink risograph plate above the title, beside an interior page carrying metric tiles, a chart and a callout">
 
-<img src="docs/gallery/themes-pages.png" width="100%" alt="The same page in four design directions, charts re-palettted to match">
+*Cover and interior from one HTML file. The cover plate is generated —
+`folio imagery` says when that is worth doing, and when it is not.*
+
+<img src="docs/gallery/themes-covers.png" width="100%" alt="The same cover in four design directions: report, editorial, technical, minimal">
+
+<img src="docs/gallery/themes-pages.png" width="100%" alt="The same interior page in four design directions, charts re-palettted to match">
 
 *One document, four design directions. Same content, same markup —
-different typographic systems, and charts that re-palette to match.*
+different typographic systems, and charts that re-palette to match.
+Two of the four take a cover image; the other two are built not to.*
 
 </div>
 
