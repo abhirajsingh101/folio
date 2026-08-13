@@ -96,6 +96,15 @@
   @top-left { content: none } @top-right { content: none }
   @bottom-right { content: counter(page, lower-roman); }
 }
+/* An invoice, a letter, a quote and a one-pager carry no running furniture:
+   no title rail, no section rail, no page counter, no footer line. It is a
+   document property rather than a build flag — an invoice is furniture-free
+   wherever it is rebuilt, and a flag has to be remembered every time. */
+@page bare {
+  @top-left { content: none } @top-right { content: none }
+  @bottom-right { content: none } @bottom-left { content: none }
+}
+body[data-furniture="none"] { page: bare; }
 
 /* ── Base ───────────────────────────────────────────────── */
 

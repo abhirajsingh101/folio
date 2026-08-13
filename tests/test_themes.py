@@ -361,3 +361,39 @@ def test_theme_read_off_the_body(name):
 def test_unknown_theme_is_a_clear_error():
     with pytest.raises(BuildError, match="unknown theme"):
         detect_theme('<body data-theme="chartreuse">')
+
+
+@pytest.mark.parametrize("name", THEMES)
+def test_furniture_none_strips_every_running_element(name):
+    """An invoice, a letter and a one-pager carry no running furniture.
+
+    Without this a single-sheet document still printed a running title, a
+    section rail, `1 / 1`, and a footer line — page chrome for a page that has
+    nowhere to run to.
+    """
+    weasyprint = pytest.importorskip("weasyprint")
+
+    def margin_text(attr: str) -> list[str]:
+        html = (
+            f"<!DOCTYPE html><html><head><style>{css_text(name)}</style></head>"
+            f'<body {attr} data-title="Invoice 2026-014" data-footer="Acme Ltd">'
+            '<h2 class="section">Invoice</h2><p>Line items.</p></body></html>'
+        )
+        page = weasyprint.HTML(string=html).render().pages[0]
+        found: list[str] = []
+
+        def rec(box):
+            text = getattr(box, "text", None)
+            if text and text.strip():
+                found.append(text.strip())
+            for child in getattr(box, "children", []):
+                rec(child)
+
+        for child in page._page_box.children:
+            if "Margin" in type(child).__name__:
+                rec(child)
+        return found
+
+    assert margin_text(""), f"{name}: the default page lost its furniture"
+    bare = margin_text('data-furniture="none"')
+    assert bare == [], f"{name}: furniture survived data-furniture=none — {bare}"

@@ -1,6 +1,6 @@
 ---
 name: folio
-description: Use when the user asks for a PDF, report, progress report, whitepaper, proposal, invoice, handbook, or any print-ready document — "make a report", "PDF of this", "write this up", "document for the team". Produces branded, typeset PDFs plus a shareable HTML page from one design system, with charts themed to match. Do NOT use for slide decks or video.
+description: Use when the user asks for a PDF, report, proposal, quote, statement of work, invoice, case study, runbook, SOP, handbook, letter, one-pager, whitepaper, or any print-ready document — "make a report", "PDF of this", "send this to the client", "write this up". Works for one-page documents as well as long ones. Produces branded, typeset PDFs plus a shareable HTML page from one design system, with charts themed to match, and measures the rendered layout for real defects before calling it done. Do NOT use for slide decks, video, or a résumé/CV (applicant tracking systems discard the formatting and the design system actively hurts).
 version: 0.1.0
 license: MIT
 ---
@@ -38,6 +38,50 @@ folio imagery                       # before adding any non-chart image
 
 `folio build` runs a sibling `charts.py` first, injects the stylesheet, then
 renders. The source document never links the stylesheet.
+
+## Route first: what kind of document is this?
+
+Do this before opening an editor. The shape of a document is decided by what
+it is *for*, and getting it wrong is not recoverable by styling — an invoice
+with a cover page is wrong no matter how good the cover is.
+
+| They asked for | Shape | Theme | Furniture | Read first |
+|---|---|---|---|---|
+| Report, progress update, findings, review | cover · contents · sections | `report` | full | `folio components` |
+| Proposal, quote, statement of work, bid | cover · contents · scope · pricing · signature | `report` or `editorial` | full | `folio components` |
+| Invoice, estimate, credit note | single sheet, no cover | `minimal` or `technical` | `data-furniture="none"` | `folio components` |
+| Runbook, SOP, procedure, playbook | doc-control head · numbered steps · warnings | `technical` | full | `folio components`, `folio gotchas` |
+| Letter, one-pager, brief, memo | single sheet, no cover | `minimal` | `data-furniture="none"` | `folio components` |
+| Case study, customer story | headline · metrics · narrative · quote | `editorial` | full | `folio imagery` |
+| Essay, annual review, long read | cover · contents · prose | `editorial` | full | `folio imagery` |
+
+**Ambiguities worth resolving before you build, not after:**
+
+- *"A report on X"* from a consultant usually means a **client deliverable**,
+  not an internal update. Ask who receives it — it changes theme and register.
+- *"Something to send the client"* is a proposal if money is being asked for,
+  a case study if it is proof, a one-pager if it is a leave-behind.
+- *"Documentation"* is a handbook if it is read, a runbook if it is executed
+  under time pressure. Those are different documents.
+- If they say **"just a quick"** anything, they want one page with no cover.
+
+## Plan before you author
+
+Four lines, written out before any HTML. This is the step that stops the
+document drifting run to run, and it takes thirty seconds:
+
+```
+Type:      invoice
+Reader:    the client's accounts-payable clerk, who will not read prose
+Register:  plain and checkable; no persuasion, no adjectives
+Evidence:  line items and rates from the user — invent nothing
+```
+
+**Register is the one people skip, and it is the one that shows.** For
+anything persuasive — a proposal, a case study, a pitch — visible polish is
+penalised by the reader, not rewarded. Buyers report docking points when a
+document looks machine-made. Restraint is the correct treatment there; save
+the plate and the display type for a document nobody is being sold by.
 
 ## Choosing a direction
 
@@ -121,6 +165,72 @@ because it was easy to generate.
 
 Only after all four is it done.
 
+## Iron Law
+
+```
+NO DOCUMENT IS FINISHED WITHOUT A GREEN --check AND A LOOK AT THE PAGES,
+BOTH IN THE MESSAGE WHERE YOU CLAIM IT IS FINISHED.
+```
+
+Three things must be true, and you must have established them *now* — not
+earlier in the session, not "it worked before":
+
+1. `folio build <file> --check` ran in this message and **exited 0**.
+2. The PDF **exists on disk**. Check it. Do not describe a file you have not
+   confirmed is there.
+3. You **read the page images** in `<name>.pages/`. Every one.
+
+The failure this prevents is specific and common: a model that narrates having
+produced a document it never wrote, or that silently drops half the content and
+reports success. Users describe it exactly that way — *"it cos-plays like it's
+generating an exported version"*, *"somehow half of the document was completely
+omitted without me noticing"*. A confident summary is not a document.
+
+`--check` measures the rendered layout tree and exits non-zero on real defects.
+It cannot see taste, which is why the page images are not optional.
+
+| Thought | Reality |
+|---|---|
+| "It rendered, so it's done." | A valid PDF that looks wrong is the *normal* failure here. Print defects are silent. |
+| "I'll describe what the document contains." | Then you have not made a document. Build it, or say you did not. |
+| "The check passed, no need to look." | The checker cannot see a chart of the wrong type or a caption that says nothing. |
+| "I'll use placeholder figures; they'll swap them." | Invented numbers in a document that looks finished is the worst output folio can produce. Ask, or leave the slot visibly empty. |
+| "It passed last time." | Evidence has a timestamp. Run it again. |
+| "The user is in a hurry." | Then a broken PDF costs them more, not less. |
+
+## What AI-generated documents look like
+
+Readers identify them before reading a word, and say so. Know the tells so you
+can avoid them — this is the document equivalent of a design system's
+anti-pattern list, and every item below is drawn from a real complaint.
+
+- **Every table set identically** regardless of what is in it — same widths,
+  same header treatment, nothing considered. *"The tables followed the same
+  format and they didn't even bother changing the font."*
+- **Numbers without a baseline.** "44%" with no denominator, no comparison and
+  no measurement window is not evidence; it is decoration that looks like
+  evidence.
+- **Captions that name the axes** instead of stating the finding.
+- **Uniform section lengths** — the signature of a template being filled rather
+  than an argument being made. Sections should be as long as they need to be.
+- **Front-matter scaffolding on a short document.** An executive summary, an
+  introduction and a conclusion on two pages of content is padding.
+- **Bullet fragments where reasoning belongs.** A list of noun phrases is not
+  an argument, and readers notice the thinking is missing.
+- **Hedged register** — "it is important to note", "in today's fast-paced
+  landscape", "robust and scalable". Cut every one.
+- **A quote polished until it reads like vendor copy.** Real people do not talk
+  in marketing sentences; an over-clean quote destroys a case study's
+  credibility faster than no quote.
+- **Opening with "About us"** instead of the reader's situation.
+- **Chrome outweighing content** — a logo and letterhead larger than the one
+  number the reader opened the document to find.
+- **Emoji as section markers.** Never in a printed document.
+
+The general form: polish applied evenly, everywhere, with no evidence that
+anyone decided what mattered. *"Pretty formatting does not create
+substantiation."*
+
 ## Rules
 
 1. **Run `folio components` before authoring.** Use the existing classes:
@@ -141,8 +251,13 @@ Only after all four is it done.
    `folio check` reports it as `figure-rescaled`. Output SVG, never PNG.
 5. **Caption the conclusion, not the axes.** "Deploy frequency doubled after the
    July cutover" beats "Deploys per month".
-6. **Use real data.** Pull actual numbers from the repo — git history, test
-   counts, planning docs. A report with invented figures is worse than none.
+6. **Use real data, and know where it comes from for this document type.** For
+   an internal report, that is the repo — git history, test counts, planning
+   docs. For an invoice, a quote or a proposal, it is the **user**, and there
+   is nothing to go looking for: ask. Do not mine a repository for a number
+   that belongs to a commercial document, and never invent one to fill a slot.
+   A document with fabricated figures that *looks* finished is worse than no
+   document, because it will be sent.
 7. **Never claim a document is finished without a clean `--check` and a look
    at the rendered pages.** "It built" is not "it is good".
 8. **If `folio build` warns about the Chromium renderer**, tell the user: their
@@ -151,32 +266,24 @@ Only after all four is it done.
 
 ## Imagery
 
-Real data is *always* a real table or a real chart. Never an image of one.
+Enough to decide; `folio imagery` carries the rest, and is the copy that stays
+current with the installed version.
 
-For everything else — a cover, a section opener, a texture — the default
-answer is **no**. A generic illustration does not read as neutral; it reads as
-nobody having thought about the page. The bar: can you say in one sentence
-what the image does that the words do not? "Breaking up the text" is not an
-answer.
+Real data is *always* a real table or a real chart, never an image of one. For
+everything else the default answer is **no** — the bar is whether you can say
+in one sentence what the image does that the words do not. "Breaking up the
+text" is not an answer.
 
-Never generate: anything a reader could take as data; anything with text in it
-(models malform words, and a diagram with garbled labels is worse than no
-diagram — diagrams are SVG); anything evidentiary, meaning a photo of a real
-place, person, product or screen; anyone else's logo.
+**Never generate** anything a reader could take as data, anything with text in
+it, anything evidentiary (a real place, person, product or screen), or anyone
+else's logo.
 
-Where it earns its place: covers, section openers in a long `editorial`
-document, a conceptual plate in an essay. `technical` and `minimal` should
-have none — one is built on density, the other on having nothing to hide
-behind.
+Decoration is `<div class="plate">`, never `<figure>` — a figure is numbered
+and referenced, and lending that grammar to decoration is how an illustration
+gets read as evidence. `folio check` enforces it both ways.
 
-Every such image is a `<div class="plate">`, never a `<figure>` — a figure is
-numbered, captioned and referenced, and lending that grammar to decoration is
-how an illustration gets read as evidence. `folio check` enforces the boundary
-both ways.
-
-**Run `folio imagery` before generating anything.** It carries the prompt
-shape that avoids stock-AI output, the Codex invocation, resolution for print,
-and the placement rules.
+**Run `folio imagery` before generating anything.** Prompt shape, the Codex
+invocation, print resolution, per-theme placement.
 
 ## Pagination
 
@@ -199,5 +306,21 @@ for Arabic and Hebrew. Two cases need you:
 
 ## Not for
 
-Slide decks. Video. Academic submissions where a venue mandates its own LaTeX
-class. Anything under ~2 pages, where the design system is overhead.
+**Slide decks and video.** Different medium, different tool.
+
+**Academic submissions to a venue that mandates its own class.** IEEE and ACM
+specify exact column geometry and forbid font substitution; the value there is
+conformance, and Overleaf and Quarto already win it.
+
+**A résumé or CV.** This one is counter-intuitive, so the reason matters:
+applicant tracking systems flatten a document into one stream of text, and
+they ignore header and footer content outright — so a designed résumé loses
+the candidate's name and phone number. Two columns scramble. Tables scramble.
+Every strength folio has is a liability here. Tell the user plainly and point
+them at a plain single-column document.
+
+Short is **not** a reason to decline. An invoice, a quote, a letter and a
+one-pager are one page each and are squarely folio's work — set
+`<body data-furniture="none">` and the running title, section rail, page
+counter and footer all go away. (Earlier versions of this skill said "nothing
+under two pages", which contradicts the trigger above.)

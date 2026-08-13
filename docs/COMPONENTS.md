@@ -113,6 +113,24 @@ both consume, so `<h4>` directly under `<h2>` claims an `<h3>` that does not
 exist and `folio check` reports it. `.eyebrow` carries the same uppercase
 label treatment in every theme without inventing a level.
 
+## Page furniture
+
+Every page carries a running title, a section rail, a page counter and a footer
+line, fed by `data-title`, `data-section` and `data-footer`.
+
+A single-sheet document — an invoice, a quote, a letter, a one-pager — should
+carry none of it. Page chrome on a page with nowhere to run to is noise, and on
+a résumé it is worse than noise: applicant tracking systems discard header and
+footer content outright.
+
+```html
+<body data-furniture="none">
+```
+
+It is an attribute rather than a build flag on purpose: an invoice is
+furniture-free wherever it is rebuilt, and a flag has to be remembered every
+time.
+
 ## Lead paragraph
 
 ```html

@@ -41,7 +41,7 @@ def _print_pages(pdf: Path) -> None:
     print("            read every one — the checker cannot see taste")
 
 
-def _parser() -> argparse.ArgumentParser:
+def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="folio",
         description="Print-ready documents from HTML — one design system, no AI slop.",
@@ -111,10 +111,10 @@ def _force_utf8_output() -> None:
 
 def main(argv: list[str] | None = None) -> int:
     _force_utf8_output()
-    args = _parser().parse_args(argv)
+    args = build_parser().parse_args(argv)
 
     if args.cmd is None:
-        _parser().print_help()
+        build_parser().print_help()
         return 0
 
     if args.cmd == "doctor":
