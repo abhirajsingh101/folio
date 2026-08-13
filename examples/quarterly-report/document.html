@@ -60,6 +60,14 @@ which unblocked eight services at once. The <strong>shared platform SDK</strong>
 cut the median migration from eleven days to four. And retiring the legacy
 scheduler removed the single largest source of tail latency.</p>
 
+<p><strong>What did not go to plan.</strong> The contract test suite grew 38% in runtime and picked up three
+intermittent failures, which is the beginning of the failure mode where a gate
+stops being a gate because everyone re-runs it. And the orphan review slipped
+the whole quarter — two services still have no named owner, which is a
+governance problem wearing a technical costume. Neither threatens the Q4 dates;
+both are recorded because a progress report that contains only progress is not
+a report.</p>
+
 <figure>
   <img src="charts/fig-deploys.svg" alt="Deploy frequency by month">
   <figcaption><span class="fnum">Fig. 1</span>Deploy frequency by month. The
@@ -136,10 +144,32 @@ looking for more of.</p>
 <h2 class="section" id="s3" data-section="Migration status">
   <span class="idx">SECTION 03</span>Migration status</h2>
 
-<p>The headline number hides an asymmetry: the twenty-seven migrated services
-carry roughly <strong>34% of production traffic</strong>. Two more were
+<p class="lead">The headline number hides an asymmetry: the twenty-seven migrated
+services carry roughly <strong>34% of production traffic</strong>. Two more were
 deprecated outright. The fourteen that remain are the high-volume ones, so the
 second half of this programme is harder than the first.</p>
+
+<p>That asymmetry was not an accident of sequencing, and it is worth being
+honest about why. Teams picked the services they understood best, which were
+almost always the ones they had written most recently and which carried the
+least traffic. It was the right call for building confidence in the SDK and
+the wrong call for the burn-up chart, and both of those things are true at
+once. The consequence lands entirely in Q4.</p>
+
+<h3>Reading the number honestly</h3>
+
+<p>Counting services is the metric that was easy to instrument, not the metric
+that describes the work. A service is one unit whether it serves four requests
+a second or four thousand, and the programme's remaining fourteen skew hard
+toward the latter. On a traffic-weighted basis the programme is closer to a
+third complete than to two thirds, which is the number worth planning against
+even though it is the less comfortable one to report.</p>
+
+<p>The other distortion runs the opposite way. Two services were retired rather
+than migrated, and they count as neither migrated nor remaining in most of the
+tables that follow. Deleting a service is the cheapest possible outcome and the
+one the current reporting is least able to celebrate — a programme measured on
+migrations has no way to record a deletion as progress.</p>
 
 <h3>The fourteen remaining</h3>
 
@@ -272,15 +302,36 @@ independently, and no amount of parallel staffing changes that.</p>
   scheduled for replacement in H1 and migrating them would be wasted work.</p></div>
 </div>
 
+<div class="callout warn">
+  <span class="ico">Watch</span>
+  <div class="body"><p><strong>Two services without an owner.</strong> The
+  orphan review has now slipped two quarters running. Neither service is large,
+  and that is precisely why nobody has picked them up. Left alone they become
+  the reason a future quarter cannot close.</p></div>
+</div>
+
 <hr class="divider">
 
 <h3>What "done" means for Q4</h3>
+
+<p>Stated as conditions rather than a percentage, because the percentage is the
+thing most likely to be gamed at the end of a quarter. Each of these is
+independently checkable by someone who was not in the room.</p>
+
 <ul class="tick">
   <li>Orders write lock partitioned, with all four contenders cutting over independently.</li>
   <li>At least 60% of production traffic served by migrated services.</li>
   <li>No service in the programme without a named owner.</li>
   <li>Every migrated service satisfies all six clauses of the migration contract.</li>
+  <li>Contract suite back under fifteen minutes with no intermittent failures.</li>
 </ul>
+
+<p><strong>What would change the plan.</strong> The sequencing assumes the lock partition is a two-to-three week change. If
+the first week shows it is not — specifically, if tenant partitioning turns out
+to need a schema migration on the orders table rather than an index change —
+then the correct response is to stop and re-plan Q4 rather than absorb the
+overrun. Four workstreams sit behind it, so an optimistic estimate held onto
+too long costs more than the estimate was ever worth.</p>
 </div>
 
 <!-- ════════ APPENDIX ════════ -->
@@ -302,11 +353,37 @@ independently, and no amount of parallel staffing changes that.</p>
   </tbody>
 </table>
 
+<h3>Deploy frequency by domain</h3>
+
+<table>
+  <caption><span class="tnum">Table 5</span>Deploys per week, quarter mean</caption>
+  <thead>
+    <tr><th>Domain</th><th class="num">Q2</th><th class="num">Q3</th><th class="num">Change</th><th>Comment</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Commerce</td><td class="num">31</td><td class="num">88</td><td class="num">+184%</td><td>Largest single gain</td></tr>
+    <tr><td>Payments</td><td class="num">12</td><td class="num">24</td><td class="num">+100%</td><td>Regulatory review caps this</td></tr>
+    <tr><td>Platform</td><td class="num">44</td><td class="num">97</td><td class="num">+120%</td><td>Includes SDK releases</td></tr>
+    <tr><td>Growth</td><td class="num">28</td><td class="num">61</td><td class="num">+118%</td><td>Effectively unblocked</td></tr>
+    <tr><td>Analytics</td><td class="num">9</td><td class="num">17</td><td class="num">+89%</td><td>Batch cadence, not a limit</td></tr>
+  </tbody>
+  <tfoot>
+    <tr><td>Total</td><td class="num">124</td><td class="num">287</td><td class="num">+131%</td><td>Excludes rollbacks</td></tr>
+  </tfoot>
+</table>
+
+<p>Payments is the outlier and the number is not a problem to solve. Two of its
+services sit behind a regulatory review that runs on a fixed fortnightly
+cadence, so deploy frequency there is bounded by a process outside the
+programme. Reading it as underperformance would push a team to optimise
+something they do not control.</p>
+
 <h3>Source</h3>
 <ul class="tick">
   <li>Service registry export, 2026.09.30</li>
   <li>Traffic shares from the edge load balancer, 30-day mean</li>
   <li>Deploy counts from the CI pipeline, excluding rollbacks</li>
+  <li>Latency percentiles from the edge tier, excluding synthetic checks</li>
 </ul>
 </div>
 
