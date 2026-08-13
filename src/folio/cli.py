@@ -12,7 +12,8 @@ from .assets import SERVED_DOCS
 EPILOG = """\
 examples:
   folio doctor                     check this machine and print exact fixes
-  folio init                       scaffold document.html + charts.py here
+  folio templates                  the document types init can scaffold
+  folio init --template invoice    scaffold that type here (default: report)
   folio build document.html        render document.pdf + document.page.html
   folio build doc.html -o out.pdf  choose the output path
   folio build doc.html --check     render, measure, and lay out the pages to read
@@ -57,6 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     i.add_argument("dir", nargs="?", default=".", help="target directory (default: .)")
     i.add_argument("--force", action="store_true", help="overwrite existing files")
     i.add_argument("--theme", help="design direction (see `folio themes`)")
+    i.add_argument("--template", help="document type (see `folio templates`)")
 
     b = sub.add_parser("build", help="render a document to PDF")
     b.add_argument("file", help="source .html document")
@@ -86,6 +88,7 @@ def build_parser() -> argparse.ArgumentParser:
     v.add_argument("--dpi", type=int, default=PREVIEW_DPI, help=f"default {PREVIEW_DPI}")
 
     sub.add_parser("themes", help="list the available design directions")
+    sub.add_parser("templates", help="list the document types `init` can scaffold")
     sub.add_parser("components", help="print the component vocabulary")
     sub.add_parser("gotchas", help="print the renderer gotchas reference")
     sub.add_parser("imagery", help="when a document may carry a generated image, and how")
@@ -182,6 +185,20 @@ def main(argv: list[str] | None = None) -> int:
         print('\nSet with `folio init --theme <name>`, or <body data-theme="<name>">.')
         return 0
 
+    if args.cmd == "templates":
+        from .assets import DEFAULT_TEMPLATE, template_blurb, template_names, template_text
+        from .build import detect_theme
+
+        # The direction is read off each scaffold rather than recorded beside
+        # it: the document declares its own theme, so there is one source for
+        # it and this column cannot fall out of date.
+        for t in template_names():
+            theme = detect_theme(template_text(t, "document.html"))
+            mark = "  (default)" if t == DEFAULT_TEMPLATE else ""
+            print(f"  {t:<10} {theme:<10} {template_blurb(t)}{mark}")
+        print("\nScaffold with `folio init --template <name>`; `--theme` overrides the pairing.")
+        return 0
+
     if args.cmd == "css":
         from .assets import css_path
 
@@ -195,14 +212,17 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "init":
-        from .assets import DEFAULT_THEME, theme_names
+        from .assets import DEFAULT_TEMPLATE, template_names, theme_names
         from .build import init
 
-        theme = args.theme or DEFAULT_THEME
-        if theme not in theme_names():
+        theme = args.theme
+        if theme and theme not in theme_names():
             sys.exit(f"unknown theme {theme!r} — choose from: {', '.join(theme_names())}")
+        template = args.template or DEFAULT_TEMPLATE
+        if template not in template_names():
+            sys.exit(f"unknown template {template!r} — choose from: {', '.join(template_names())}")
         target = Path(args.dir).resolve()
-        init(target, force=args.force, theme=theme)
+        init(target, force=args.force, theme=theme, template=template)
         print(f"\nNext:  folio build {Path(args.dir) / 'document.html'}")
         return 0
 

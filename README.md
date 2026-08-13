@@ -100,10 +100,20 @@ pacman -S mingw-w64-x86_64-pango
 ## Use it
 
 ```bash
-folio themes                        # the four design directions
-folio init --theme editorial        # scaffold document.html + charts.py
+folio templates                     # the document types it can scaffold
+folio init --template invoice       # scaffold that type here
 folio build document.html           # → document.pdf + document.page.html
 ```
+
+| template | shape |
+|---|---|
+| `report` | cover · contents · sections · charts — a progress report or review *(default)* |
+| `proposal` | cover · scope · price · signature — a proposal, quote or SOW |
+| `invoice` | one sheet, no furniture — line items, totals, payment terms |
+| `runbook` | control block · numbered steps · verification — an SOP or playbook |
+
+Each scaffold arrives in the direction that suits it — an invoice in `minimal`,
+a runbook in `technical` — and `--theme` overrides the pairing:
 
 | theme | what it is |
 |---|---|

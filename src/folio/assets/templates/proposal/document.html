@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Proposal — Platform migration</title>
+</head>
+<!-- A proposal is read by someone deciding whether to spend money, and visible
+     polish is penalised rather than rewarded: buyers dock points for a
+     document that looks machine-made. Open on the client's situation, never on
+     "about us", and let the scope and the price be the loudest things here. -->
+<body data-theme="report" data-title="Proposal · Platform migration" data-footer="Commercial in confidence">
+
+<!-- ════════ COVER ════════ -->
+<section class="cover">
+  <div class="cover-brand">yourbrand</div>
+  <div class="cover-kicker">Proposal</div>
+  <h1>Platform&nbsp;migration</h1>
+  <p class="sub">Moving the order service off the shared database, without a
+  weekend of downtime.</p>
+  <div class="cover-rule"></div>
+  <div class="cover-meta">
+    <div><span class="k">Prepared for</span>Client Company Ltd</div>
+    <div><span class="k">Date</span>2026.08.13</div>
+    <div><span class="k">Valid until</span>2026.09.12</div>
+    <div><span class="k">Reference</span>PR-2026-014</div>
+  </div>
+</section>
+
+<!-- ════════ CONTENTS ════════ -->
+<section class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><span class="num">01</span><span class="ttl">What you asked for</span><span class="fill"></span><a class="pg" href="#s1"></a></li>
+    <li><span class="num">02</span><span class="ttl">Scope</span><span class="fill"></span><a class="pg" href="#s2"></a></li>
+    <li><span class="num">03</span><span class="ttl">Schedule and price</span><span class="fill"></span><a class="pg" href="#s3"></a></li>
+    <li><span class="num">04</span><span class="ttl">Acceptance</span><span class="fill"></span><a class="pg" href="#s4"></a></li>
+  </ol>
+</section>
+
+<!-- ════════ SECTION ════════ -->
+<div class="section-wrap">
+<h2 class="section" id="s1" data-section="What you asked for">
+  <span class="idx">SECTION 01</span>What you asked for</h2>
+
+<p class="lead">State the client's situation in their words, from the call.
+Getting this paragraph wrong is not recoverable further down: a reader who does
+not see their own problem in the opening stops reading the price.</p>
+
+<div class="cols rail">
+  <div>
+    <p>Two or three paragraphs on what is happening now and what it costs —
+    the constraint, the deadline, and what has already been tried. Quote the
+    numbers they gave you and attribute them; do not go looking for your own.</p>
+
+    <p>Then one paragraph on what changes if this is done, in the same terms.
+    No adjectives: a decision-maker discounts every one of them.</p>
+
+    <p>Close by saying what you understand the decision to be, and by when —
+    a proposal that never names the decision leaves the reader to work out
+    what they are being asked for.</p>
+  </div>
+  <aside>
+    <p class="eyebrow">At a glance</p>
+    <dl class="facts">
+      <div><dt>Duration</dt><dd>8 weeks</dd></div>
+      <div><dt>Team</dt><dd>2 engineers</dd></div>
+      <div><dt>Fee</dt><dd>48,000 GBP</dd></div>
+      <div><dt>Start</dt><dd>2026.09.01</dd></div>
+    </dl>
+  </aside>
+</div>
+
+<div class="callout info">
+  <span class="ico">Assumption</span>
+  <div class="body"><p>State every assumption the price depends on. An
+  assumption written down is a variation later; an assumption left out is an
+  argument.</p></div>
+</div>
+</div>
+
+<!-- ════════ SECTION ════════ -->
+<div class="section-wrap">
+<h2 class="section" id="s2" data-section="Scope"><span class="idx">SECTION 02</span>Scope</h2>
+
+<p>Say what is in and what is out on the same page. Out-of-scope is the half
+that prevents the argument, so it is not an appendix.</p>
+
+<div class="cols">
+  <div>
+    <p class="eyebrow">Included</p>
+    <ul class="tick">
+      <li>Schema extraction and a reversible migration path.</li>
+      <li>Dual-write period with reconciliation reporting.</li>
+      <li>Cutover rehearsal against a production-sized copy.</li>
+      <li>Runbook and handover to your on-call team.</li>
+    </ul>
+  </div>
+  <div>
+    <p class="eyebrow">Not included</p>
+    <ul class="tick">
+      <li>Application changes beyond the data layer.</li>
+      <li>Licence or hosting costs, which you hold directly.</li>
+      <li>Ongoing operation after handover.</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Deliverables</h3>
+
+<table>
+  <caption><span class="tnum">Table 1</span>What you receive, and how each one
+  is judged complete.</caption>
+  <thead>
+    <tr><th>Deliverable</th><th>Accepted when</th><th>Week</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Migration plan</td><td>Signed off by your architect</td><td>2</td></tr>
+    <tr><td>Dual-write in production</td><td>Reconciliation clean for 7 days</td><td>5</td></tr>
+    <tr><td>Cutover</td><td>Error rate at baseline for 24 hours</td><td>7</td></tr>
+    <tr><td>Runbook and handover</td><td>Your on-call team runs a rehearsal</td><td>8</td></tr>
+  </tbody>
+</table>
+
+<h3>How we work</h3>
+
+<p>One paragraph on the working arrangement — where the team sits, what cadence
+you get, and who to call. Keep it short: process is only interesting where it
+differs from what the reader expects.</p>
+</div>
+
+<!-- ════════ SECTION ════════ -->
+<div class="section-wrap">
+<h2 class="section" id="s3" data-section="Schedule and price">
+  <span class="idx">SECTION 03</span>Schedule and price</h2>
+
+<ul class="timeline">
+  <li><span class="tl-h">Discovery</span>
+    <span class="tl-d">Weeks 1–2 · fixed fee</span>
+    <div class="tl-b">Schema extraction, migration plan, agreed rollback.</div></li>
+  <li><span class="tl-h">Build and dual-write</span>
+    <span class="tl-d">Weeks 3–5</span>
+    <div class="tl-b">Reconciliation reporting runs from week 4.</div></li>
+  <li><span class="tl-h">Cutover</span>
+    <span class="tl-d">Weeks 6–7 · out of hours</span>
+    <div class="tl-b">Rehearsal first, then the live move.</div></li>
+  <li><span class="tl-h">Handover</span>
+    <span class="tl-d">Week 8</span>
+    <div class="tl-b">Runbook, rehearsal with your on-call team.</div></li>
+</ul>
+
+<table>
+  <caption><span class="tnum">Table 2</span>Price, in the currency and terms
+  the invoice will use.</caption>
+  <thead>
+    <tr><th>Item</th><th>Basis</th><th class="num">Amount (GBP)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Discovery</td><td>Fixed fee</td><td class="num">8,000.00</td></tr>
+    <tr><td>Build and cutover</td><td>6 weeks, 2 engineers</td><td class="num">36,000.00</td></tr>
+    <tr><td>Handover</td><td>Fixed fee</td><td class="num">4,000.00</td></tr>
+  </tbody>
+  <tfoot>
+    <tr><td colspan="2">Subtotal</td><td class="num">48,000.00</td></tr>
+    <tr><td colspan="2">VAT at 20%</td><td class="num">9,600.00</td></tr>
+    <tr><td colspan="2">Total</td><td class="num">57,600.00</td></tr>
+  </tfoot>
+</table>
+
+<p class="eyebrow">Payment</p>
+<p>Invoiced monthly in arrears, net 30. Expenses at cost with prior approval.
+Say what happens if the schedule slips for a reason on either side.</p>
+</div>
+
+<!-- ════════ SECTION ════════ -->
+<div class="section-wrap">
+<h2 class="section" id="s4" data-section="Acceptance">
+  <span class="idx">SECTION 04</span>Acceptance</h2>
+
+<p>Signing accepts the scope in section 02 at the price in section 03, on the
+terms below. Anything outside that scope is quoted separately before it starts.</p>
+
+<dl class="facts">
+  <div><dt>Valid until</dt><dd>2026.09.12</dd></div>
+  <div><dt>Start</dt><dd>2026.09.01</dd></div>
+  <div><dt>Governing law</dt><dd>England and Wales</dd></div>
+</dl>
+
+<p>Either side may end the engagement on two weeks' notice, with work
+completed to that point invoiced at the rates in section 03.</p>
+
+<div class="signature">
+  <div><span class="line"></span><span class="who">For Client Company Ltd</span>
+       <span class="role">Name · role · date</span></div>
+  <div><span class="line"></span><span class="who">For Your Company Ltd</span>
+       <span class="role">Name · role · date</span></div>
+</div>
+</div>
+
+</body>
+</html>

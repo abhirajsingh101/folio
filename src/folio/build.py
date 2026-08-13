@@ -16,7 +16,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from .assets import DEFAULT_THEME, css_text, template_text, theme_names
+from .assets import DEFAULT_TEMPLATE, DEFAULT_THEME, css_text, template_files, theme_names
 from .renderers import Renderer, pick
 from .scripts import Profile
 from .scripts import detect as detect_scripts
@@ -190,18 +190,40 @@ def build(
     return Result(pdf, page, renderer.name, degraded, prof)
 
 
-def init(target: Path, *, force: bool = False, theme: str = DEFAULT_THEME) -> list[Path]:
-    """Scaffold a document beside whatever project you are in."""
+def retheme(html: str, theme: str) -> str:
+    """Point a document at a different design direction.
+
+    Scaffolds declare their own — an invoice is `minimal`, a runbook is
+    `technical` — so `--theme` rewrites a declaration rather than adding one.
+    Adding a second `data-theme` would leave which one wins to the parser.
+    """
+    if _THEME_ATTR.search(html):
+        return _THEME_ATTR.sub(lambda m: m.group(0).replace(m.group(1), theme, 1), html, count=1)
+    return re.sub(r"<body\b", f'<body data-theme="{theme}"', html, count=1, flags=re.I)
+
+
+def init(
+    target: Path,
+    *,
+    force: bool = False,
+    theme: str | None = None,
+    template: str = DEFAULT_TEMPLATE,
+) -> list[Path]:
+    """Scaffold a document beside whatever project you are in.
+
+    `theme` of None keeps whatever direction the scaffold was designed in.
+    """
+    files = template_files(template)  # before mkdir: an unknown type writes nothing
     target.mkdir(parents=True, exist_ok=True)
     written = []
-    for tpl, name in (("starter.html", "document.html"), ("starter_charts.py", "charts.py")):
-        dst = target / name
+    for src in files:
+        dst = target / src.name
         if dst.exists() and not force:
-            print(f"  skip      {name} (exists — use --force to overwrite)")
+            print(f"  skip      {src.name} (exists — use --force to overwrite)")
             continue
-        body = template_text(tpl)
-        if name == "document.html" and theme != DEFAULT_THEME:
-            body = body.replace("<body data-title=", f'<body data-theme="{theme}" data-title=')
+        body = src.read_text(encoding="utf-8")
+        if theme and src.suffix == ".html":
+            body = retheme(body, theme)
         dst.write_text(body, encoding="utf-8")
         print(f"  create    {dst}")
         written.append(dst)

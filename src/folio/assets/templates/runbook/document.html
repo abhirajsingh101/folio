@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SOP-014 — Database failover</title>
+</head>
+<!-- A procedure is executed at a keyboard, often at 03:00, so it is dense and
+     it flows: every section carries `cont` rather than starting a fresh page,
+     because a page turn mid-step is a place to lose your position. The running
+     footer says which revision is in the reader's hand. -->
+<body data-theme="technical"
+      data-title="SOP-014 · Database failover"
+      data-footer="Rev 3.0 — uncontrolled when printed">
+
+<div class="doc-head">
+  <p class="eyebrow">Standard operating procedure</p>
+  <h1>Database failover</h1>
+  <p class="sub">Promote the standby and return service, with the checks that
+  say whether it worked.</p>
+</div>
+
+<dl class="facts">
+  <div><dt>Document</dt><dd>SOP-014</dd></div>
+  <div><dt>Revision</dt><dd>3.0</dd></div>
+  <div><dt>Owner</dt><dd>Platform team</dd></div>
+  <div><dt>Approved</dt><dd>2026.08.13</dd></div>
+  <div><dt>Next review</dt><dd>2027.02.13</dd></div>
+  <div><dt>Runtime</dt><dd>20 minutes</dd></div>
+</dl>
+
+<div class="callout risk">
+  <span class="ico">Stop</span>
+  <div class="body"><p>Step 4 is irreversible: once the standby is promoted the
+  old primary cannot be re-attached without a full resync. Confirm replication
+  lag is under 5 seconds before starting, and say what makes this the wrong
+  procedure to run.</p></div>
+</div>
+
+<div class="section-wrap cont">
+<h2 class="section" id="s1" data-section="Preconditions">
+  <span class="idx">SECTION 01</span>Preconditions</h2>
+
+<p class="lead">Every line here is a check, not a note. If one fails, stop and
+escalate rather than continuing — name who.</p>
+
+<ul class="tick">
+  <li>Incident channel open and the on-call lead is aware.</li>
+  <li>Replication lag under 5 seconds (<code>SELECT now() - last_replay</code>).</li>
+  <li>Most recent base backup verified within the last 24 hours.</li>
+  <li>Maintenance page ready to publish.</li>
+</ul>
+
+<p class="eyebrow">Access required</p>
+<p>Production database role <code>failover</code>, and the deploy pipeline.
+Ask in the incident channel rather than escalating your own access.</p>
+</div>
+
+<div class="section-wrap cont">
+<h2 class="section" id="s2" data-section="Procedure">
+  <span class="idx">SECTION 02</span>Procedure</h2>
+
+<!-- Numbered steps only for a real sequence. One action per step, in the
+     imperative, with the expected result attached — a step whose outcome is
+     unstated cannot be verified by the person running it. -->
+<ol class="steps">
+  <li><strong>Announce the start.</strong> Post in the incident channel with
+  this document's number and revision. Expect: acknowledgement from the
+  on-call lead.</li>
+  <li><strong>Publish the maintenance page.</strong>
+  <code>deploy maintenance --on</code>. Expect: the status page shows
+  <em>Maintenance</em> within 30 seconds.</li>
+  <li><strong>Stop writes to the primary.</strong>
+  <code>svc pause writer</code>. Expect: the writer queue drains to zero;
+  confirm before continuing.</li>
+  <li><strong>Promote the standby.</strong> <code>pgctl promote standby-2</code>.
+  Expect: the node reports <em>primary</em> and accepts a test write. This is
+  the irreversible step.</li>
+  <li><strong>Repoint the application.</strong>
+  <code>deploy config set db.host=standby-2</code>, then roll the web tier.
+  Expect: error rate returns to baseline within two minutes.</li>
+  <li><strong>Lift maintenance.</strong> <code>deploy maintenance --off</code>,
+  and announce in the channel.</li>
+</ol>
+</div>
+
+<div class="section-wrap cont">
+<h2 class="section" id="s3" data-section="Verification and rollback">
+  <span class="idx">SECTION 03</span>Verification and rollback</h2>
+
+<p>Record the measured value, not a tick. A checklist of ticks is not evidence
+that the service recovered.</p>
+
+<table class="keep">
+  <thead>
+    <tr><th>Check</th><th>How</th><th>Pass when</th><th class="num">Measured</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Writes accepted</td><td><code>svc status writer</code></td>
+        <td>ok for 60s</td><td class="num"></td></tr>
+    <tr><td>Error rate</td><td>Dashboard — API 5xx</td>
+        <td>under 0.1%</td><td class="num"></td></tr>
+    <tr><td>Replication</td><td><code>pgctl status</code></td>
+        <td>new standby streaming</td><td class="num"></td></tr>
+    <tr><td>Backups</td><td>Backup job log</td>
+        <td>next run targets standby-2</td><td class="num"></td></tr>
+  </tbody>
+</table>
+
+<h3>If a check fails</h3>
+
+<div class="callout warn">
+  <span class="ico">Rollback</span>
+  <div class="body"><p>Before step 4, rollback is
+  <code>svc resume writer</code> and lifting maintenance. After step 4 there is
+  no rollback: the old primary must be rebuilt as a standby
+  (<code>SOP-021</code>), which takes about four hours. Escalate to the
+  database owner instead of improvising.</p></div>
+</div>
+
+<h3>After the incident</h3>
+
+<ul class="tick">
+  <li>File the timeline in the incident record within 24 hours.</li>
+  <li>Raise a revision to this document if any step read wrong at 03:00.</li>
+</ul>
+
+<div class="signature">
+  <div><span class="line"></span><span class="who">Ran the procedure</span>
+       <span class="role">Name · date · time</span></div>
+  <div><span class="line"></span><span class="who">Verified</span>
+       <span class="role">On-call lead</span></div>
+</div>
+</div>
+
+</body>
+</html>

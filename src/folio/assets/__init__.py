@@ -10,12 +10,14 @@ base.css for the token contract between them.
 
 from __future__ import annotations
 
+import json
 from importlib.resources import files
 from pathlib import Path
 
 _ROOT = files(__package__)
 
 DEFAULT_THEME = "report"
+DEFAULT_TEMPLATE = "report"
 
 # Reference docs the CLI prints. Kept here rather than in cli.py so the wheel
 # packaging can be tested against the same list: `doc_text` falls back to the
@@ -76,8 +78,46 @@ def css_text(theme: str = DEFAULT_THEME, rtl: bool = False) -> str:
     return css
 
 
-def template_text(name: str) -> str:
-    return asset_path("templates", name).read_text(encoding="utf-8")
+def template_names() -> list[str]:
+    """Every installed scaffold, default first.
+
+    Discovery is a glob, so a new document type is a new folder — nothing to
+    register in code and nothing that can be half-added. What the folder cannot
+    carry is a description, which is why the manifest exists beside it.
+    """
+    found = sorted(p.parent.name for p in asset_path("templates").glob("*/document.html"))
+    if DEFAULT_TEMPLATE in found:
+        found.remove(DEFAULT_TEMPLATE)
+        found.insert(0, DEFAULT_TEMPLATE)
+    return found
+
+
+def template_path(name: str) -> Path:
+    p = asset_path("templates", name)
+    if not (p / "document.html").exists():
+        raise ValueError(f"unknown template {name!r} — choose from: {', '.join(template_names())}")
+    return p
+
+
+def template_files(name: str) -> list[Path]:
+    """Everything a scaffold ships, in the order it should be written.
+
+    The files are named for where they land, so `init` copies rather than
+    maps: a scaffold with no charts simply has no `charts.py`, instead of the
+    caller knowing which types own which files.
+    """
+    return sorted(p for p in template_path(name).iterdir() if p.is_file())
+
+
+def template_blurb(name: str) -> str:
+    """The one line `folio templates` prints. Kept in a manifest beside the
+    scaffolds so adding a folder without describing it fails the suite."""
+    manifest = json.loads(asset_path("templates", "manifest.json").read_text(encoding="utf-8"))
+    return manifest.get(name, "")
+
+
+def template_text(name: str, filename: str) -> str:
+    return (template_path(name) / filename).read_text(encoding="utf-8")
 
 
 def doc_text(name: str) -> str:

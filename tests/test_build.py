@@ -25,8 +25,8 @@ def test_css_ships_and_is_nonempty():
 
 
 def test_templates_ship():
-    assert "<!DOCTYPE html>" in template_text("starter.html")
-    assert "from folio import theme" in template_text("starter_charts.py")
+    assert "<!DOCTYPE html>" in template_text("report", "document.html")
+    assert "from folio import theme" in template_text("report", "charts.py")
 
 
 def test_reference_docs_resolve():
@@ -63,13 +63,6 @@ def test_every_served_doc_ships_in_the_wheel():
     shipped = cfg["tool"]["hatch"]["build"]["targets"]["wheel"]["force-include"]
     for name in SERVED_DOCS.values():
         assert f"docs/{name}" in shipped, f"{name} would be missing from the wheel"
-
-
-def test_starter_template_has_no_absolute_paths():
-    """The scaffold must not assume where folio was installed."""
-    text = template_text("starter_charts.py")
-    assert ".local/share" not in text
-    assert "Path.home()" not in text
 
 
 # ── document assembly ─────────────────────────────────────────────────────

@@ -6,6 +6,42 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — a scaffold per document type
+`folio init` had one document baked into it, a progress report, which is one of
+the seven shapes the skill routes to. Everything else — an invoice, a proposal,
+an SOP — was improvised from the component list on the spot, which is the drift
+the kit exists to stop, happening at the moment nobody checks: the first minute
+of a document, before there is anything to measure.
+
+- **`folio init --template <type>`**, with **`folio templates`** to list what
+  exists. Four ship: `report` (unchanged, still the default), `proposal`,
+  `invoice` and `runbook`.
+- Each scaffold declares the direction that suits it — an invoice in `minimal`,
+  a runbook in `technical` — so the routing table's pairing arrives with the
+  file instead of being remembered. `--theme` rewrites that declaration rather
+  than adding a second one, which would leave the winner to the parser.
+- Scaffolds are **discovered from the directory**, and their files are named
+  for where they land, so `init` copies rather than maps: a scaffold with
+  nothing to plot simply ships no `charts.py`. A manifest beside them carries
+  the one-line description, and a test asserts the two never diverge. That is
+  the gap `folio themes` still has — its blurbs live in a dict in the CLI with
+  an empty-string fallback, so a fifth theme would list as a bare name.
+- The conformance suite is parametrised over every scaffold in every theme.
+  A scaffold is the first folio markup anyone reads and it gets copied, so a
+  hand-rolled style or a skipped heading level in one does not stay in one.
+- The skill's routing table now names the command for each row, held to the
+  installed set in both directions: a row cannot send an agent to a scaffold
+  that does not exist, and a scaffold nobody is routed to fails the suite.
+
+**What looking caught that measuring did not.** The invoice scaffold ran onto a
+second page carrying the remit-to block at 12% fill — a single-sheet document
+that is not a single sheet, which is the one defect an invoice cannot ship
+with. `folio check` was silent, because the rule that would report it excuses
+the last page: the tail-widow blind spot recorded in 0.2.0, found again by
+reading the pages. Bank details are now lines rather than a `.facts` grid, and
+the currency is stated once in the column head instead of taking a fourth fact
+that wrapped to a row of its own.
+
 ## [0.2.0] — 2026-08-12
 
 ### Added

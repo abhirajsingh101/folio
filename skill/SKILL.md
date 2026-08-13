@@ -27,8 +27,9 @@ contents page whose numbers are real. Author in HTML with folio's classes.
 
 ```bash
 folio doctor                        # FIRST RUN ON A NEW MACHINE — what's missing
+folio templates                     # the document types, and the theme each pairs with
 folio themes                        # the four design directions
-folio init --theme editorial        # scaffold document.html + charts.py
+folio init --template invoice       # scaffold that type here (default: report)
 folio build document.html --check   # render, then measure the layout
 folio check document.html           # measure without rebuilding
 folio components                    # the component vocabulary — READ FIRST
@@ -45,15 +46,20 @@ Do this before opening an editor. The shape of a document is decided by what
 it is *for*, and getting it wrong is not recoverable by styling — an invoice
 with a cover page is wrong no matter how good the cover is.
 
-| They asked for | Shape | Theme | Furniture | Read first |
+| They asked for | Start from | Shape | Theme | Furniture |
 |---|---|---|---|---|
-| Report, progress update, findings, review | cover · contents · sections | `report` | full | `folio components` |
-| Proposal, quote, statement of work, bid | cover · contents · scope · pricing · signature | `report` or `editorial` | full | `folio components` |
-| Invoice, estimate, credit note | single sheet, no cover | `minimal` or `technical` | `data-furniture="none"` | `folio components` |
-| Runbook, SOP, procedure, playbook | doc-control head · numbered steps · warnings | `technical` | full | `folio components`, `folio gotchas` |
-| Letter, one-pager, brief, memo | single sheet, no cover | `minimal` | `data-furniture="none"` | `folio components` |
-| Case study, customer story | headline · metrics · narrative · quote | `editorial` | full | `folio imagery` |
-| Essay, annual review, long read | cover · contents · prose | `editorial` | full | `folio imagery` |
+| Report, progress update, findings, review | `init --template report` | cover · contents · sections | `report` | full |
+| Proposal, quote, statement of work, bid | `init --template proposal` | cover · contents · scope · pricing · signature | `report` or `editorial` | full |
+| Invoice, estimate, credit note | `init --template invoice` | single sheet, no cover | `minimal` or `technical` | `data-furniture="none"` |
+| Runbook, SOP, procedure, playbook | `init --template runbook` | doc-control head · numbered steps · warnings | `technical` | full |
+| Letter, one-pager, brief, memo | `init --template invoice`, strip the table | single sheet, no cover | `minimal` | `data-furniture="none"` |
+| Case study, customer story | `init --template report`, drop the contents | headline · metrics · narrative · quote | `editorial` | full |
+| Essay, annual review, long read | `init --template report` | cover · contents · prose | `editorial` | full |
+
+The scaffold is a starting shape, not a form to fill in: delete every block the
+document does not need, and never leave a placeholder value in place. Read
+`folio components` before adding anything that is not already in it, and
+`folio gotchas` before debugging a layout.
 
 **Ambiguities worth resolving before you build, not after:**
 
@@ -103,8 +109,9 @@ A document is not done when it renders. Print defects are silent by nature:
 the PDF is valid and merely looks wrong. Work in passes, and do not move on
 while a pass is failing.
 
-**Pass 1 — draft.** `folio init --theme <t>`, then write the content using the
-component vocabulary. Real data only.
+**Pass 1 — draft.** `folio init --template <type>` (add `--theme <t>` to
+override the pairing), then write the content using the component vocabulary.
+Real data only, and delete the blocks this document does not need.
 
 **Pass 2 — measure.** `folio build document.html --check`
 

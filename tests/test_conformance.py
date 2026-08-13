@@ -110,6 +110,40 @@ def test_every_theme_conforms_on_the_reference_document():
         assert not found, f"{theme}: {[str(f) for f in found]}"
 
 
+def _scaffolds() -> list[str]:
+    from folio.assets import template_names
+
+    return template_names()
+
+
+def _directions() -> list[str]:
+    from folio.assets import theme_names
+
+    return theme_names()
+
+
+@pytest.mark.parametrize("theme", _directions())
+@pytest.mark.parametrize("template", _scaffolds())
+def test_every_scaffold_conforms_in_every_theme(template, theme):
+    """A scaffold is the first folio markup anyone reads, and it gets copied.
+
+    Whatever it does is what the next document does — so a hand-rolled style
+    or a skipped level in a scaffold does not stay in the scaffold. Every
+    direction is tested because `folio init --theme` can pair any of them with
+    any scaffold.
+    """
+    from folio.assets import css_text, template_path, template_text
+
+    source = template_text(template, "document.html")
+    html = source.replace("</head>", f"<style>{css_text(theme)}</style></head>")
+    found = [
+        f
+        for f in inspect(html, template_path(template))
+        if f.rule in ("type-drift", "inline-style", "heading-skip")
+    ]
+    assert not found, f"{template}/{theme}: {[str(f) for f in found]}"
+
+
 # ── type scale ────────────────────────────────────────────────────────────
 
 

@@ -82,6 +82,29 @@ def test_the_trigger_and_the_scope_do_not_contradict():
         assert short_form in text.split("## Not for")[0], f"{short_form} dropped from the trigger"
 
 
+def test_every_scaffold_the_routing_table_sends_you_to_exists():
+    """The table now routes to a command, not just a shape.
+
+    `folio init --template proposal` for a template that was renamed exits 1,
+    and an agent that has been told to run it improvises instead — which is
+    the whole failure mode this file exists to prevent.
+    """
+    from folio.assets import template_names
+
+    named = set(re.findall(r"init --template ([a-z][a-z-]*)", skill_text()))
+    unknown = named - set(template_names())
+    assert not unknown, f"SKILL.md routes to scaffolds that do not exist: {sorted(unknown)}"
+
+
+def test_every_installed_scaffold_is_routed_to():
+    """A scaffold nobody is sent to is a scaffold nobody uses."""
+    from folio.assets import template_names
+
+    text = skill_text()
+    missing = [t for t in template_names() if f"init --template {t}" not in text]
+    assert not missing, f"the routing table never sends anyone to: {missing}"
+
+
 def test_every_theme_named_in_the_routing_table_is_installed():
     from folio.assets import theme_names
 
