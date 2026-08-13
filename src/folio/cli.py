@@ -76,6 +76,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     f = sub.add_parser("fonts", help="check font coverage for a document's scripts")
     f.add_argument("file", nargs="?", help="document to inspect (default: whole system)")
+    f.add_argument(
+        "--install",
+        metavar="SCRIPT",
+        help="fetch the Noto faces covering a script (e.g. ko, thai) into your user font directory",
+    )
 
     c = sub.add_parser("check", help="measure the rendered layout for real defects")
     c.add_argument("file", help="source .html document")
@@ -149,6 +154,23 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "fonts":
         from . import doctor as D
+
+        if args.install:
+            from .fonts import LICENCE, FontInstallError, install, user_font_dir
+
+            target = user_font_dir()
+            print(f"folio fonts — install {args.install}\n")
+            print(f"  into      {target}")
+            try:
+                written = install(args.install, on_progress=print)
+            except FontInstallError as exc:
+                sys.exit(f"\n{exc}")
+            if written:
+                print(f"\n{LICENCE}")
+                print("Re-run `folio fonts <file>` to confirm the document is covered.")
+            else:
+                print("\nNothing to do — every face for that script is already installed.")
+            return 0
 
         if args.file:
             src = Path(args.file)

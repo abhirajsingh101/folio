@@ -6,6 +6,43 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — `folio fonts --install <script>`
+A report that names a gap it cannot close is half a feature. `folio fonts`
+would tell you Tamil has no face and then leave you to it, which on a machine
+with no package manager — most Windows, plenty of locked-down macOS — turns
+"install Noto Sans Tamil" from a step into an afternoon. Carried in Planned
+since 0.3.0.
+
+`folio fonts --install ko` fetches the sans and the serif covering a script
+into the user's own font directory and refreshes the font cache. Both faces,
+because half the themes set body copy in a serif and a serif document with a
+sans Korean face in it is still two documents.
+
+The doctrine does not move: **no font is bundled, and nothing is fetched at
+build time.** This runs only when asked, only for the script asked for, and
+only into `~/.local/share/fonts` (or the macOS and Windows equivalents) —
+never a system directory, never with admin rights. Everything it fetches is
+Noto under the SIL Open Font License, from `google/fonts`, and the command
+prints that.
+
+- **A 200 carrying an error page is refused.** A moved URL answers with HTML
+  on plenty of hosts, and a `.ttf` full of `<!DOCTYPE html>` installs happily
+  and renders as nothing at all. The first four bytes decide.
+- **Re-running is free rather than 34MB** — that being what Korean costs.
+  Families already installed are skipped.
+- **The filenames are a table, not a pattern.** Each family names its own
+  variable axes: `NotoSansKR[wght].ttf` beside `NotoSansThai[wdth,wght].ttf`.
+  A derived URL would 404 on half the world. A test asserts the table covers
+  every script `check_document_fonts` can report as missing.
+- `folio fonts <file>` now names this command first when it reports a gap,
+  ahead of the platform's package manager.
+
+Verified against the live upstream rather than only against mocks: all twenty
+URLs resolve, and a real fetch of both Tamil faces produces files that
+fontconfig identifies as `Noto Sans Tamil` and `Noto Serif Tamil` — the exact
+names folio's stacks write — and that WeasyPrint then renders Tamil with. The
+tests themselves inject the fetch and never touch the network.
+
 ### Added — `font-fallback`, so the checker can finally see a font
 0.5.0 shipped four font defects' worth of fixes and not one of them was found
 by `folio check`. Every rule there measures geometry, and a document set in the

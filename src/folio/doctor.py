@@ -338,7 +338,11 @@ def check_document_fonts(html: str) -> list[Check]:
                     FAIL,
                     f"no font covers it — text will render as boxes "
                     f"(want one of: {', '.join(families)})",
-                    [FONT_INSTALL[_system()]],
+                    # folio's own command first: it needs no package manager and
+                    # no admin rights, which is the case this report is most
+                    # often read in. The platform line stays for anyone who
+                    # would rather their distribution owned the file.
+                    [f"folio fonts --install {script}", FONT_INSTALL[_system()]],
                 )
             )
     return checks

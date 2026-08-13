@@ -250,3 +250,71 @@ def test_cli_output_survives_a_legacy_codepage(tmp_path, capsys):
 
     assert main(["fonts", str(src)]) in (0, 1)
     assert "Japanese" in capsys.readouterr().out
+
+
+# ── fetching a face for a script the machine does not have ────────────────
+
+
+def test_every_script_folio_can_report_missing_can_also_be_fetched():
+    """A report that names a gap it cannot close is half a feature.
+
+    `check_document_fonts` will tell you Tamil has no face; `--install tamil`
+    has to be able to answer that. The table is explicit rather than derived
+    because the upstream filename carries the variable axes, and they differ
+    per family — `NotoSansKR[wght].ttf` beside `NotoSansThai[wdth,wght].ttf`.
+    """
+    from folio.fonts import DOWNLOADS
+    from folio.scripts import SCRIPT_INFO
+
+    reportable = {s for s in SCRIPT_INFO if s != "latin"}
+    assert reportable <= set(DOWNLOADS), f"no download for: {sorted(reportable - set(DOWNLOADS))}"
+
+
+def test_a_downloaded_file_that_is_not_a_font_is_refused(tmp_path):
+    """The failure that would otherwise install an error page as a typeface.
+
+    A moved URL answers 200 with HTML on plenty of hosts, and a `.ttf` full of
+    `<!DOCTYPE html>` installs perfectly happily and renders as nothing. The
+    first four bytes say what a file really is.
+    """
+    from folio import fonts
+
+    def fetch(url: str) -> bytes:
+        return b"<!DOCTYPE html><title>404</title>"
+
+    with pytest.raises(fonts.FontInstallError, match="not a font"):
+        fonts.install("thai", target=tmp_path, fetch=fetch, refresh=False, have=set())
+
+
+def test_a_fetched_face_lands_in_the_target_directory(tmp_path):
+    from folio import fonts
+
+    def fetch(url: str) -> bytes:
+        return b"\x00\x01\x00\x00" + b"padding" * 8  # a TrueType magic number
+
+    written = fonts.install("thai", target=tmp_path, fetch=fetch, refresh=False, have=set())
+    assert written, "nothing was written"
+    for path in written:
+        assert path.exists() and path.parent == tmp_path
+        assert path.suffix == ".ttf"
+
+
+def test_a_face_already_installed_is_not_fetched_again(tmp_path):
+    """Re-running the command must be free, not 34MB."""
+    from folio import fonts
+
+    calls = []
+
+    def fetch(url: str) -> bytes:
+        calls.append(url)
+        return b"OTTO" + b"padding" * 8
+
+    fonts.install("thai", target=tmp_path, fetch=fetch, refresh=False, have={"noto sans thai"})
+    assert not any("NotoSansThai" in u for u in calls), "refetched a face already present"
+
+
+def test_an_unknown_script_names_the_ones_that_exist(tmp_path):
+    from folio import fonts
+
+    with pytest.raises(fonts.FontInstallError, match="thai"):
+        fonts.install("klingon", target=tmp_path, fetch=lambda u: b"", refresh=False, have=set())

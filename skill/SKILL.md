@@ -345,7 +345,10 @@ for Arabic and Hebrew. Two cases need you:
   share characters and the heuristic cannot tell them apart.
 - Run `folio fonts <file>` before shipping any non-Latin document. folio
   bundles no fonts; if a script has no font it renders as boxes, and this is
-  the command that says so.
+  the command that says so. When it reports a gap, `folio fonts --install
+  <script>` closes it — Noto, from Google Fonts, into the user's own font
+  directory, no package manager and no admin rights. Ask before running it:
+  it is a download, and Korean is 34MB.
 
 The faces themselves are chosen for you: `folio build` puts the families that
 cover the detected scripts into the stylesheet, a serif companion for the
