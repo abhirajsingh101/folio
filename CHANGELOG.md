@@ -6,6 +6,8 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-08-13
+
 ### Added — a scaffold per document type
 `folio init` had one document baked into it, a progress report, which is one of
 the seven shapes the skill routes to. Everything else — an invoice, a proposal,
@@ -122,6 +124,23 @@ The Cover entry still promised the gradient and two layered circles the split
 band replaced. It is the reference an agent reads before authoring, so stale
 copy there is read as current. Now the band, its per-theme heights,
 `img.cover-plate`, and why type never sits on it.
+
+### Planned
+- **`thin-page` still cannot see a tail widow**, and it has now cost two real
+  defects — the 0.2.0 example's section tails and this release's invoice
+  running onto a second page at 12% fill. A page is excused when the page
+  *after* it begins with an authored break, which is right for a section
+  ending at 85% and wrong for one that widowed at 11%. The last page is
+  excused outright, which is where a single-sheet document fails. This is the
+  next rule to fix.
+- Scaffolds for the three routing rows that have none of their own — letter
+  and one-pager, case study, essay. They currently route to the nearest
+  scaffold with blocks to delete.
+- Optional `folio fonts --install <script>` to fetch a single Noto family into
+  a user font directory, for machines with no package manager.
+- Byte-identical output across machines. Currently the look degrades
+  gracefully but is not pinned; solving it without bundling everything means
+  optional per-script subsets.
 
 ## [0.2.0] — 2026-08-12
 
