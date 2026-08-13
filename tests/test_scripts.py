@@ -318,3 +318,72 @@ def test_an_unknown_script_names_the_ones_that_exist(tmp_path):
 
     with pytest.raises(fonts.FontInstallError, match="thai"):
         fonts.install("klingon", target=tmp_path, fetch=lambda u: b"", refresh=False, have=set())
+
+
+def test_the_kit_faces_the_doctor_asks_for_can_all_be_installed():
+    """`folio doctor` says "missing Inter" and must be able to answer for it.
+
+    The kit's own three faces are what decide whether a Latin document looks
+    the way folio intends, and until now the report named them without being
+    able to fetch them — the same half-a-feature the script install closed.
+    """
+    from folio.doctor import KIT_FACES
+    from folio.fonts import DOWNLOADS
+
+    installable = {family for family, _, _ in DOWNLOADS["kit"]}
+    assert set(KIT_FACES) <= installable, f"cannot install: {set(KIT_FACES) - installable}"
+
+
+def test_every_download_names_a_licence_folio_can_print():
+    """Two licences now, and the command states the one that applies.
+
+    Noto is OFL; P052 is AGPL with an exemption that permits embedding in a
+    PDF regardless of the document's own licence, which is precisely what a
+    typesetting kit does with it. Getting that wrong in either direction is
+    the kind of mistake nobody notices until it matters.
+    """
+    from folio.fonts import DOWNLOADS, LICENCES
+
+    for script, entries in DOWNLOADS.items():
+        for family, _, licence in entries:
+            assert licence in LICENCES, f"{script}/{family} names licence {licence!r}"
+
+
+def test_installing_the_kit_fetches_its_own_faces(tmp_path):
+    from folio import fonts
+
+    fetched = []
+
+    def fetch(url: str) -> bytes:
+        fetched.append(url)
+        return b"OTTO" + b"padding" * 8
+
+    fonts.install("kit", target=tmp_path, fetch=fetch, refresh=False, have=set())
+    assert any("Inter" in u for u in fetched)
+    assert any("JetBrainsMono" in u for u in fetched)
+    assert any("P052" in u for u in fetched)
+
+
+def test_every_style_of_an_installed_family_is_skipped(tmp_path):
+    """P052 arrives as four files and fontconfig calls them all one family.
+
+    Naming the styles separately in the table would mean a machine that has
+    P052 re-fetches its italic and both bolds on every run — the "re-running
+    is free" property quietly false for the one family that ships as a set.
+    """
+    from folio import fonts
+
+    fetched = []
+
+    def fetch(url: str) -> bytes:
+        fetched.append(url)
+        return b"OTTO" + b"padding" * 8
+
+    fonts.install(
+        "kit",
+        target=tmp_path,
+        fetch=fetch,
+        refresh=False,
+        have={"inter", "jetbrains mono", "p052"},
+    )
+    assert not fetched, f"refetched faces already present: {fetched}"

@@ -6,6 +6,43 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — `--install kit`, and output is already reproducible
+The Planned item read "byte-identical output across machines. Currently the
+look degrades gracefully but is not pinned." The first half of that turned out
+to be done already, and measuring it changed what the second half means.
+
+**On one machine, folio's output is byte-identical today.** Two builds of the
+same document hash the same, including through the charts path where
+matplotlib runs — WeasyPrint 68 writes no `CreationDate` and no document ID.
+That is now a test rather than a happy accident: a timestamp in a running
+footer, or a renderer that starts stamping one, would take it away silently and
+the only symptom would be that nobody can diff two builds any more.
+
+So the remaining variable across machines is not the renderer. It is **which
+faces are installed** — and that is what `--install kit` closes:
+
+- Inter, JetBrains Mono and P052, which are the three faces `folio doctor`
+  checks for and the first names in every stack the kit writes. A machine
+  without P052 sets every report and essay in whatever serif fontconfig
+  prefers, and P052 is the first name in `--font-body`.
+- Four P052 files, because a body face without its italic and bold is not a
+  body face — but **one family**, which is what fontconfig calls them. Listing
+  the styles as separate families would have re-fetched three files on every
+  run of a machine that already had the set, quietly making "re-running is
+  free" false for the one family that ships as a set. Caught by looking at what
+  `fc-scan` says the fetched files actually are.
+- P052 comes from Artifex rather than Google Fonts, under the AGPL with a font
+  exemption that permits embedding in a PDF regardless of the document's own
+  licence — precisely what a typesetting kit does with it. Each entry carries
+  its licence and the command prints the ones that apply, so the OFL line is no
+  longer claimed over a font it does not cover.
+- `folio doctor`'s "missing Inter — falling back" now names the command that
+  fixes it.
+
+Verified against the live upstream: all six files fetch, and fontconfig
+identifies them as `Inter`, `JetBrains Mono` and `P052` — the exact names the
+stacks ask for.
+
 ### Added — the `essay` scaffold, and the routing table is complete
 Seven rows in the skill's routing table, and until now six of them started from
 a scaffold. The seventh was sent to `report --theme editorial`, which is a

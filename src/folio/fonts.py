@@ -11,9 +11,14 @@ So this is opt-in and explicit: it runs only when asked, only for the script
 asked for, and only into the user's own font directory. Nothing is fetched at
 build time, and nothing is ever written outside the user's home.
 
-Everything here is Noto under the SIL Open Font License, from the `google/fonts`
-repository. The filenames are held in a table rather than derived because each
-family names its own variable axes — `NotoSansKR[wght].ttf` beside
+The script faces are Noto under the SIL Open Font License, from `google/fonts`.
+The kit's own serif, P052, is URW's Palladio from Artifex under the AGPL with a
+font exemption that permits embedding in a PDF regardless of the document's own
+licence — which is exactly what a typesetting kit does with it. Each entry
+carries which of the two applies, and the command prints it.
+
+The filenames are held in a table rather than derived because each family names
+its own variable axes — `NotoSansKR[wght].ttf` beside
 `NotoSansThai[wdth,wght].ttf` — and a derived URL would 404 on half the world.
 """
 
@@ -24,10 +29,27 @@ import shutil
 import subprocess
 from collections.abc import Callable, Iterable
 from pathlib import Path
+from urllib.parse import unquote
 
 BASE = "https://github.com/google/fonts/raw/main/ofl"
+URW = "https://github.com/ArtifexSoftware/urw-base35-fonts/raw/master/fonts"
 
-# script -> ((family name, upstream directory, filename), ...)
+LICENCES = {
+    "ofl": "Noto and the kit's sans faces are under the SIL Open Font License 1.1.",
+    "urw": (
+        "P052 is URW's Palladio, from Artifex, under the AGPL v3 with a font\n"
+        "  exemption: embedding it in a PDF is permitted regardless of the\n"
+        "  licence of the document itself, which is exactly what folio does."
+    ),
+}
+
+
+def _noto(family: str, folder: str, filename: str) -> tuple[str, str, str]:
+    quoted = filename.replace("[", "%5B").replace("]", "%5D")
+    return (family, f"{BASE}/{folder}/{quoted}", "ofl")
+
+
+# script -> ((family name, url, licence key), ...)
 #
 # Sans and serif both, because half the themes set body copy in a serif and a
 # serif document with a sans Korean face in it is still two documents. The
@@ -35,48 +57,69 @@ BASE = "https://github.com/google/fonts/raw/main/ofl"
 # by any stack folio writes.
 DOWNLOADS: dict[str, tuple[tuple[str, str, str], ...]] = {
     "hangul": (
-        ("Noto Sans KR", "notosanskr", "NotoSansKR[wght].ttf"),
-        ("Noto Serif KR", "notoserifkr", "NotoSerifKR[wght].ttf"),
+        _noto("Noto Sans KR", "notosanskr", "NotoSansKR[wght].ttf"),
+        _noto("Noto Serif KR", "notoserifkr", "NotoSerifKR[wght].ttf"),
     ),
     "kana": (
-        ("Noto Sans JP", "notosansjp", "NotoSansJP[wght].ttf"),
-        ("Noto Serif JP", "notoserifjp", "NotoSerifJP[wght].ttf"),
+        _noto("Noto Sans JP", "notosansjp", "NotoSansJP[wght].ttf"),
+        _noto("Noto Serif JP", "notoserifjp", "NotoSerifJP[wght].ttf"),
     ),
     "han": (
-        ("Noto Sans SC", "notosanssc", "NotoSansSC[wght].ttf"),
-        ("Noto Serif SC", "notoserifsc", "NotoSerifSC[wght].ttf"),
+        _noto("Noto Sans SC", "notosanssc", "NotoSansSC[wght].ttf"),
+        _noto("Noto Serif SC", "notoserifsc", "NotoSerifSC[wght].ttf"),
     ),
     "arabic": (
-        ("Noto Sans Arabic", "notosansarabic", "NotoSansArabic[wdth,wght].ttf"),
-        ("Noto Naskh Arabic", "notonaskharabic", "NotoNaskhArabic[wght].ttf"),
+        _noto("Noto Sans Arabic", "notosansarabic", "NotoSansArabic[wdth,wght].ttf"),
+        _noto("Noto Naskh Arabic", "notonaskharabic", "NotoNaskhArabic[wght].ttf"),
     ),
     "hebrew": (
-        ("Noto Sans Hebrew", "notosanshebrew", "NotoSansHebrew[wdth,wght].ttf"),
-        ("Noto Serif Hebrew", "notoserifhebrew", "NotoSerifHebrew[wdth,wght].ttf"),
+        _noto("Noto Sans Hebrew", "notosanshebrew", "NotoSansHebrew[wdth,wght].ttf"),
+        _noto("Noto Serif Hebrew", "notoserifhebrew", "NotoSerifHebrew[wdth,wght].ttf"),
     ),
     "devanagari": (
-        ("Noto Sans Devanagari", "notosansdevanagari", "NotoSansDevanagari[wdth,wght].ttf"),
-        ("Noto Serif Devanagari", "notoserifdevanagari", "NotoSerifDevanagari[wdth,wght].ttf"),
+        _noto("Noto Sans Devanagari", "notosansdevanagari", "NotoSansDevanagari[wdth,wght].ttf"),
+        _noto("Noto Serif Devanagari", "notoserifdevanagari", "NotoSerifDevanagari[wdth,wght].ttf"),
     ),
     "bengali": (
-        ("Noto Sans Bengali", "notosansbengali", "NotoSansBengali[wdth,wght].ttf"),
-        ("Noto Serif Bengali", "notoserifbengali", "NotoSerifBengali[wdth,wght].ttf"),
+        _noto("Noto Sans Bengali", "notosansbengali", "NotoSansBengali[wdth,wght].ttf"),
+        _noto("Noto Serif Bengali", "notoserifbengali", "NotoSerifBengali[wdth,wght].ttf"),
     ),
     "tamil": (
-        ("Noto Sans Tamil", "notosanstamil", "NotoSansTamil[wdth,wght].ttf"),
-        ("Noto Serif Tamil", "notoseriftamil", "NotoSerifTamil[wdth,wght].ttf"),
+        _noto("Noto Sans Tamil", "notosanstamil", "NotoSansTamil[wdth,wght].ttf"),
+        _noto("Noto Serif Tamil", "notoseriftamil", "NotoSerifTamil[wdth,wght].ttf"),
     ),
     "thai": (
-        ("Noto Sans Thai", "notosansthai", "NotoSansThai[wdth,wght].ttf"),
-        ("Noto Serif Thai", "notoserifthai", "NotoSerifThai[wdth,wght].ttf"),
+        _noto("Noto Sans Thai", "notosansthai", "NotoSansThai[wdth,wght].ttf"),
+        _noto("Noto Serif Thai", "notoserifthai", "NotoSerifThai[wdth,wght].ttf"),
     ),
     "cyrillic": (
-        ("Noto Sans", "notosans", "NotoSans[wdth,wght].ttf"),
-        ("Noto Serif", "notoserif", "NotoSerif[wdth,wght].ttf"),
+        _noto("Noto Sans", "notosans", "NotoSans[wdth,wght].ttf"),
+        _noto("Noto Serif", "notoserif", "NotoSerif[wdth,wght].ttf"),
     ),
     "greek": (
-        ("Noto Sans", "notosans", "NotoSans[wdth,wght].ttf"),
-        ("Noto Serif", "notoserif", "NotoSerif[wdth,wght].ttf"),
+        _noto("Noto Sans", "notosans", "NotoSans[wdth,wght].ttf"),
+        _noto("Noto Serif", "notoserif", "NotoSerif[wdth,wght].ttf"),
+    ),
+    # Not a script: the kit's own three faces, which decide whether a *Latin*
+    # document looks the way folio intends. `folio doctor` has always been able
+    # to say "missing Inter — falling back" and never able to do anything about
+    # it, which is the same half-a-feature the script list closed.
+    #
+    # P052 is URW's Palladio and comes from Artifex rather than Google Fonts:
+    # it is the first name in `--font-body`, so a machine without it sets every
+    # report and essay in whatever serif fontconfig prefers. Four styles,
+    # because a body face without its italic and bold is not a body face.
+    "kit": (
+        _noto("Inter", "inter", "Inter[opsz,wght].ttf"),
+        _noto("JetBrains Mono", "jetbrainsmono", "JetBrainsMono[wght].ttf"),
+        # All four name the same *family*, which is what fontconfig calls them
+        # and what the stacks ask for. Styles are not separate families, and
+        # listing them as such would re-fetch three files on every run of a
+        # machine that already has the set.
+        ("P052", f"{URW}/P052-Roman.otf", "urw"),
+        ("P052", f"{URW}/P052-Italic.otf", "urw"),
+        ("P052", f"{URW}/P052-Bold.otf", "urw"),
+        ("P052", f"{URW}/P052-BoldItalic.otf", "urw"),
     ),
 }
 
@@ -84,8 +127,6 @@ DOWNLOADS: dict[str, tuple[tuple[str, str, str], ...]] = {
 # failure this catches: `.ttf` full of `<!DOCTYPE html>` installs perfectly
 # happily and renders as nothing at all.
 MAGIC = (b"\x00\x01\x00\x00", b"OTTO", b"true", b"ttcf", b"wOFF", b"wOF2")
-
-LICENCE = "Noto is licensed under the SIL Open Font License 1.1."
 
 
 class FontInstallError(RuntimeError):
@@ -133,6 +174,21 @@ def resolve(script: str) -> str:
     )
 
 
+def licences_for(script: str) -> list[str]:
+    """The licence text covering what `--install <script>` would fetch.
+
+    Per script rather than one constant for the whole module: the Noto families
+    are OFL and P052 is AGPL-with-an-exemption, and printing the wrong one is
+    the kind of mistake nobody notices until it matters.
+    """
+    key = resolve(script)
+    out: list[str] = []
+    for _family, _url, licence in DOWNLOADS[key]:
+        if LICENCES[licence] not in out:
+            out.append(LICENCES[licence])
+    return out
+
+
 def install(
     script: str,
     *,
@@ -158,14 +214,16 @@ def install(
 
     directory.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
-    for family, folder, filename in DOWNLOADS[key]:
+    reported: set[str] = set()  # a family ships as several files; say so once
+    for family, url, _licence in DOWNLOADS[key]:
+        name = unquote(url.rsplit("/", 1)[-1])
         if family.lower() in present:
-            if on_progress:
+            if on_progress and family not in reported:
+                reported.add(family)
                 on_progress(f"  have      {family}")
             continue
-        url = f"{BASE}/{folder}/{filename.replace('[', '%5B').replace(']', '%5D')}"
         if on_progress:
-            on_progress(f"  fetching  {family}")
+            on_progress(f"  fetching  {family}  ({name})")
         data = fetch(url)
         if not data.startswith(MAGIC):
             raise FontInstallError(
@@ -174,7 +232,7 @@ def install(
                 "  the upstream path has probably moved; install it by hand "
                 "from https://fonts.google.com/noto"
             )
-        out = directory / filename
+        out = directory / name
         out.write_bytes(data)
         written.append(out)
         if on_progress:

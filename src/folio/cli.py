@@ -156,7 +156,7 @@ def main(argv: list[str] | None = None) -> int:
         from . import doctor as D
 
         if args.install:
-            from .fonts import LICENCE, FontInstallError, install, user_font_dir
+            from .fonts import FontInstallError, install, licences_for, user_font_dir
 
             target = user_font_dir()
             print(f"folio fonts — install {args.install}\n")
@@ -166,7 +166,8 @@ def main(argv: list[str] | None = None) -> int:
             except FontInstallError as exc:
                 sys.exit(f"\n{exc}")
             if written:
-                print(f"\n{LICENCE}")
+                for line in licences_for(args.install):
+                    print(f"\n  {line}")
                 print("Re-run `folio fonts <file>` to confirm the document is covered.")
             else:
                 print("\nNothing to do — every face for that script is already installed.")

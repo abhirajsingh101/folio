@@ -217,8 +217,8 @@ def check_fonts() -> Check:
             WARN,
             f"missing {', '.join(missing)} — falling back",
             [
+                "folio fonts --install kit",
                 "Optional. Output stays professional; see docs/GOTCHAS.md.",
-                "Best look: install Inter, JetBrains Mono, and a Palatino-class serif.",
             ],
         )
     return Check("Fonts", OK, "all preferred faces present")

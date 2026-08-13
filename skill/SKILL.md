@@ -349,6 +349,10 @@ for Arabic and Hebrew. Two cases need you:
   <script>` closes it — Noto, from Google Fonts, into the user's own font
   directory, no package manager and no admin rights. Ask before running it:
   it is a download, and Korean is 34MB.
+- `folio fonts --install kit` does the same for folio's own faces — Inter,
+  JetBrains Mono and P052 — when `folio doctor` reports them missing. Two
+  machines with the kit installed render one document identically; without it
+  the look degrades gracefully into whatever the machine happens to have.
 
 The faces themselves are chosen for you: `folio build` puts the families that
 cover the detected scripts into the stylesheet, a serif companion for the

@@ -73,7 +73,9 @@ Japanese? one Noto family, not all of them. `folio doctor` and
 `folio fonts <file>` name the specific gap and the exact command for your
 platform, so you never install a toolchain to find out which half you needed —
 and `folio fonts --install <script>` fetches that family itself, no package
-manager and no admin rights required.
+manager and no admin rights required. `folio fonts --install kit` does the same
+for folio's own three faces, which is what makes one document look the same on
+two machines.
 
 `folio doctor` is not decoration. WeasyPrint binds Pango, cairo and
 GDK-PixBuf through ctypes, and **pip cannot install those** — it is the single
