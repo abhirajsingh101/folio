@@ -301,6 +301,50 @@ def test_the_version_is_declared_once():
     assert re.fullmatch(r"\d+\.\d+\.\d+", declared)
 
 
+def test_a_korean_document_is_never_slanted(tmp_path):
+    """Hangul has no italic, so a renderer asked for one fakes a slant.
+
+    `editorial` italicises captions, eyebrows, document subtitles and
+    pull-quote attributions. In a Korean document those are Korean text, and
+    WeasyPrint answers with a synthesised oblique — smeared strokes that read
+    as a rendering fault rather than as emphasis. `font-synthesis: none` is
+    ignored, and `src: local(...)` — which would let the italic slot be mapped
+    to the upright face — is not resolved at all, both measured on WeasyPrint
+    68. Suppressing the request is what is left.
+
+    Asserted on the computed style of the laid-out document, because whether a
+    slant is synthesised is a fact about the cascade: the rule has to beat
+    every italic declaration the theme makes, and `.doc-head .sub` alone is two
+    selectors deep. Not asserted on the PDF — WeasyPrint compresses its object
+    streams, so the font names are not in the bytes and a search for `Oblique`
+    passes whatever happens, which is how the first version of this test
+    "passed" before the fix existed.
+    """
+    weasyprint = pytest.importorskip("weasyprint")
+    from folio.check import _walk
+
+    src = tmp_path / "doc.html"
+    src.write_text(
+        '<html><head><meta charset="utf-8"></head>'
+        '<body data-theme="editorial">'
+        '<div class="doc-head"><h1>측정 보고서</h1>'
+        '<p class="sub">부제목입니다</p></div>'
+        "<h4>소제목</h4><p>본문에 <em>강조</em>가 있습니다.</p>"
+        "<figure><figcaption>그림 설명</figcaption></figure>"
+        '<blockquote class="pullquote">인용문입니다<cite>— 저자</cite></blockquote>'
+        "</body></html>",
+        encoding="utf-8",
+    )
+    html, _ = B.prepare(src)
+    page = weasyprint.HTML(string=html, base_url=str(tmp_path)).render().pages[0]
+    slanted = {
+        getattr(box, "element_tag", "?")
+        for box in _walk(page._page_box)
+        if box.style["font_style"] != "normal"
+    }
+    assert not slanted, f"italic still requested on: {sorted(slanted)}"
+
+
 def test_a_korean_document_is_built_with_korean_faces(tmp_path):
     """End to end: the detected script has to reach the stylesheet.
 

@@ -113,12 +113,29 @@ before the generic. Two names, not one: `Noto Sans KR` is the Google Fonts
 name and `Noto Sans CJK KR` is what the same face is called when a
 distribution packages it, and a machine typically has exactly one of them.
 
-**A related one folio cannot fix: CJK has no italic.** Ask for one and
-WeasyPrint synthesises a slant, which is a rendering artefact rather than
-emphasis. `font-synthesis: none` does not help — measured on WeasyPrint 68,
-the oblique is synthesised with and without it. Setting `font-style: normal`
-under `:lang(ko)` would work, but it also un-slants Latin book titles inside
-the same document, so folio leaves the call to the author.
+### Italic does not exist in most of the world's scripts
+
+Italic is a Latin invention. Hangul, kana, Han, Arabic, Hebrew, Devanagari,
+Bengali, Tamil and Thai never developed an equivalent, so a slant in them is
+not emphasis — it is a distorted letterform. Ask for one anyway and WeasyPrint
+synthesises it, which is what `editorial` did to every Korean caption,
+eyebrow, subtitle and pull-quote attribution it set.
+
+It cannot be declined, measured on WeasyPrint 68:
+
+| approach | result |
+|---|---|
+| `font-synthesis: none` | ignored — the oblique is synthesised anyway |
+| `@font-face { src: local("…") }` mapping the italic slot to the upright face | `local()` is not resolved at all; the rule does nothing |
+
+So folio withdraws the request instead: for a document in one of those scripts,
+`folio build` emits `font-style: normal`. **Latin inside those documents goes
+upright too** — CSS selects elements, not scripts, and a Korean caption with an
+English title in it is one element. That is the deliberate trade: upright Latin
+in a Korean caption is unremarkable, slanted Hangul is not. To take the italic
+back, set `font-style: italic` in `brand.css`, which is appended last and wins.
+
+Cyrillic and Greek are excluded — both have true italics and use them.
 
 ### `.bleed` cannot bleed off the top of a page
 

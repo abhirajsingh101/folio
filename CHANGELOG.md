@@ -150,16 +150,36 @@ landing on the correct number. There is no change to what the rule reports on
 any shipped document; all nine examples and six scaffolds are silent on it in
 all four directions, before and after.
 
-### Planned
-- **CJK has no italic, and folio still asks for one.** `editorial` italicises
-  captions, eyebrows and pull-quote attributions; in a Korean document
-  WeasyPrint synthesises a slant on the Hangul, which is a rendering artefact
-  rather than emphasis. `font-synthesis: none` does not help — measured on
-  WeasyPrint 68, the oblique appears with and without it. `font-style: normal`
-  under `:lang(ko)` in the injected script block would work and would win the
-  cascade, but it also un-slants Latin book titles inside the same document,
-  and CSS cannot tell the two apart. A real trade-off, so it is recorded here
-  rather than decided quietly inside a font fix.
+### Changed — italic is withdrawn in the scripts that do not have one
+Italic is a Latin invention. Hangul, kana, Han, Arabic, Hebrew, Devanagari,
+Bengali, Tamil and Thai never developed an equivalent, so a slant in them is a
+distorted letterform rather than emphasis — and `editorial` was asking for one
+on every Korean caption, eyebrow, subtitle and pull-quote attribution it set,
+which WeasyPrint duly synthesised.
+
+Two ways out were measured on WeasyPrint 68 and neither works:
+`font-synthesis: none` is ignored, and `@font-face { src: local(…) }` — which
+would map the italic slot to the upright face and cost nothing at all — is not
+resolved, so the rule does nothing. The request is therefore withdrawn:
+`folio build` emits `font-style: normal` for those scripts.
+
+**Latin inside those documents goes upright with them.** CSS selects elements,
+not scripts, and a Korean caption with an English title in it is one element.
+That is the trade, made deliberately: upright Latin in a Korean caption is
+unremarkable, and slanted Hangul is not. `brand.css` is appended afterwards and
+takes it back for a document that wants it. Cyrillic and Greek are excluded —
+both have true italics and use them.
+
+The selector carries a doubled `:lang()`, which is specificity rather than a
+typo: language inherits, so every element matches both halves, and the second
+buys the level needed to outrank `.doc-head .sub`. A test asserts it on the
+laid-out document, so a future theme rule that outranks it fails loudly.
+
+That test is also the reason this entry is trustworthy. The first version of it
+searched the PDF bytes for `Oblique` and passed before the fix existed —
+WeasyPrint compresses its object streams, so the font names are not in the
+bytes and the assertion could never fail. It reads the computed style off the
+layout tree now.
 
 ### Added — a test that a rule nobody documented cannot ship
 `folio check` prints a rule name; what the name means and which of two remedies

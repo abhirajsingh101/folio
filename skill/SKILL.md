@@ -345,6 +345,13 @@ wrong, and invisible to `folio check`, because fonts are not geometry. If a
 document genuinely needs a specific face, name it in `brand.css`, which is
 appended last and wins.
 
+Italic is withdrawn in the scripts that do not have one — Hangul, kana, Han,
+Arabic, Hebrew, Devanagari, Bengali, Tamil, Thai. A slant there is a
+synthesised distortion, not emphasis. Latin inside those documents goes upright
+with it, because CSS selects elements and not scripts; **do not** re-add
+`font-style: italic` to fix what looks like a missing accent — reach for weight
+or a `.eyebrow` instead.
+
 ## Not for
 
 **Slide decks and video.** Different medium, different tool.

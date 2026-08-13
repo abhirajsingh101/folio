@@ -75,6 +75,14 @@ SCRIPT_INFO: dict[str, tuple[str, str, list[str], list[str]]] = {
     "latin": ("en", "Latin", ["Inter", "P052", "DejaVu Sans"], ["P052", "DejaVu Serif"]),
 }
 
+# Scripts with no italic. Not a shortage of fonts — italic is a Latin
+# invention, and these writing systems never developed an equivalent, so a
+# slant is not emphasis in them but a distortion of the letterform. Cyrillic
+# and Greek are absent deliberately: both have true italics and use them.
+NO_ITALIC = frozenset(
+    {"hangul", "kana", "han", "arabic", "hebrew", "devanagari", "bengali", "tamil", "thai"}
+)
+
 # The three scripts with a monospaced face of their own. Everything else uses
 # its sans inside a code block — a proportional face in `pre` is not ideal, but
 # it is what exists, and CJK is where the grid actually matters, because the
@@ -222,7 +230,7 @@ def script_font_css(profile: Profile) -> str:
             if family not in mono:
                 mono.append(family)
     names = ", ".join(SCRIPT_INFO[s][1] for s in scripts)
-    return (
+    block = (
         f"/* ── Faces for the scripts in this document: {names} ── */\n"
         ":root {\n"
         f"  --script-sans: {_families(sans)};\n"
@@ -230,6 +238,35 @@ def script_font_css(profile: Profile) -> str:
         f"  --script-mono: {_families(mono)};\n"
         "}"
     )
+    upright = [s for s in scripts if s in NO_ITALIC]
+    if upright:
+        langs = ", ".join(
+            f"html:lang({lang}) :lang({lang})" for lang in (SCRIPT_INFO[s][0] for s in upright)
+        )
+        block += (
+            "\n\n/* These scripts have no italic. Asked for one, WeasyPrint\n"
+            "   synthesises a slant, which reads as a rendering fault rather\n"
+            "   than as emphasis — and it cannot be declined: `font-synthesis:\n"
+            "   none` is ignored, and `src: local(…)`, which would let the\n"
+            "   italic slot be mapped to the upright face, is not resolved at\n"
+            "   all. Both measured on WeasyPrint 68. So the request is\n"
+            "   withdrawn instead.\n\n"
+            "   The cost is Latin inside these documents, which goes upright\n"
+            "   too: CSS selects elements, not scripts, and a Korean caption\n"
+            "   with an English title in it is one element. Upright Latin in a\n"
+            "   Korean caption is unremarkable; slanted Hangul is not. A\n"
+            "   document that wants the italic back says so in brand.css,\n"
+            "   which is appended after this and wins.\n\n"
+            "   The doubled `:lang()` is specificity, not a typo. Language\n"
+            "   inherits, so every element in the document matches both halves;\n"
+            "   the second one buys a level. The themes' italic declarations\n"
+            "   top out at two classes (`.doc-head .sub`, `.cover .sub`), and\n"
+            "   one pseudo-class more than that is what it takes to withdraw\n"
+            "   them. Held by a test on the laid-out document, so a new rule\n"
+            "   that outranks this says so. */\n"
+            f"{langs} {{ font-style: normal; }}"
+        )
+    return block
 
 
 def _families(names: list[str]) -> str:
