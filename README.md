@@ -189,9 +189,9 @@ pages — and reports real defects:
 
 Overflow, overlapping text, near-empty pages, tails that spilled onto a page
 of their own, stranded headings, illegibly small type, rasters blown up past
-their pixels, text too close in tone to what it sits on, and a full-bleed
-block that reaches both side edges of the paper but stops short of the top
-one. Every rule encodes a defect that really shipped during folio's own
+their pixels, text too close in tone to what it sits on, a full-bleed block
+that reaches both side edges of the paper but stops short of the top one, and
+text in a writing system that nothing in its font stack can set. Every rule encodes a defect that really shipped during folio's own
 development — that thin page on p6 is a real finding from the example in this
 repo, that 1.9:1 footer is a real finding from folio's own stylesheet,
 `page-widow` was written after a one-sheet invoice quietly shipped as two

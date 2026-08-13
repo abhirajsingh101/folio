@@ -277,6 +277,47 @@ def test_a_one_page_document_is_never_a_widow():
     assert "page-widow" not in rules(doc(body))
 
 
+# ── a stack with no face for the script it is setting ─────────────────────
+
+
+def test_text_in_a_script_the_stack_cannot_cover_is_flagged():
+    """The defect 0.5.0 was cut for, and the rule that would have found it.
+
+    Every Korean document folio built was set in a Chinese face, because the
+    body stack was `P052, Palatino, Bitstream Charter, Georgia, serif` and not
+    one of those has a Hangul glyph. It was found by reading fonts out of a
+    rendered PDF; nothing in the checker could see it, because every other rule
+    measures geometry and a document in the wrong face has correct geometry.
+
+    The layout tree carries each box's resolved stack, and folio already knows
+    which families cover which script, so the contradiction is measurable:
+    text in a script that nothing named can set.
+    """
+    body = "<p style=\"font-family:'P052',Georgia,serif\">한글 본문입니다</p>"
+    assert "font-fallback" in rules(doc(body))
+
+
+def test_a_stack_that_names_a_covering_face_is_silent():
+    body = "<p style=\"font-family:'P052','Noto Serif CJK KR',serif\">한글 본문입니다</p>"
+    assert "font-fallback" not in rules(doc(body))
+
+
+def test_an_unrecognised_family_is_not_judged():
+    """folio's table is Noto-centric, and Korean typography is not.
+
+    Pretendard, Nanum Gothic and Apple SD Gothic Neo are not in it, and a rule
+    that fired on every one of them would be noise on exactly the documents
+    whose author knew what they were doing. Silence on an unknown family is the
+    price of the rule being trustworthy on a known one.
+    """
+    body = "<p style=\"font-family:'Pretendard',serif\">한글 본문입니다</p>"
+    assert "font-fallback" not in rules(doc(body))
+
+
+def test_latin_text_is_never_asked_about_coverage():
+    assert "font-fallback" not in rules(doc("<p>Ordinary Latin prose, unremarkable.</p>"))
+
+
 # ── a bleed that stops short of the paper ─────────────────────────────────
 
 

@@ -160,6 +160,18 @@ Two rules measure how a page filled, and they mean different things:
   one-pager that quietly became two pages. Tighten the copy above it, or move
   a block up so the page carries more. A one-page document is never a widow.
 
+One rule is not about geometry at all:
+
+- `font-fallback` — text in a script that nothing in its font stack can set.
+  A stack falls through per glyph; when it runs out, the renderer asks
+  fontconfig, which never fails and never asks — for Korean on Linux it
+  commonly answers with a *Chinese* face. The document renders and is simply
+  in the wrong typeface. `folio build` injects covering faces for the scripts
+  it detects, so this fires on type styled outside that: a hand-written stack,
+  or a `brand.css` that names only Latin faces. Name a family that covers the
+  script. The rule stays silent on a family folio does not recognise, because
+  that may be exactly the face you chose.
+
 One rule measures *where* a block sits rather than what it measures:
 
 - `half-bleed` — a full-bleed block opened a page. `.bleed` cancels the page

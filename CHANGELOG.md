@@ -6,6 +6,38 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — `font-fallback`, so the checker can finally see a font
+0.5.0 shipped four font defects' worth of fixes and not one of them was found
+by `folio check`. Every rule there measures geometry, and a document set in the
+wrong typeface has perfectly correct geometry — so all four were found by
+rendering a PDF and reading the embedded fonts back out by hand. That is a
+tool-shaped hole, and 0.5.0's Planned section said so.
+
+- **`font-fallback`** — text in a script that nothing in its stack can set.
+  A stack falls through per glyph; when it runs out the renderer asks
+  fontconfig, which never fails and never asks. For Korean on a Linux machine
+  it commonly answers with a *Chinese* face.
+- **It catches the defect the last release was cut for.** Run against the
+  stylesheet as it shipped before 0.5.0, it reports "Korean text, and nothing
+  in its stack covers Korean" on page 1; run against the same document as
+  folio builds it today, it is silent.
+- **Silent on a family folio does not recognise.** The table is Noto-centric
+  and Korean typography is not: Pretendard, Nanum Gothic and Apple SD Gothic
+  Neo are not in it, and a rule that fired on all three would be noise on
+  exactly the documents whose author knew what they were doing. It reports only
+  when *every* named family is one folio knows to be Latin-only, or a generic —
+  which is the case where the choice provably falls to fontconfig.
+- **Judged against the document's scripts, not each run's.** Han and Japanese
+  share characters, so a run of kanji with no kana in it reads as Chinese, and
+  judging per run would report a Japanese document for naming Japanese faces.
+  The document-level profile has already settled that question.
+- Silent across all nine examples and six scaffolds in four directions.
+
+Both halves are mutation-tested rather than assumed: neutering `covers` fails
+the covering-face test, and neutering `judgeable` fails the unknown-family
+test. Written after 0.5.0's guard refused the commit — a new rule with no
+`SKILL.md` entry, which is what that guard exists for.
+
 ## [0.5.0] — 2026-08-13
 
 ### Fixed — every Korean document folio built was set in a Chinese face

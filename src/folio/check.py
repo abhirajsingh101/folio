@@ -518,6 +518,55 @@ def _check_orphan_heading(root, n, frame) -> list[Finding]:
     return out
 
 
+def _check_font_fallback(root, n, scripts) -> list[Finding]:
+    """Text in a script that nothing in its stack can set.
+
+    A font stack falls through per glyph. When it runs out, the renderer asks
+    fontconfig, which never fails and never asks: for Korean on a Linux machine
+    it commonly answers with a *Chinese* face. The document renders, nothing
+    overflows, and it is simply set in the wrong typeface — which is why this
+    is the one rule here that is not about geometry.
+
+    Judged only on families folio can speak for. A stack naming a face it has
+    never heard of gets silence, because that face may be exactly the Korean
+    one the author chose.
+    """
+    from .scripts import SCRIPT_INFO, covers, judgeable, scripts_in
+
+    candidates = [s for s in scripts if s != "latin"]
+    if not candidates:
+        return []
+    out, seen = [], set()
+    for box in _walk(root):
+        if not _is_text(box):
+            continue
+        text = box.text
+        if text.isascii():  # the fast path, and most documents take it
+            continue
+        stack = box.style["font_family"]
+        for script in scripts_in(text, candidates):
+            if script in seen:
+                continue
+            if any(covers(f, script) for f in stack):
+                continue
+            if not all(judgeable(f) for f in stack):
+                continue  # an unknown family may well be the covering one
+            seen.add(script)
+            label = SCRIPT_INFO[script][1]
+            out.append(
+                Finding(
+                    "font-fallback",
+                    WARN,
+                    n,
+                    f"{label} text, and nothing in its stack covers {label}",
+                    "the renderer will pick a face on its own, and for CJK it "
+                    "commonly picks the wrong language's — name a covering "
+                    "family, or let `folio build` inject one",
+                )
+            )
+    return out
+
+
 def _check_half_bleed(root, n, page_width) -> list[Finding]:
     """A block that reaches the paper on both sides and stops short at the top.
 
@@ -959,8 +1008,15 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
             "  provides. The Chromium fallback cannot do it. Run `folio doctor`."
         ) from exc
 
+    from .scripts import detect as detect_scripts
+
     doc = HTML(string=html, base_url=str(base_dir)).render()
     pages = doc.pages
+    # Which scripts this document is in, settled once. Han and Japanese share
+    # characters and only the whole document can tell them apart, so a per-page
+    # or per-run answer would report a Japanese document for naming Japanese
+    # faces.
+    profile = detect_scripts(html)
     # Indexed 0-based, so page i (1-based) reads its successor at [i].
     authored_starts = _authored_page_starts(pages) + [False]
     findings: list[Finding] = []
@@ -984,6 +1040,7 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
         findings += _check_image_scale(root, i)
         findings += _check_figure_scale(root, i)
         findings += _check_half_bleed(root, i, page.width)
+        findings += _check_font_fallback(root, i, profile.scripts)
 
     # Structure and conformance are properties of the document, not of a page.
     ordered = list(_elements_in_order(pages))

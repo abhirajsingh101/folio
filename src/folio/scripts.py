@@ -75,6 +75,87 @@ SCRIPT_INFO: dict[str, tuple[str, str, list[str], list[str]]] = {
     "latin": ("en", "Latin", ["Inter", "P052", "DejaVu Sans"], ["P052", "DejaVu Serif"]),
 }
 
+# Families folio knows to be Latin-only, so it can say with certainty that a
+# stack made of these covers nothing else. Everything here is either one of the
+# kit's own faces or a companion named in its stacks. Anything *not* listed —
+# Pretendard, Nanum Gothic, Apple SD Gothic Neo, a licensed corporate face — is
+# unknown rather than uncovering, and `font-fallback` stays silent on it: a
+# Noto-centric table is not a census of the world's typefaces.
+LATIN_ONLY = frozenset(
+    {
+        "inter",
+        "p052",
+        "palatino",
+        "bitstream charter",
+        "georgia",
+        "jetbrains mono",
+        "dejavu sans",
+        "dejavu serif",
+        "helvetica",
+        "arial",
+        "times new roman",
+    }
+)
+
+# The CSS generics. Not families: naming one is precisely how the choice gets
+# handed to fontconfig, which is the defect `font-fallback` reports.
+GENERICS = frozenset(
+    {
+        "serif",
+        "sans-serif",
+        "monospace",
+        "cursive",
+        "fantasy",
+        "system-ui",
+        "ui-serif",
+        "ui-sans-serif",
+        "ui-monospace",
+        "ui-rounded",
+        "emoji",
+        "math",
+        "fangsong",
+    }
+)
+
+
+_RX = dict(_COMPILED)
+
+
+def scripts_in(text: str, allowed) -> list[str]:
+    """Which of `allowed` appear in this run of text.
+
+    Restricted to the scripts the *document* was found to be in, rather than
+    detected afresh per run, because Han cannot be told apart from Japanese at
+    this scale: a run of kanji with no kana in it reads as Chinese, and judging
+    it as Chinese would report a Japanese document for naming Japanese faces.
+    The document-level profile has already settled that question.
+    """
+    return [s for s in allowed if s in _RX and _RX[s].search(text)]
+
+
+def covers(family: str, script: str) -> bool:
+    """Does this named family set this script?"""
+    if script not in SCRIPT_INFO:
+        return False
+    known = SCRIPT_INFO[script][2] + SCRIPT_INFO[script][3] + mono_families(script)
+    return family.strip().strip("\"'").lower() in {f.lower() for f in known}
+
+
+def judgeable(family: str) -> bool:
+    """Whether folio knows enough about a family to say what it does not cover.
+
+    A generic is judgeable — it covers nothing by name, which is the point. A
+    family folio has never heard of is not: it may well be the Korean face the
+    author chose deliberately.
+    """
+    name = family.strip().strip("\"'").lower()
+    return (
+        name in GENERICS
+        or name in LATIN_ONLY
+        or any(name in {f.lower() for f in info[2] + info[3]} for info in SCRIPT_INFO.values())
+    )
+
+
 # Scripts with no italic. Not a shortage of fonts — italic is a Latin
 # invention, and these writing systems never developed an equivalent, so a
 # slant is not emphasis in them but a distortion of the letterform. Cyrillic
