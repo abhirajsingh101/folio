@@ -29,17 +29,30 @@
 
 /* ── Cover: typographic, no ornament ────────────────────── */
 
+/* The plate is smaller here than in `report`, and that is the theme talking:
+   editorial is built on scale contrast and white space, with no filled
+   surfaces, so a half-page block of ink contradicts it. The image is a mark on
+   paper, and the masthead rule sits directly under its edge — a gap between
+   the two reads as a seam rather than as breathing room. The white space is
+   spent below the label, where it is doing work. */
 .cover {
-  --cover-plate-h: 150mm;
+  --cover-plate-h: 118mm;
   background: var(--paper); color: var(--ink);
   justify-content: flex-end;
 }
 .cover::before { background: var(--brand-tint); }
+/* Pinned to the plate's bottom edge, not floated there with `margin-bottom:
+   auto` — WeasyPrint's flex does not absorb free space through block-direction
+   auto margins, so the masthead sank to the bottom group and left ~57mm of
+   dead white under the image. Absolute positioning against `.cover` (which
+   base.css already makes `position: relative`) puts the rule exactly where the
+   ink stops, every time. */
 .cover-brand {
-  position: static; font: 400 9pt var(--font-ui);
+  position: absolute;
+  top: var(--cover-plate-h); left: var(--page-margin-x); right: var(--page-margin-x);
+  font: 400 9pt var(--font-ui);
   letter-spacing: 0.34em; text-transform: uppercase; color: var(--ink-mute);
-  padding: 9mm 0 4mm; border-bottom: 1px solid var(--ink);
-  margin-bottom: auto; width: 100%;
+  padding: 7mm 0 4mm; border-bottom: 1px solid var(--ink);
 }
 .cover-kicker {
   font: 400 8pt var(--font-ui); letter-spacing: 0.26em; text-transform: uppercase;
