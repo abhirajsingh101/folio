@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "folio-press"
-version = "0.3.0"
+version = "0.4.0"
 description = "Print-ready documents from HTML — one design system, no AI slop."
 readme = "README.md"
 requires-python = ">=3.10"

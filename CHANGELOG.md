@@ -6,6 +6,8 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-08-13
+
 ### Fixed — the theme gallery showed one palette four times
 The two theme strips were shot by injecting a different stylesheet into an
 already-rendered document. That restyles the type and leaves the figures alone,
@@ -191,6 +193,32 @@ Three defects the checker could not see, caught by reading the pages: a metric
 label wrapped and pushed its context line out of alignment with the row; a rail
 sat beside a single short paragraph and left a third of a page empty; and a
 four-item fact grid wrapped one item onto a row of its own.
+
+### Planned
+- **The defects that keep escaping are compositional, not dimensional.** Every
+  rule in `folio check` asks whether a measurement is out of range. Nothing it
+  found this release came from the look pass: a full-bleed plate at the head of
+  a sheet cannot reach the page's top edge and lands under a white strip; a
+  band above a table pushed the last section's rows onto a page of their own;
+  an image credit under a signature block reads as part of the signature. Each
+  is a component in the wrong *place*, and every measurement around it is
+  legal. The first of the three is the one a rule could plausibly catch —
+  a full-bleed element whose top edge stops short of the page edge is a
+  measurable contradiction — and it is where the next rule should start.
+- **`.cols` was the second defect this release that no rule could see**, and
+  unlike the three above it was structural rather than authorial. It got
+  `tests/test_layout.py`, a file for the class where a component reserves more
+  space than its content fills. That file currently holds one case.
+- **The `essay` row is the last of the skill's seven without a scaffold**, and
+  it routes to `report --theme editorial`. Unlike the two rows that got
+  scaffolds this release, the fit is close — a long read does take a cover,
+  contents and prose — so this is the weakest of the four items here.
+- Optional `folio fonts --install <script>` to fetch a single Noto family into
+  a user font directory, for machines with no package manager. Carried from
+  0.3.0.
+- Byte-identical output across machines. Currently the look degrades
+  gracefully but is not pinned; solving it without bundling everything means
+  optional per-script subsets. Carried from 0.3.0.
 
 ## [0.3.0] — 2026-08-13
 
