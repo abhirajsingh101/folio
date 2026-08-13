@@ -18,7 +18,11 @@
   background: var(--brand-deep);
   color: #fff;
 }
-.cover::before { background: var(--brand-deep); }
+/* Lighter than the field on purpose. Most documents have no plate — `folio
+   init` scaffolds none — and painting the band the same navy as the ground
+   made the default cover a flat rectangle. Two tones read as designed with or
+   without an image, and an image simply covers it. */
+.cover::before { background: var(--brand); }
 .cover-brand {
   position: static; font: 600 15pt var(--font-ui); letter-spacing: -0.01em;
   margin-bottom: auto; padding-top: 10mm;

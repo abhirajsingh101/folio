@@ -220,6 +220,62 @@ every direction; the hierarchy is unchanged, and it is legible on paper.
   bundled: shipping every writing system would cost every user tens of
   megabytes so that a few can set Japanese.
 
+### Changed — the cover, in all four directions
+`report` opened on a navy radial gradient with two soft circles floating in it.
+It was the most dated thing in the kit and it was on the cover of every
+document folio produced.
+
+All four covers now share one architecture: a bleeding band across the head of
+the page, sized per theme by `--cover-plate-h`, with the type below it on solid
+ground. The band is `.cover::before` rather than an element, so it lands
+without a markup migration — `technical`'s 6mm brand bar and `minimal`'s new
+3mm accent rule are the same component sized down, one system with four
+positions on it instead of a pseudo-element in one theme and nothing in two
+others. `img.cover-plate` optionally covers the band, and the painted band
+shows through if the image fails to load.
+
+**Type never sits on the plate.** `low-contrast` declines to measure anything
+over an image, so a cover that reversed its title out of a generated plate
+would ship illegible with a green build. Keeping the type on a solid field is
+what preserves the one check that would catch it.
+
+### Fixed — the report cover's meta labels were 4.4:1
+Under AA, and shipped that way in every document. The gradient made the
+backdrop unmeasurable, so the contrast rule never got to speak; on solid ground
+it fires immediately. The label alpha moves 0.5 → 0.58, now 5.4:1 — headroom
+rather than sitting on the 4.5 line.
+
+### Added — generated cover plates on `report` and `editorial`
+Two-ink risograph strata, generated through the path `docs/IMAGERY.md` already
+prescribed and folio's own showcase had never used. The two plates share a
+composition and differ only in ink, so the themes read as siblings.
+
+`technical` and `minimal` take no image, which is what the doctrine has always
+said: one exists to fit more on the page, the other is built on having nothing
+to hide behind. Having a stated position on when *not* to reach for an image is
+more distinctive than four themes all reaching for one.
+
+### Changed — the showcase fills its pages
+`.section-wrap { break-before: page }` gives every section a fresh page, and
+the example held about half a page per section. `report` had an 18%-full page
+and `technical` a 7%-full one — a heading, a paragraph, then nothing. Worst
+body page, before → after: `report` 18% → 52%, `technical` 7% → 38%, `minimal`
+4% → 19%, `editorial` 19% → 11%.
+
+`editorial` moved the wrong way. One document rendered at four type scales with
+a forced break per section cannot fill every page in all four, and its
+remaining thin pages are section tails running a paragraph over.
+
+### Known — `thin-page` cannot see a tail widow
+A page is excused when the page *after* it begins with an authored break, on
+the reasoning that a short page is short because the next section demanded a
+fresh one. That is right for a section ending at 85% and wrong for one whose
+last paragraph widowed at 11% — both precede an authored break, and the rule
+cannot tell them apart. So a section-tail widow, the most common under-fill in
+a sectioned document, is invisible to the rule that exists to catch under-fill.
+Found while measuring this release's own example; not fixed here, because
+changing it changes what every existing document reports.
+
 ### Fixed — the first build on a bare install ended in a traceback
 `pip install folio-press` is deliberately core-only, so the charts extra is
 absent on a fresh machine. But `folio init` scaffolds a `charts.py` and prints
