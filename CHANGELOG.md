@@ -6,6 +6,52 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — `half-bleed`, the first rule that measures where a block sits
+0.4.0's Planned section recorded that everything the look pass caught was
+compositional: a component in the wrong place, with every measurement around it
+legal. Three defects, and one of them is measurable.
+
+`.bleed` works by cancelling the page margin sideways — negative left and right
+margins, and as much again in width. There is no equivalent upwards, because
+content is laid out inside the page box and the top margin is not content's to
+enter. So a bleed placed first on a page opens *below* that margin: a band that
+reaches both side edges of the paper and stops 20–34mm short of the top one,
+with the running header floating in the gap. Three edges reach the paper and
+one does not, which reads as a misprint.
+
+- **`half-bleed`** — a full-bleed block with nothing printed above it on the
+  page. The detail gives the strip: "a full-bleed `<div>` opens 34mm below the
+  page's top edge". Two remedies, and the choice is about the document: move it
+  into the prose, where a band between paragraphs is the job `.bleed` exists
+  for, or drop `bleed` and let it sit inset. Never try to pull it up.
+- Verified against the defect as it actually shipped — the exhibition guide's
+  halftone plate, put back at the head of its page — and silent across all nine
+  examples and six scaffolds in all four directions, which is 60 renders.
+- The cover is the exception and is built differently on purpose:
+  `.cover::before` and `img.cover-plate` are absolutely positioned at `top: 0`,
+  outside the flow, which is how they reach the edge at all. Recorded in
+  `folio gotchas` beside the other `.bleed` trap.
+
+Measuring it needed a second rect. `_rect` reads `position_x` — the *margin*
+edge — alongside `width`, the content width: near enough for a box with no
+margins and wrong by the margin for one that has them. A bleed **is** a
+negative margin, so it was the one case that mix could not measure, and the
+first version of the rule silently found nothing. `_border_rect` measures the
+box as it is painted.
+
+### Added — a test that a rule nobody documented cannot ship
+`folio check` prints a rule name; what the name means and which of two remedies
+applies lives in SKILL.md. There was nothing holding those together, and
+shipping `half-bleed` meant finding three doc sites by hand.
+
+The new test derives the rule list from `check.py` itself and fails if SKILL.md
+never names one. It failed on the commit that introduced it, which is the point
+of writing it: **eight rules were described in prose but never named** —
+`overflow-x`, `overflow-y`, `text-overlap`, `orphan-heading`, `tiny-text`,
+`image-upscaled`, `image-role`, `image-alt`. An agent reading `! p4 tiny-text`
+could not search its way to the explanation. Pass 2 now names each rule beside
+the defect it describes.
+
 ## [0.4.0] — 2026-08-13
 
 ### Fixed — the theme gallery showed one palette four times

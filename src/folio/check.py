@@ -118,6 +118,24 @@ def _rect(box) -> tuple[float, float, float, float] | None:
     return (x, y, x + w, y + h)
 
 
+def _border_rect(box) -> tuple[float, float, float, float] | None:
+    """The box as it is painted, margins excluded.
+
+    `_rect` reads `position_x`, which is the *margin* edge, alongside `width`,
+    which is the content width — near enough for a box with no margins, and
+    wrong by the margin for one that has them. A bleed is a negative margin, so
+    it is precisely the case that mix cannot measure.
+    """
+    try:
+        x, y = box.border_box_x(), box.border_box_y()
+        w, h = box.border_width(), box.border_height()
+    except (AttributeError, TypeError):
+        return None
+    if None in (x, y, w, h):
+        return None
+    return (x, y, x + w, y + h)
+
+
 def _is_text(box) -> bool:
     return type(box).__name__ == "TextBox" and bool((getattr(box, "text", "") or "").strip())
 
@@ -481,6 +499,59 @@ def _check_orphan_heading(root, n, frame) -> list[Finding]:
                 )
             )
     return out
+
+
+def _check_half_bleed(root, n, page_width) -> list[Finding]:
+    """A block that reaches the paper on both sides and stops short at the top.
+
+    Bleeding sideways is a margin cancelled: the block is given a negative
+    left and right margin and grows by as much again. Upwards there is nothing
+    to cancel — content is laid out inside the page box, and the top margin is
+    not content's to enter — so a bleed placed first on a page opens under a
+    strip of white as tall as that margin. Three edges reach the paper, one
+    does not, and the reader files it as a misprint.
+
+    Every other rule here asks whether a measurement is out of range. This one
+    asks where a component sits, which is the class of defect that has been
+    escaping: nothing overflows, nothing overlaps, and the page is a perfectly
+    legal object that looks like a mistake.
+    """
+    for box in _walk(root):  # pre-order: the outermost bleeding box wins
+        r = _border_rect(box)
+        if not r:
+            continue
+        bleeds = r[0] <= OVERFLOW_TOLERANCE_PX and r[2] >= page_width - OVERFLOW_TOLERANCE_PX
+        strip = r[1]
+        if not bleeds or strip <= OVERFLOW_TOLERANCE_PX:
+            continue
+        if _prints_above(root, r[1]):
+            continue  # a band between blocks: no strip, and the job .bleed is for
+        tag = getattr(box, "element_tag", None) or "block"
+        return [
+            Finding(
+                "half-bleed",
+                WARN,
+                n,
+                f"a full-bleed <{tag}> opens {strip / MM:.0f}mm below the page's top edge",
+                "content cannot enter the page margin — inset it, or move it "
+                "into the prose, where a band is meant to sit",
+            )
+        ]
+    return []
+
+
+def _prints_above(root, top: float) -> bool:
+    """Is anything on this page printed clear of `top`?
+
+    Ancestors enclose the candidate rather than sitting above it, so their
+    bottoms fall below this line and they do not count — which is what makes a
+    bottom-edge test enough, with no parent map to consult.
+    """
+    for box in _walk(root):
+        r = _border_rect(box)
+        if r and r[3] - r[1] > OVERFLOW_TOLERANCE_PX and r[3] <= top + OVERFLOW_TOLERANCE_PX:
+            return True
+    return False
 
 
 def _check_text_overlap(root, n) -> list[Finding]:
@@ -895,6 +966,7 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
         findings += _check_orphan_heading(root, i, frame)
         findings += _check_image_scale(root, i)
         findings += _check_figure_scale(root, i)
+        findings += _check_half_bleed(root, i, page.width)
 
     # Structure and conformance are properties of the document, not of a page.
     ordered = list(_elements_in_order(pages))

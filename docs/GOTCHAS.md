@@ -92,6 +92,30 @@ If a page comes out mostly empty, the cause is almost always a non-splittable
 block that could not fit and jumped. Figures, callouts and pull quotes all
 behave this way by design — a split callout looks broken.
 
+### `.bleed` cannot bleed off the top of a page
+
+`.bleed` works by cancelling the page margin: negative left and right margins,
+and as much again in width. There is no equivalent upwards. Content is laid out
+inside the page box and the top margin is not content's to enter, so a bleed
+placed first on a page opens *below* that margin — a band that reaches both
+side edges of the paper and stops 20–34mm short of the top one.
+
+Nothing is wrong with the file. Nothing overflows, nothing overlaps, and the
+page is a perfectly legal object; it simply reads as a misprint, because three
+edges reach the paper and one does not. This is what `half-bleed` reports.
+
+Two remedies, and which one is right is a question about the document:
+
+- **Move it into the prose.** A band between paragraphs is the job `.bleed`
+  exists for, and there is no strip when something is printed above it.
+- **Inset it** — drop `bleed` and let it sit in the measure. A plate that must
+  open a page is an inset plate.
+
+Only a `@page` with no top margin can carry a bleed at the head of a page, and
+the shipped themes all have one. The cover is the exception, and it is built
+differently on purpose: `.cover::before` and `img.cover-plate` are absolutely
+positioned at `top: 0`, outside the flow, which is how they reach the edge.
+
 ### A gradient inside an SVG does not paint in a `.bleed` container
 
 Put an SVG that fills a shape with `url(#someGradient)` inside `class="bleed"`

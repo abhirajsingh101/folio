@@ -28,6 +28,14 @@ FILLED_PAGE = (
     f'<p style="{FLAT};margin-bottom:40mm">and fills to its foot</p>'
 )
 
+# What `.bleed` does, written out: cancel the page margin on both sides and
+# grow by as much again. Spelled out rather than imported so the fixture
+# measures the geometry the rule is about, not the class that usually causes it.
+BLEED = "margin-left:-20mm;margin-right:-20mm;width:calc(100% + 40mm)"
+# The kit zeroes this in base.css. Without it the UA's 8px keeps a bleed 8px
+# clear of the paper on both sides, and the fixture stops being a bleed.
+NO_BODY_MARGIN = "body{margin:0}"
+
 
 def rules(html: str) -> set[str]:
     return {f.rule for f in inspect(html, Path("/tmp"))}
@@ -235,6 +243,34 @@ def test_a_one_page_document_is_never_a_widow():
     """
     body = f'<p style="{FLAT}">a letter of three lines, which is a whole document</p>'
     assert "page-widow" not in rules(doc(body))
+
+
+# ── a bleed that stops short of the paper ─────────────────────────────────
+
+
+def test_a_full_bleed_block_at_the_head_of_a_page_is_flagged():
+    """The exhibition guide's plate, and the first composition defect measured.
+
+    A block that bleeds runs to the left and right edges of the paper by
+    cancelling the page margin. It cannot do the same upwards — content is laid
+    out inside the page box, and the top margin is not content's to enter — so
+    a bleed placed first on a page lands under a strip of white as tall as that
+    margin. Three edges reach the paper and one stops short, which reads as a
+    misprint rather than a decision.
+    """
+    body = f'<div style="{BLEED};background:#123456;height:60mm"></div><p>Body text.</p>'
+    assert "half-bleed" in rules_on(doc(body, NO_BODY_MARGIN), 1)
+
+
+def test_a_full_bleed_block_below_the_first_line_is_left_alone():
+    """A band between paragraphs is the job `.bleed` exists for.
+
+    The defect is the strip above it, and there is no strip when something is
+    printed above it — so the rule has to be about position on the page, not
+    about bleeding.
+    """
+    body = f'<p>Opening prose.</p><div style="{BLEED};background:#123456;height:60mm"></div>'
+    assert "half-bleed" not in rules(doc(body, NO_BODY_MARGIN))
 
 
 # ── reporting ─────────────────────────────────────────────────────────────

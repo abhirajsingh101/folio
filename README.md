@@ -189,12 +189,14 @@ pages — and reports real defects:
 
 Overflow, overlapping text, near-empty pages, tails that spilled onto a page
 of their own, stranded headings, illegibly small type, rasters blown up past
-their pixels, and text too close in tone to what it sits on. Every rule
-encodes a defect that really shipped during folio's own development — that
-thin page on p6 is a real finding from the example in this repo, that 1.9:1
-footer is a real finding from folio's own stylesheet, and `page-widow` was
-written after a one-sheet invoice quietly shipped as two pages with a clean
-report.
+their pixels, text too close in tone to what it sits on, and a full-bleed
+block that reaches both side edges of the paper but stops short of the top
+one. Every rule encodes a defect that really shipped during folio's own
+development — that thin page on p6 is a real finding from the example in this
+repo, that 1.9:1 footer is a real finding from folio's own stylesheet,
+`page-widow` was written after a one-sheet invoice quietly shipped as two
+pages with a clean report, and `half-bleed` after an exhibition guide opened a
+page with a band floating 34mm below the sheet's edge.
 
 Charts get measured too, which is harder than it sounds: a chart is an image,
 so every other rule stops at its edge. `figure-rescaled` catches a vector

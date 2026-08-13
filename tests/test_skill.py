@@ -82,6 +82,23 @@ def test_the_trigger_and_the_scope_do_not_contradict():
         assert short_form in text.split("## Not for")[0], f"{short_form} dropped from the trigger"
 
 
+def test_every_rule_the_checker_can_emit_is_named_in_the_skill():
+    """A rule nobody documented is a finding nobody knows how to act on.
+
+    `folio check` prints a rule name and a one-line hint; what the name *means*
+    and which of two remedies applies lives in SKILL.md. Ship a rule without
+    that entry and the agent reading the report has to guess — which is the
+    same failure as a renamed flag, arriving through the output instead of the
+    interface.
+    """
+    source = (ROOT / "src" / "folio" / "check.py").read_text(encoding="utf-8")
+    emitted = set(re.findall(r'Finding\(\s*\n?\s*"([a-z][a-z-]+)"', source))
+    assert emitted, "no rules found — the Finding( pattern moved"
+    text = skill_text()
+    missing = sorted(r for r in emitted if f"`{r}`" not in text)
+    assert not missing, f"rules the checker emits but SKILL.md never explains: {missing}"
+
+
 def test_every_scaffold_the_routing_table_sends_you_to_exists():
     """The table now routes to a command, not just a shape.
 

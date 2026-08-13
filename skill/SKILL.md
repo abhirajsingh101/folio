@@ -116,10 +116,15 @@ Real data only, and delete the blocks this document does not need.
 **Pass 2 — measure.** `folio build document.html --check`
 
 This renders and then measures the actual layout tree: text overrunning its
-box, elements overlapping, pages a fifth full, headings stranded at a page
-foot, text below legible size, rasters upscaled past their pixels, and type
-too close in tone to what it sits on. Every rule encodes a defect that really
-shipped.
+box (`overflow-x`, `overflow-y`), elements overlapping (`text-overlap`),
+headings stranded at a page foot (`orphan-heading`), text below legible size
+(`tiny-text`), rasters upscaled past their pixels (`image-upscaled`), a vector
+drawn well off the size it was authored at (`figure-rescaled`), an image with
+no `alt` (`image-alt`) or wearing the wrong role — a plate numbered like
+evidence, a figure with no number (`image-role`) — and type too close in tone
+to what it sits on (`low-contrast`). Every rule encodes a defect that really
+shipped. The report prints the rule name; each one is explained here, so a
+finding you do not recognise is a search away rather than a guess.
 
 `low-contrast` is measured against WCAG AA — 4.5:1 for body text, 3:1 once
 type is large — after resolving what the glyph actually sits on, so reversed
@@ -154,6 +159,15 @@ Two rules measure how a page filled, and they mean different things:
   take seriously on a short document** — it is what catches an invoice or a
   one-pager that quietly became two pages. Tighten the copy above it, or move
   a block up so the page carries more. A one-page document is never a widow.
+
+One rule measures *where* a block sits rather than what it measures:
+
+- `half-bleed` — a full-bleed block opened a page. `.bleed` cancels the page
+  margin sideways; nothing cancels it upwards, so the block reaches both side
+  edges of the paper and stops short of the top one, under a strip of white.
+  Either move it into the prose, where a band belongs, or drop `bleed` and let
+  it sit inset. Do not try to pull it up — content cannot enter the page
+  margin, which is why the cover plate is positioned rather than flowed.
 
 - **Any `✗` error → fix and re-run.** Never hand over a document with errors.
 - **Each `!` warning → judge it.** Most are real.
