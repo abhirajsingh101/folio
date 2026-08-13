@@ -6,6 +6,45 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — `page-widow`, and the end of a known blind spot
+0.2.0 shipped `thin-page` with a caveat recorded against it: a page is excused
+when the page after it begins with an authored break, which is right for a
+section ending at 85% and wrong for one whose last line widowed at 11%. The
+last page was excused outright on the same reasoning. Both exemptions were
+blanket, so the rule that exists to catch under-fill was blind to its most
+common form — and that is not theoretical: it let a one-sheet invoice ship as
+two pages with a clean report, and it stayed quiet on a case study whose last
+page held four lines.
+
+A page that is *meant* to end early is now measured against a second, lower
+threshold instead of being skipped:
+
+- **`page-widow`** — the last page, or the page before an authored break,
+  holding a quarter or less. The detail says which: "the document ends 12%
+  into its last page", or "a section ends 11% into its page".
+- `thin-page` is unchanged for pages mid-section, where the cause is a block
+  that jumped rather than a tail that spilled. Two causes, two remedies, two
+  rules.
+- **A one-page document is never a widow.** Nothing spilled — there is no
+  earlier page for the content to sit on — and reporting it would make the
+  rule unusable for exactly the short documents `data-furniture="none"` exists
+  for.
+- The threshold is 25%, measured rather than guessed. Across the five examples
+  in all four directions, 52 pages end early and their fills fall either side
+  of a gap between 21% and 34%: below it a page reads as a spill, above it as
+  an ending.
+
+The rule immediately failed three documents in this repo, which is the point of
+writing it. The case study's last page held 15% — its pull quote now closes the
+document instead of sitting mid-section, which is both a better ending and two
+pages instead of three. The `report` scaffold stranded its code block on a page
+of its own in every direction: the checklist and pull quote have moved into
+section 01, the demo figures were oversized and are now shorter, and it is four
+pages instead of five. The `runbook` scaffold is clean in `technical`, which is
+what it ships as; paired with `editorial` or `minimal` it reports a short tail,
+and that is a true statement about that document rather than something to
+suppress.
+
 ### Added — four more example documents, and a gallery that shows them
 The README sold one document: a quarterly report, four times over. Nothing on
 the landing page showed that folio makes anything else, which is the first

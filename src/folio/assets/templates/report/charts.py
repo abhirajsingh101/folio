@@ -20,7 +20,7 @@ def fig_example():
     labels = ["Jan", "Feb", "Mar", "Apr"]
     values = [120, 340, 285, 410]
 
-    fig, ax = plt.subplots(figsize=(6.6, 2.5))
+    fig, ax = plt.subplots(figsize=(6.6, 2.1))
     bars = ax.bar(labels, values, color=theme.BRAND, width=0.62, zorder=3)
     bars[-1].set_color(theme.BRAND_DEEP)
     theme.grid(ax)
@@ -43,7 +43,7 @@ def fig_example():
 
 def fig_pair():
     for name in ("fig-a", "fig-b"):
-        fig, ax = plt.subplots(figsize=(3.25, 2.45))
+        fig, ax = plt.subplots(figsize=(3.25, 1.85))
         ax.plot(
             range(10),
             [x**1.4 for x in range(10)],

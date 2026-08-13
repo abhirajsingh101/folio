@@ -21,6 +21,12 @@ ERROR, WARN = "error", "warn"
 
 # A page is "thin" below this fraction of its content height.
 THIN_PAGE_FILL = 0.45
+# A page that is *meant* to end early — the last one, or the one before an
+# authored break — is a widow below this. Measured rather than guessed: across
+# folio's five examples in all four directions, 52 pages end early, and their
+# fills fall either side of a gap between 21% and 34%. Below the gap the page
+# reads as a spill; above it, as an ending.
+WIDOW_PAGE_FILL = 0.25
 # Text below this size (px) is not reliably legible in print.
 MIN_FONT_PX = 6.0
 # A heading with less than this much room beneath it is stranded.
@@ -365,9 +371,26 @@ def _authored_page_starts(pages) -> list[bool]:
     return authored
 
 
-def _check_thin_page(root, n, frame, is_last: bool, kind: str, authored: bool) -> list[Finding]:
-    """A page a fifth full means a block jumped rather than fitting."""
-    if is_last or kind != "body" or authored:
+def _check_thin_page(root, n, frame, total: int, kind: str, authored: bool) -> list[Finding]:
+    """Under-filled pages, which arrive two ways and need different words.
+
+    Mid-section, a short page means a block would not fit and jumped: that is
+    `thin-page`, and the remedy is to reorder or to keep a table together.
+
+    A page the author ended — the last one, or the one before a forced break —
+    is short because that is where the content stopped, and for a long time
+    that excused it entirely. It excused too much. A section ending at 85% is
+    a chapter break; the same section ending at 11% is a tail that widowed,
+    and the two are indistinguishable by cause. Both were silent, so the rule
+    that exists to catch under-fill was blind to its most common form, and a
+    one-sheet invoice that ran onto a second page passed clean.
+    """
+    if kind != "body":
+        return []
+    is_last = n == total
+    if is_last and total == 1:
+        # Nothing widowed: there is no earlier page for the content to sit on.
+        # A one-page letter is allowed to use half a sheet.
         return []
     top, bottom = frame[1], frame[3]
     usable = bottom - top
@@ -377,6 +400,25 @@ def _check_thin_page(root, n, frame, is_last: bool, kind: str, authored: bool) -
         if r and _is_text(box):
             lowest = max(lowest, r[3])
     fill = (lowest - top) / usable if usable else 1.0
+
+    if is_last or authored:
+        if fill >= WIDOW_PAGE_FILL:
+            return []
+        return [
+            Finding(
+                "page-widow",
+                WARN,
+                n,
+                (
+                    f"the document ends {fill * 100:.0f}% into its last page"
+                    if is_last
+                    else f"a section ends {fill * 100:.0f}% into its page"
+                ),
+                "a tail this short reads as a spill, not an ending; tighten the "
+                "copy above it, or move a block up so the page carries more",
+            )
+        ]
+
     if fill < THIN_PAGE_FILL:
         return [
             Finding(
@@ -845,11 +887,10 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
         for margin_box in _margin_boxes(page):
             findings += _check_contrast(margin_box, i, _parent_map(margin_box), paper)
         findings += _check_text_overlap(root, i)
-        # A page is thin because the next one was demanded, or because
-        # something on this one would not fit. Only the second is a defect.
-        findings += _check_thin_page(
-            root, i, frame, i == len(pages), kind, authored=authored_starts[i]
-        )
+        # A page is short because the next one was demanded, because the
+        # document ended, or because something here would not fit. The first
+        # two are defects only once the page is nearly empty.
+        findings += _check_thin_page(root, i, frame, len(pages), kind, authored=authored_starts[i])
         findings += _check_tiny_text(root, i)
         findings += _check_orphan_heading(root, i, frame)
         findings += _check_image_scale(root, i)

@@ -48,6 +48,11 @@ sentences. Everything after it is supporting detail.</p>
 <p>Body copy. Use <strong>bold</strong> for the load-bearing phrase and
 <code>inline code</code> for identifiers.</p>
 
+<ul class="tick">
+  <li>Checklist item.</li>
+  <li>Another item.</li>
+</ul>
+
 <figure>
   <img src="charts/fig-example.svg" alt="Describe the chart">
   <figcaption><span class="fnum">Fig. 1</span>Say what the reader should
@@ -59,6 +64,11 @@ sentences. Everything after it is supporting detail.</p>
   <div class="body"><p>Callout tones: <code>ok</code>, <code>info</code>,
   <code>warn</code>, <code>risk</code>.</p></div>
 </div>
+
+<blockquote class="pullquote">
+  A sentence worth pulling out of the body.
+  <cite>— source</cite>
+</blockquote>
 </div>
 
 <!-- ════════ SECTION ════════ -->
@@ -97,16 +107,9 @@ sentences. Everything after it is supporting detail.</p>
   <li><strong>Second step.</strong> What it depends on.</li>
 </ol>
 
-<blockquote class="pullquote">
-  A sentence worth pulling out of the body.
-  <cite>— source</cite>
-</blockquote>
-
-<ul class="tick">
-  <li>Checklist item.</li>
-  <li>Another item.</li>
-</ul>
-
+<!-- A `pre` never splits, so it is the block most likely to jump a page and
+     strand the one after it. This section is deliberately sized to end with it
+     rather than past it; `folio check` reports the version that did not. -->
 <pre><span class="c">// code blocks keep their own left accent</span>
 <span class="k">const</span> example = <span class="s">'value'</span>;</pre>
 </div>

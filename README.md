@@ -177,14 +177,18 @@ pages — and reports real defects:
          → body text wants 4.5:1 — darken the ink or lighten the fill
   ! p6   thin-page      only 18% full
          → a figure or table could not fit and jumped
+  ! p2   page-widow     the document ends 12% into its last page
+         → a tail this short reads as a spill, not an ending
 ```
 
-Overflow, overlapping text, near-empty pages, stranded headings, illegibly
-small type, rasters blown up past their pixels, and text too close in tone to
-what it sits on. Every rule encodes a defect that really shipped during
-folio's own development — that thin page on p6 is a real finding from the
-example in this repo, and that 1.9:1 footer is a real finding from folio's own
-stylesheet, caught the day the contrast rule was written.
+Overflow, overlapping text, near-empty pages, tails that spilled onto a page
+of their own, stranded headings, illegibly small type, rasters blown up past
+their pixels, and text too close in tone to what it sits on. Every rule
+encodes a defect that really shipped during folio's own development — that
+thin page on p6 is a real finding from the example in this repo, that 1.9:1
+footer is a real finding from folio's own stylesheet, and `page-widow` was
+written after a one-sheet invoice quietly shipped as two pages with a clean
+report.
 
 Charts get measured too, which is harder than it sounds: a chart is an image,
 so every other rule stops at its edge. `figure-rescaled` catches a vector

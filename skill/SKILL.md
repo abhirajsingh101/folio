@@ -142,11 +142,21 @@ perfectly:
   apart, so the scale has a step that carries no meaning. The usual cause is a
   relative size compounding: an `em` nested inside another `em`.
 
+Two rules measure how a page filled, and they mean different things:
+
+- `thin-page` — a page mid-section came out under half full, because a block
+  could not fit and jumped. Reorder the section, or mark a short table
+  `class="keep"`.
+- `page-widow` — a page that was *meant* to end early ended almost empty: the
+  last page of the document, or the page before a section break, holding a
+  quarter or less. A section ending at 85% is a chapter break and is silent;
+  the same section ending at 11% is a tail that spilled. **This is the one to
+  take seriously on a short document** — it is what catches an invoice or a
+  one-pager that quietly became two pages. Tighten the copy above it, or move
+  a block up so the page carries more. A one-page document is never a widow.
+
 - **Any `✗` error → fix and re-run.** Never hand over a document with errors.
-- **Each `!` warning → judge it.** Most are real. A thin page means a block
-  jumped rather than fitting; reorder the section, or mark a short table
-  `class="keep"`. A section that simply *ends* early is not reported — a page
-  you asked for with `break-before` is a chapter break, not a defect.
+- **Each `!` warning → judge it.** Most are real.
 
 **Pass 3 — look.** The checker measures geometry, contrast and conformance —
 not taste. It cannot see that a chart is the wrong type for its data, that a

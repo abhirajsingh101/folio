@@ -43,14 +43,13 @@ three teams had to agree on.</p>
 <div class="cols rail">
   <div>
     <p>By September those windows were holding eleven releases a month — one in
-    three. The cost was not the waiting itself so much as what teams did about
-    it: changes were batched to fit a window, so each release carried more, and
-    the ones that failed were harder to attribute. Peak season started on 24
-    November and a freeze was not available.</p>
+    three. The cost was not the waiting: changes were batched to fit a window,
+    so each release carried more and its failures were harder to attribute.
+    Peak season started on 24 November and a freeze was not available.</p>
 
-    <p>Meridian's platform team knew what needed doing and said plainly that
-    they could not staff it alongside the remaining sixteen service moves. That
-    is the whole brief: take the schema, leave the services.</p>
+    <p>Meridian's platform team knew what needed doing and could not staff it
+    alongside the remaining sixteen service moves. The brief was that sentence:
+    take the schema, leave the services.</p>
   </div>
   <aside>
     <p class="eyebrow">At a glance</p>
@@ -68,54 +67,48 @@ three teams had to agree on.</p>
 <h2 class="section" id="s2" data-section="What we did">
   <span class="idx">02</span>What we did</h2>
 
-<p>The extraction itself was unremarkable, which was the point. Nine of the
-forty-one tables had writers outside the order path; those went behind an API
-first, with shadow traffic compared for seventy-two hours before anything was
-believed. Dual-write followed, and a reconciliation report that a human could
-read every morning — not a dashboard, a list of divergences with the row
-attached.</p>
+<p>The extraction itself was unremarkable, which was the point. The nine tables
+with writers outside the order path went behind an API first, with shadow
+traffic compared for seventy-two hours before anything was believed. Then
+dual-write, and a reconciliation report a human could read every morning — not
+a dashboard, a list of divergences with the row attached.</p>
 
 <p>The decision that mattered was making the cutover reversible for a fortnight
-rather than a single night. It cost two weeks of dual-write we would rather not
-have paid for, and it meant nobody had to be brave at three in the morning. The
-switch was two config changes; the rollback was the same two in reverse, timed
-at four minutes in rehearsal.</p>
-
-<blockquote class="pullquote">
-  We'd been told before that a migration would be zero-downtime. This is the
-  first time someone showed us the rollback and made us run it ourselves.
-  <cite>— Principal engineer, Meridian Platform Engineering</cite>
-</blockquote>
+rather than a single night. It cost two weeks of dual-write, and it meant
+nobody had to be brave at three in the morning: the switch was two config
+changes, the rollback the same two in reverse, timed at four minutes in
+rehearsal.</p>
 
 <h3>What went wrong</h3>
 
 <p>Two things, both in discovery. The schema export we priced against was a
-week old, and by the time we started there were forty-three tables, not
-forty-one — small, but we quoted the change rather than absorbing it, which is
-the habit that keeps the last invoice boring. The second rehearsal also found
-that the writer queue took 140 seconds to drain, not 90, so the procedure's
-threshold was wrong before it was ever used in anger. It is 180 seconds now.</p>
+week old, so there were forty-three tables by the start, not forty-one — small,
+but we quoted the change rather than absorbing it, which is the habit that
+keeps the last invoice boring. The second rehearsal found the writer queue took
+140 seconds to drain, not 90; the procedure said 90 before it was ever used in
+anger, and says 180 now.</p>
 </div>
 
 <div class="section-wrap cont">
 <h2 class="section" id="s3" data-section="Where it left them">
   <span class="idx">03</span>Where it left them</h2>
 
-<p>Meridian ran the cutover themselves, from a runbook they had already
-rehearsed unaided — the last deliverable, and the one that decides whether an
-engagement leaves anything behind. Thirty-four minutes, no downtime, and the
-old instance retired three weeks later on their own schedule.</p>
+<p>Meridian ran the cutover themselves, from a runbook they had rehearsed
+unaided — the deliverable that decides whether an engagement leaves anything
+behind. Thirty-four minutes, no downtime, and the old instance retired three
+weeks later on their own schedule.</p>
 
 <p>Releases held for a schema window went from eleven in September to one in
-February, and that one was a genuine coordination, not a queue. The sixteen
-remaining service moves are back with the platform team, unblocked, which is
-where they wanted them.</p>
+February, and that one was a coordination rather than a queue. The sixteen
+remaining service moves are back with the platform team, unblocked, and there
+is no standing dependency on us: the runbook is theirs to revise, and we are
+not on the rota.</p>
 
-<ul class="tick">
-  <li>Order path on its own instance, dual-write retired.</li>
-  <li>Runbook owned and revised by Meridian, not by us.</li>
-  <li>No standing dependency on halyard afterwards. We are not on the rota.</li>
-</ul>
+<blockquote class="pullquote">
+  We'd been told before that a migration would be zero-downtime. This is the
+  first time someone showed us the rollback and made us run it ourselves.
+  <cite>— Principal engineer, Meridian Platform Engineering</cite>
+</blockquote>
 </div>
 
 </body>

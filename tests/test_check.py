@@ -19,9 +19,27 @@ PAGE = "@page{size:A4;margin:20mm}"
 # which is exactly how the first version of these two got through review.
 FLAT = "font-size:10pt;line-height:1;margin-top:0"
 
+# A page carried to ~94% with text at its foot, and 20mm of slack in whether
+# the block after it fits. Pushing the overflow with a trailing margin rather
+# than a leading one keeps the fixture out of the question of whether a margin
+# survives a page break, which is where two earlier versions of this went wrong.
+FILLED_PAGE = (
+    f'<p style="{FLAT};margin-bottom:230mm">page one opens</p>'
+    f'<p style="{FLAT};margin-bottom:40mm">and fills to its foot</p>'
+)
+
 
 def rules(html: str) -> set[str]:
     return {f.rule for f in inspect(html, Path("/tmp"))}
+
+
+def rules_on(html: str, page: int) -> set[str]:
+    """Pagination fixtures produce incidental short pages of their own.
+
+    Naming the page under test keeps a fixture's own tail from deciding
+    whether the case it was written for passes.
+    """
+    return {f.rule for f in inspect(html, Path("/tmp")) if f.page == page}
 
 
 def doc(body: str, extra: str = "") -> str:
@@ -116,13 +134,20 @@ def test_a_page_the_author_asked_for_is_not_thin():
     folio's own `.section-wrap` does exactly this, so every short section in
     every document reported a defect whose hint said a block had jumped —
     which was never what happened.
+
+    The fixture now ends its first section around half the page rather than on
+    one line. An authored break excuses a page that *ends*; it does not excuse
+    a page that is empty, which is what `page-widow` measures below.
     """
     body = (
-        "<p>a deliberately short opening section</p>"
+        f'<p style="{FLAT};margin-bottom:130mm">a section that runs down the page</p>'
+        f'<p style="{FLAT}">and ends here, a little over halfway</p>'
         '<div style="break-before:page"><h2>Second section</h2><p>text</p></div>'
         '<div style="break-before:page"><h2>Third section</h2><p>text</p></div>'
     )
-    assert "thin-page" not in rules(doc(body))
+    found = rules_on(doc(body), 1)
+    assert "thin-page" not in found
+    assert "page-widow" not in found
 
 
 def test_illegibly_small_text_is_flagged():
@@ -155,8 +180,61 @@ def test_running_headers_are_not_overflow():
 
 
 def test_last_page_may_be_short():
-    body = '<p style="margin-bottom:240mm">page one</p><p>a short final page</p>'
-    assert "thin-page" not in rules(doc(body))
+    """A document is allowed to stop where it stops.
+
+    The fixture carries the last page to about half, because "short" and
+    "empty" are different claims: the second is `page-widow`, below.
+    """
+    body = (
+        FILLED_PAGE
+        + f'<p style="{FLAT};margin-bottom:120mm">the last page opens</p>'
+        + f'<p style="{FLAT}">and ends a little past halfway down</p>'
+    )
+    found = rules_on(doc(body), 2)
+    assert "thin-page" not in found
+    assert "page-widow" not in found
+
+
+# ── tail widows: the under-fill the fill rule could not see ───────────────
+
+
+def test_a_document_that_spills_a_few_lines_onto_a_last_page_is_flagged():
+    """The blind spot that shipped an invoice as two pages.
+
+    `thin-page` excused the last page outright, so a single-sheet document
+    that was not a single sheet passed with a clean report — the one defect an
+    invoice cannot ship with. Being last excuses a page that ends; it cannot
+    excuse a page that holds three lines.
+    """
+    body = FILLED_PAGE + f'<p style="{FLAT}">three words spill</p>'
+    assert "page-widow" in rules_on(doc(body), 2)
+
+
+def test_a_section_tail_that_widows_before_a_chapter_break_is_flagged():
+    """The mirror case, and the more common one.
+
+    A page is excused when the page after it begins with an authored break,
+    on the reasoning that it is short because the next section demanded a
+    fresh one. That is right for a section ending at 85% and wrong for one
+    whose last line widowed at 11% — both precede an authored break, and the
+    old rule could not tell them apart.
+    """
+    body = (
+        f'<p style="{FLAT}">one line, then a chapter break</p>'
+        '<div style="break-before:page"><h2>Second section</h2><p>text</p></div>'
+    )
+    assert "page-widow" in rules_on(doc(body), 1)
+
+
+def test_a_one_page_document_is_never_a_widow():
+    """Nothing widowed: there is no earlier page for the content to sit on.
+
+    A one-page letter or a short invoice is allowed to use half a sheet, and
+    reporting it would make the rule unusable for exactly the document types
+    `data-furniture="none"` exists for.
+    """
+    body = f'<p style="{FLAT}">a letter of three lines, which is a whole document</p>'
+    assert "page-widow" not in rules(doc(body))
 
 
 # ── reporting ─────────────────────────────────────────────────────────────
