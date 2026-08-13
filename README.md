@@ -16,9 +16,15 @@ Your agent can already write the words. It cannot make them look like this.
 *Cover and interior from one HTML file. The cover plate is generated —
 `folio imagery` says when that is worth doing, and when it is not.*
 
+<img src="docs/gallery/documents.png" width="100%" alt="Four documents side by side: a proposal with a navy cover, an editorial case study opening on a headline and metric tiles, a one-sheet invoice, and a dense technical runbook">
+
+*Not just reports. A proposal, a case study, an invoice and a runbook — each
+one `folio init --template <type>`, each in the direction that suits it. Every
+page here is a real build from [`examples/`](examples/), not a mock-up.*
+
 <img src="docs/gallery/themes-covers.png" width="100%" alt="The same cover in four design directions: report, editorial, technical, minimal">
 
-<img src="docs/gallery/themes-pages.png" width="100%" alt="The same interior page in four design directions, charts re-palettted to match">
+<img src="docs/gallery/themes-pages.png" width="100%" alt="The same interior page in four design directions, charts re-paletted to match">
 
 *One document, four design directions. Same content, same markup —
 different typographic systems, and charts that re-palette to match.
@@ -147,6 +153,14 @@ Write documents in plain HTML using the component vocabulary:
 </div>
 ```
 
+<img src="docs/gallery/interiors.png" width="100%" alt="Two interior pages at reading size: a proposal page with a side rail, a bar chart and a callout, beside a runbook page of numbered steps with inline commands and a warning">
+
+*Those classes, on the page. Left: a main measure with an at-a-glance rail, a
+chart paletted to the document, a numbered figure whose caption states the
+conclusion. Right: document control, a stop notice, and steps carrying the
+commands you actually type. Nothing here is a one-off style — `folio check`
+reports it if you write one.*
+
 ### It checks its own work
 
 ```bash
@@ -226,7 +240,7 @@ appended after the design system, so it always wins:
 :root { --brand: #7A1F3D; --brand-deep: #4E1226; }
 ```
 
-Everything — cover gradient, section kickers, chart palette, table rules,
+Everything — the cover band, section kickers, chart palette, table rules,
 callout accents — re-derives from that.
 
 ## For agents

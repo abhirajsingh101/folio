@@ -6,6 +6,35 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — four more example documents, and a gallery that shows them
+The README sold one document: a quarterly report, four times over. Nothing on
+the landing page showed that folio makes anything else, which is the first
+question a reader has and the one the scaffolds had just answered in the CLI
+and nowhere visible.
+
+- **`examples/proposal`, `examples/invoice`, `examples/runbook`,
+  `examples/case-study`** — real documents, not filled-in scaffolds, and one
+  story rather than four disconnected samples: a consultancy proposes the
+  extraction the existing quarterly report names as its Q4 keystone, invoices
+  for the first month of it, hands over the cutover runbook, and writes the
+  engagement up afterwards. Each is a different direction — `report`,
+  `minimal`, `technical`, `editorial` — so the set doubles as a tour of them.
+- **`docs/gallery/documents.png`** — the four side by side. What reads at that
+  size is the shape: a cover, a one-sheet, a dense procedure, a headline.
+- **`docs/gallery/interiors.png`** — two interior pages at a size where the
+  body type is legible, because "it looks designed" is a claim a thumbnail
+  cannot make.
+- **`docs/gallery/shoot.py`** composes both from the rendered pages. The
+  geometry was previously reproduced by hand, and images that sit in one
+  README at two different margins read as two different products.
+- Conformance now sweeps **every example in every theme**, the same bar the
+  scaffolds are held to.
+
+Three defects the checker could not see, caught by reading the pages: a metric
+label wrapped and pushed its context line out of alignment with the row; a rail
+sat beside a single short paragraph and left a third of a page empty; and a
+four-item fact grid wrapped one item onto a row of its own.
+
 ## [0.3.0] — 2026-08-13
 
 ### Added — a scaffold per document type

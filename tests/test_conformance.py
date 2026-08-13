@@ -86,19 +86,29 @@ def test_a_heading_split_across_pages_is_counted_once():
 # ── the shipped design system ─────────────────────────────────────────────
 
 
-def test_every_theme_conforms_on_the_reference_document():
+def _examples() -> list[str]:
+    root = Path(__file__).resolve().parents[1] / "examples"
+    return sorted(p.parent.name for p in root.glob("*/document.html"))
+
+
+@pytest.mark.parametrize("example", _examples() or ["missing"])
+def test_every_theme_conforms_on_the_shipped_examples(example):
     """The kit must obey its own rules, or they are decoration.
 
     All four themes failed this when it was written: inline `code` was sized
     in `em`, so it compounded off every container it sat in and produced three
     near-identical sizes for one element. The reference document also carried
     two hand-rolled styles and a skipped heading level.
+
+    Every example is measured in every theme, not just the one it declares:
+    the examples are what people copy, and `--theme` can pair any of them with
+    any direction.
     """
     from folio.assets import css_text, theme_names
 
-    src = Path(__file__).resolve().parents[1] / "examples/quarterly-report/document.html"
+    src = Path(__file__).resolve().parents[1] / "examples" / example / "document.html"
     if not src.exists():  # pragma: no cover - sdist without examples
-        pytest.skip("example not present")
+        pytest.skip("examples not present")
     source = src.read_text(encoding="utf-8")
     for theme in theme_names():
         html = source.replace("</head>", f"<style>{css_text(theme)}</style></head>")
@@ -107,7 +117,7 @@ def test_every_theme_conforms_on_the_reference_document():
             for f in inspect(html, src.parent)
             if f.rule in ("type-drift", "inline-style", "heading-skip")
         ]
-        assert not found, f"{theme}: {[str(f) for f in found]}"
+        assert not found, f"{example}/{theme}: {[str(f) for f in found]}"
 
 
 def _scaffolds() -> list[str]:

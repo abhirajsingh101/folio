@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SOP-042 — Order-path cutover</title>
+</head>
+<!-- A fictional showcase: the handover deliverable from examples/proposal,
+     now owned by Meridian. Sections carry `cont` rather than starting a fresh
+     page — this is read at a keyboard at 03:00, and a page turn mid-step is a
+     place to lose your position. -->
+<body data-theme="technical"
+      data-title="SOP-042 · Order-path cutover"
+      data-footer="Rev 1.0 — uncontrolled when printed">
+
+<div class="doc-head">
+  <p class="eyebrow">Standard operating procedure</p>
+  <h1>Order-path cutover</h1>
+  <p class="sub">Move order writes from the shared <code>orders</code> schema to
+  the extracted instance, and prove it took.</p>
+</div>
+
+<dl class="facts">
+  <div><dt>Document</dt><dd>SOP-042</dd></div>
+  <div><dt>Revision</dt><dd>1.0</dd></div>
+  <div><dt>Owner</dt><dd>Platform Engineering</dd></div>
+  <div><dt>Approved</dt><dd>2027.01.12</dd></div>
+  <div><dt>Next review</dt><dd>2027.07.12</dd></div>
+  <div><dt>Runtime</dt><dd>35 minutes</dd></div>
+</dl>
+
+<div class="callout risk">
+  <span class="ico">Stop</span>
+  <div class="body"><p>Do not run this during a peak-season window
+  (2026.11.24 – 2027.01.06) or while reconciliation is reporting a non-zero
+  divergence. Both are grounds to stop and reschedule, not to proceed
+  carefully. If the divergence appeared in the last hour, page the on-call
+  database owner before doing anything else.</p></div>
+</div>
+
+<div class="section-wrap cont">
+<h2 class="section" id="s1" data-section="Preconditions">
+  <span class="idx">SECTION 01</span>Preconditions</h2>
+
+<p class="lead">Every line is a check with a value you can read, not a note. If
+one fails, stop and page the on-call lead — the cutover keeps until tomorrow.</p>
+
+<ul class="tick">
+  <li>Reconciliation clean for 7 consecutive days
+  (<code>recon report --since 7d</code>, divergence 0).</li>
+  <li>Dual-write lag under 2 seconds at p99 for the last hour.</li>
+  <li>Both rehearsals signed off, most recent within 14 days.</li>
+  <li>Base backup of both instances verified in the last 6 hours.</li>
+  <li>Incident channel open, on-call lead and database owner present.</li>
+</ul>
+
+<p class="eyebrow">Access required</p>
+<p>Role <code>orders-cutover</code> on both instances, and the deploy pipeline.
+Request it in the incident channel — do not escalate your own access, and do
+not run this with a role borrowed from someone not on the call.</p>
+</div>
+
+<div class="section-wrap cont">
+<h2 class="section" id="s2" data-section="Procedure">
+  <span class="idx">SECTION 02</span>Procedure</h2>
+
+<ol class="steps">
+  <li><strong>Announce the start.</strong> Post in the incident channel naming
+  this document and revision. Expect: acknowledgement from the on-call lead
+  before continuing.</li>
+  <li><strong>Freeze schema changes.</strong>
+  <code>deploy gate set orders-schema --closed</code>. Expect: the gate shows
+  <em>closed</em> and any queued migration reports as blocked.</li>
+  <li><strong>Drain the writer queue.</strong> <code>svc pause order-writer</code>,
+  then watch <code>svc queue order-writer</code>. Expect: depth reaches zero
+  within 90 seconds. If it does not, resume and stop here.</li>
+  <li><strong>Confirm the final reconciliation.</strong>
+  <code>recon report --now</code>. Expect: divergence 0 across all 41 tables.
+  This is the last checkpoint before the switch.</li>
+  <li><strong>Switch the read path.</strong>
+  <code>deploy config set orders.reader=extracted</code>. Expect: read error
+  rate flat for 5 minutes at baseline.</li>
+  <li><strong>Switch the write path.</strong>
+  <code>deploy config set orders.writer=extracted</code>, then
+  <code>svc resume order-writer</code>. Expect: writes land on the extracted
+  instance and the old instance's write counter stops climbing.</li>
+  <li><strong>Lift the schema gate</strong> and announce completion with the
+  measured values from section 03.</li>
+</ol>
+
+<div class="callout info">
+  <span class="ico">Reversible</span>
+  <div class="body"><p>Dual-write stays on for 14 days after the cutover, so
+  steps 5 and 6 are switches, not a migration. Reversing is the same two
+  commands with <code>=shared</code>, in the reverse order, and takes about
+  four minutes.</p></div>
+</div>
+</div>
+
+<div class="section-wrap cont">
+<h2 class="section" id="s3" data-section="Verification and rollback">
+  <span class="idx">SECTION 03</span>Verification and rollback</h2>
+
+<p>Record the measured value, not a tick. A column of ticks is not evidence
+that the order path recovered, and it is what the post-incident review asks
+for.</p>
+
+<table class="keep">
+  <thead>
+    <tr><th>Check</th><th>How</th><th>Pass when</th><th class="num">Measured</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Order writes</td><td><code>svc status order-writer</code></td>
+        <td>ok for 10 minutes</td><td class="num"></td></tr>
+    <tr><td>Error rate</td><td>Dashboard — orders 5xx</td>
+        <td>under 0.1%, 30 minutes</td><td class="num"></td></tr>
+    <tr><td>p99 write latency</td><td>Dashboard — orders write</td>
+        <td>under 120ms</td><td class="num"></td></tr>
+    <tr><td>Reconciliation</td><td><code>recon report --now</code></td>
+        <td>divergence 0</td><td class="num"></td></tr>
+    <tr><td>Old instance</td><td><code>pgctl stats shared</code></td>
+        <td>write counter static</td><td class="num"></td></tr>
+  </tbody>
+</table>
+
+<h3>If a check fails</h3>
+
+<div class="callout warn">
+  <span class="ico">Rollback</span>
+  <div class="body"><p>Reverse steps 6 then 5 with
+  <code>=shared</code>, resume the writer, and announce the rollback with the
+  failing value. Do not attempt a partial state — a reader on one instance and
+  a writer on the other passes every check above and corrupts quietly. Raise an
+  incident and hand back to the database owner.</p></div>
+</div>
+
+<h3>After the cutover</h3>
+
+<ul class="tick">
+  <li>File the measured table in the change record within 24 hours.</li>
+  <li>Leave dual-write on for 14 days; retiring it is <code>SOP-043</code>.</li>
+  <li>Raise a revision here if any step read wrong on the night.</li>
+</ul>
+
+<div class="signature">
+  <div><span class="line"></span><span class="who">Ran the procedure</span>
+       <span class="role">Name · date · time</span></div>
+  <div><span class="line"></span><span class="who">Verified</span>
+       <span class="role">On-call lead</span></div>
+</div>
+</div>
+
+</body>
+</html>
