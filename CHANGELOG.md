@@ -6,6 +6,38 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — the `essay` scaffold, and the routing table is complete
+Seven rows in the skill's routing table, and until now six of them started from
+a scaffold. The seventh was sent to `report --theme editorial`, which is a
+document with a contents page and sections that each start on a fresh sheet —
+the opposite of a long read, which is one argument broken into stages. Carried
+in Planned since 0.4.0, where it was called the weakest of the four items; it
+was, and it is also the last one that could be finished.
+
+- **A cover, and deliberately no contents.** An essay is read from the front,
+  not navigated, and a contents page in front of an argument invites a reader
+  to skip to the part they already agree with. Sections carry `cont` so the
+  prose runs continuously.
+- The placeholders are the advice, as in `letter` and `case-study`: open on
+  the claim rather than the background, one idea per section with the heading
+  as the idea, state the opposing reading as strongly as its holder would, and
+  name what would change your mind — the most persuasive section in any
+  argument and the one most often left out.
+- Notes and colophon sit **side by side**: end matter is reference rather than
+  reading, and stacking two short blocks puts a third of a page of white under
+  them.
+
+Clean under `folio check` in `report`, `editorial` and `minimal`. In
+`technical` it reports a 21% tail, and that is left standing: technical fits
+about 1.19× more per page than report, so no content length clears its 25%
+floor without spilling `editorial` onto a fourth page. It is a true statement
+about pairing a long-form essay with the densest procedural direction — the
+same call the `runbook` scaffold got in 0.4.0.
+
+Two sections were numbered `04` — the new one was added ahead of `Notes`
+without renumbering. Nothing measures that; it was caught by rendering page 3
+and looking at it, which is the pass that keeps earning its place.
+
 ### Added — `folio fonts --install <script>`
 A report that names a gap it cannot close is half a feature. `folio fonts`
 would tell you Tamil has no face and then leave you to it, which on a machine

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Essay title</title>
+</head>
+<!-- A cover, and deliberately no contents. An essay is read from the front,
+     not navigated: a contents page in front of an argument invites a reader to
+     skip to the part they already agree with. An annual review that genuinely
+     needs one starts from `report` instead.
+
+     Sections carry `cont` so the prose runs continuously rather than starting
+     each part on a fresh page. That is the difference between this and the
+     report scaffold, and it is the whole reason this is its own starting
+     point: a long read is one thing broken into stages, not six documents
+     stapled together.
+
+     The hard part of an essay is not the prose, it is the claim. If you cannot
+     write the first paragraph below as one sentence that someone could
+     disagree with, the piece is not ready to typeset. -->
+<body data-theme="editorial"
+      data-title="Essay title"
+      data-footer="Your Name">
+
+<section class="cover">
+  <div class="cover-brand">yourbrand</div>
+  <div class="cover-kicker">Essay</div>
+  <h1>The claim, not the topic</h1>
+  <p class="sub">A subtitle earns its place by narrowing the claim — the case
+  it holds for, or the one it does not.</p>
+  <div class="cover-rule"></div>
+  <div class="cover-meta">
+    <div><span class="k">Author</span>Your Name</div>
+    <div><span class="k">Date</span>2026.01.01</div>
+    <div><span class="k">Reading</span>12 minutes</div>
+  </div>
+</section>
+
+<div class="section-wrap cont">
+
+<p class="lead">Open on the claim itself. Not the background, not the history
+of the field, and not an apology for the length: the sentence a reader would
+repeat to someone else if they only read one. Everything after this earns its
+place by supporting it.</p>
+
+<p>Then the ground the claim stands on. An essay is not a report — it argues
+rather than records — but the argument still rests on something a reader can
+check, and naming it early is what separates an essay from an opinion. Say
+where the evidence comes from and how far it reaches.</p>
+
+<h2 class="section" id="s1" data-section="What is actually happening">
+  <span class="idx">01</span>What is actually happening</h2>
+
+<p>One idea per section, and the section heading is the idea rather than a
+label for a bucket. "What is actually happening" is a claim; "Background" is
+furniture. If a heading could sit unchanged in any other essay, it is not
+doing any work.</p>
+
+<div class="cols rail">
+  <div>
+    <p>The rail beside this paragraph is for the aside that would otherwise
+    derail the sentence — a definition, a date, a caveat that matters to one
+    reader in ten. Prose that keeps interrupting itself is prose that has not
+    decided what it is about.</p>
+
+    <p>Keep the main column moving. A reader who is following an argument
+    forgives a long paragraph and never forgives a digression, because the
+    digression costs them the thread they were holding.</p>
+  </div>
+  <aside>
+    <p class="eyebrow">Worth knowing</p>
+    <p>The one fact a reader needs to follow the paragraph beside this, and
+    would resent being taught in the middle of it.</p>
+  </aside>
+</div>
+
+<h2 class="section" id="s2" data-section="Why the obvious reading is wrong">
+  <span class="idx">02</span>Why the obvious reading is wrong</h2>
+
+<p>The section that makes the piece worth reading. State the reading a
+sensible person would arrive at on their own, as strongly as they would state
+it — an essay that argues against a weak version of the other side convinces
+only the people who already agreed.</p>
+
+<blockquote class="pullquote">The sentence you would want quoted back at
+you.<cite>— pull it from the prose, do not write it for the box</cite></blockquote>
+
+<p>Then the turn: what that reading misses, and what follows once it is
+corrected. This is the paragraph the whole document exists to deliver, so give
+it room — it should be the one place where you slow down rather than
+compress.</p>
+
+<h2 class="section" id="s3" data-section="What it costs to believe this">
+  <span class="idx">03</span>What it costs to believe this</h2>
+
+<p>Every claim worth making has a price: something it rules out, someone it
+inconveniences, a case where it fails. Naming that yourself is not a
+concession — it is the difference between an argument and a pitch, and a
+reader who finds the exception you did not mention stops trusting the parts
+they cannot check.</p>
+
+<h2 class="section" id="s4" data-section="What would change my mind">
+  <span class="idx">04</span>What would change my mind</h2>
+
+<p>Name the evidence that would make you drop the claim — the measurement
+that would come out the other way, the case you have not seen yet. It is the
+most persuasive paragraph in any argument, and the one most often left out,
+because it is the only proof on offer that the conclusion was not decided in
+advance.</p>
+
+<p>Close on what changes if the reader accepts it. Not a summary: they have
+just read the essay, and repeating it back to them wastes the one paragraph
+they are most likely to remember.</p>
+
+</div>
+
+<!-- Sources, not footnotes: WeasyPrint has no automatic footnote machinery,
+     and a list at the end is what a printed essay does anyway. Delete this
+     block if the piece cites nothing — an empty "Notes" heading reads as a
+     section you forgot to write. -->
+<h2 class="section" id="notes" data-section="Notes">
+  <span class="idx">05</span>Notes</h2>
+
+<!-- Side by side: end matter is reference, not reading, and stacking it puts
+     a third of a page of white under two short blocks. -->
+<div class="cols">
+  <div>
+    <ol class="steps">
+      <li>Author, <em>Title</em>, publisher, year — the claim it supports.</li>
+      <li>The dataset, with the window it covers and where a reader can get
+      it.</li>
+      <li>The piece you are arguing against, cited generously enough that its
+      author would recognise the summary.</li>
+    </ol>
+  </div>
+  <div>
+    <h3>About this piece</h3>
+    <p class="appendix">Who wrote it, when, and what it draws on — a version
+    of the argument given as a talk, a longer paper it condenses, the work
+    that paid for the time. An essay that names no author is a leaflet. Say
+    how to reply, too: the useful response to an argument is a
+    counter-argument, and a reader who has one needs somewhere to send
+    it.</p>
+  </div>
+</div>
+
+</body>
+</html>
