@@ -474,7 +474,9 @@ def test_every_stylesheet_parses_without_errors(name):
     test about hierarchy. A stylesheet that does not parse should say so
     itself.
     """
-    import tinycss2
+    tinycss2 = pytest.importorskip(
+        "tinycss2", reason="the CSS parser arrives with WeasyPrint; skipped in degraded runs"
+    )
 
     css = css_text(name)
     errors = []
