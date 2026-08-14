@@ -107,8 +107,13 @@ h4, .eyebrow { font: italic 400 10.5pt var(--font-body); color: var(--ink-soft);
 p.lead {
   font: 400 13.4pt/1.5 var(--font-body); color: var(--ink); margin-bottom: 1.2em;
 }
-/* first paragraph after the lead opens with small caps */
-p.lead + p::first-line { font-variant: small-caps; letter-spacing: 0.02em; }
+/* The first paragraph after the lead used to open in small caps. It came out
+   synthetic on every face folio resolves — Inter, P052 and DejaVu Serif all
+   lack an `smcp` table, so pango scaled capitals instead, too light and too
+   wide for the size they imitated. Butterick's rule 14: if you do not have
+   real small caps, do not use them at all. `fake-small-caps` now reports it,
+   which is how it was found after shipping since this theme was written. */
+p.lead + p::first-line { letter-spacing: 0.01em; }
 
 /* ── Metric tiles: rules, not boxes ─────────────────────── */
 

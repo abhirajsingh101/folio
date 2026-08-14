@@ -669,6 +669,52 @@ def _check_characters(root, n, parents: dict) -> list[Finding]:
     return out
 
 
+def _check_fake_small_caps(root, n) -> list[Finding]:
+    """Small caps asked of a face that has none.
+
+    Butterick's rule 14: if you do not have real small caps, do not use them at
+    all. Asked anyway, pango synthesises them by scaling capitals — too light
+    and too wide for the size they are imitating, which reads as a weight error
+    rather than as a style.
+
+    Measured off the resolved face's GSUB table rather than its name, so it is
+    silent whenever the face genuinely carries `smcp`. None of the Latin faces
+    folio resolves has it — Inter, P052 and DejaVu Serif all lack it — which is
+    why `editorial`'s opening line had been synthetic since the theme was
+    written, under a green check, with perfectly correct geometry.
+    """
+    from .faces import FacesUnavailable, feature_tags, resolved_runs
+
+    out, seen = [], set()
+    for box in _walk(root):
+        if not _is_text(box):
+            continue
+        if box.style["font_variant_caps"] in ("normal", None):
+            continue
+        try:
+            if "smcp" in feature_tags(box):
+                continue
+            runs = resolved_runs(box)
+        except FacesUnavailable:  # pragma: no cover - environment dependent
+            return []
+        family = runs[0][1] if runs else "the resolved face"
+        if family in seen:
+            continue
+        seen.add(family)
+        out.append(
+            Finding(
+                "fake-small-caps",
+                WARN,
+                n,
+                f"small caps asked of {family}, which has no smcp table",
+                "pango scales capitals instead, which reads as a weight error; "
+                "set the passage in a face that has real small caps, or drop "
+                "the small caps",
+            )
+        )
+    return out
+
+
 def _check_half_bleed(root, n, page_width) -> list[Finding]:
     """A block that reaches the paper on both sides and stops short at the top.
 
@@ -1290,6 +1336,7 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
         findings += _check_half_bleed(root, i, page.width)
         findings += _check_font_fallback(root, i, profile.scripts)
         findings += _check_characters(root, i, parents)
+        findings += _check_fake_small_caps(root, i)
 
     # Structure and conformance are properties of the document, not of a page.
     ordered = list(_elements_in_order(pages))

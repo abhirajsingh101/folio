@@ -534,3 +534,15 @@ def test_hard_broken_lines_do_not_measure_the_column():
                                    "Head of Operations", "Client Company Ltd",
                                    "2 Client Road, City, CL1 2NT", "Accounts Payable"]) + "</p>"
     assert "measure" not in rules(doc(address))
+
+
+def test_small_caps_on_a_face_without_them_is_reported():
+    body = "<p>Nato and the treaty</p>"
+    extra = 'p{font-family:"DejaVu Serif";font-variant-caps:small-caps}'
+    assert "fake-small-caps" in rules(doc(body, extra))
+
+
+def test_small_caps_on_a_face_that_has_them_is_silent():
+    body = "<p>Nato and the treaty</p>"
+    extra = 'p{font-family:"Noto Serif";font-variant-caps:small-caps}'
+    assert "fake-small-caps" not in rules(doc(body, extra))

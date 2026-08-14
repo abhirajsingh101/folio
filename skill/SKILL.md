@@ -195,6 +195,12 @@ Three rules read the characters rather than the geometry:
 - `dash` — `--` standing in for a dash. Two hyphens is a typewriter working
   around a key it did not have. Use `—` for a break in thought and `–` for a
   range. Exempt inside code, where a double hyphen opens a command-line flag.
+- `fake-small-caps` — small caps asked of a face with no `smcp` table. Pango
+  synthesises them by scaling capitals, which reads as a weight error rather
+  than a style: too light and too wide for the size they imitate. None of the
+  Latin faces folio resolves — Inter, P052, DejaVu Serif — carries the feature,
+  so this is a decision about the passage rather than a setting to switch on.
+  Set it in a face that has real small caps, or drop them.
 - `dot-ellipsis` — three periods where `…` belongs. The single character keeps
   its own spacing and cannot be broken across a line. Four or more dots are a
   leader or a redaction and are left alone.
