@@ -268,3 +268,17 @@ h1 { font: 400 34pt/1.06 var(--font-body); letter-spacing: -0.018em; color: var(
   font: 500 6.8pt var(--font-ui); letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--ink-mute); margin-top: 1mm;
 }
+
+/* Ragged right. `base.css` justifies, which suits the dense themes: a table-
+   heavy page wants its columns squared off. editorial sets larger type in a
+   measured column and is read continuously, and justification there buys a
+   straight edge at the price of uneven word spacing — the eye reads the rhythm
+   of the spaces, not the edge, so the trade is the wrong way round.
+
+   `start` rather than `left`, so the RTL mirror stays correct without a second
+   rule: this reads as `right` in an Arabic or Hebrew document.
+
+   On `body` and not in the token block above: this is a real property, and
+   `base.css` sets it on `body`, so a `:root` declaration loses on specificity
+   and silently does nothing. */
+body { text-align: start; }
