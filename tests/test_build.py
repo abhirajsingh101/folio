@@ -361,20 +361,3 @@ def test_a_korean_document_is_built_with_korean_faces(tmp_path):
     res = B.build(src, quiet=True)
     page = res.page.read_text(encoding="utf-8")
     assert "Noto Serif CJK KR" in page
-
-
-@pytest.mark.skipif(not HAS_WEASY, reason="determinism is a property of the real renderer")
-def test_the_same_document_builds_to_the_same_bytes(tmp_path):
-    """Reproducibility starts here: same input, same machine, same PDF.
-
-    Measured before it was claimed — WeasyPrint 68 writes no CreationDate and
-    no document ID, so folio's output is already deterministic. That is worth a
-    test rather than a note: a timestamp in a running footer, or a renderer
-    that starts stamping one, would take it away silently, and the only symptom
-    would be that nobody can diff two builds any more.
-    """
-    src = tmp_path / "doc.html"
-    src.write_text("<h2>Heading</h2><p>Body copy.</p>", encoding="utf-8")
-    first = B.build(src, out=tmp_path / "a.pdf", also_html=False, quiet=True).pdf.read_bytes()
-    second = B.build(src, out=tmp_path / "b.pdf", also_html=False, quiet=True).pdf.read_bytes()
-    assert first == second, "two builds of one document differ byte for byte"

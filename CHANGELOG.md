@@ -6,6 +6,31 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.1] — 2026-08-14
+
+### Fixed — 0.6.0 claimed byte-identical output, and CI disproved it
+The claim was measured, and measured too narrowly. Two builds of one document
+hash the same here, across twenty runs and twelve fixed hash seeds, on
+WeasyPrint 68 and 69 alike — so it went into 0.6.0 as fact, with a test to hold
+it. The release commit's own CI then failed on **one job of eight**:
+`ubuntu · py3.10` produced two PDFs differing by two bytes at `startxref`,
+while `ubuntu · py3.13` beside it — same WeasyPrint 69.0, same pydyf, same
+fonttools, same code — passed.
+
+It has not been reproduced since, and the cause is not known. Rendering the
+same document twice through bare WeasyPrint 69 is byte-identical; through
+`folio build` it is byte-identical everywhere it has been run by hand. That is
+not enough to assert on a supported configuration, so the assertion is gone.
+What is left is a smaller, true statement: folio's output is byte-identical in
+every environment it has been measured in bar one, and nobody yet knows what
+that one did differently.
+
+The lesson is the one this project keeps relearning in a new place: *"it holds
+on this machine" is not a property, it is a sample.* The same mistake produced
+`--font-mono` falling through to a proportional face, and font-install tests
+that passed only because this machine had Noto Sans Thai. This time it reached
+a tag.
+
 ## [0.6.0] — 2026-08-14
 
 ### Added — `font-fallback`, so the checker can finally see a font
@@ -153,13 +178,13 @@ and looking at it, which is the pass that keeps earning its place.
   is as measurable as a heading level — and unlike most of what the look pass
   finds, this one does not need taste to judge. The nearest neighbour to
   `heading-skip`, and the next rule to write.
-- **Byte-identical output across machines**, rewritten now that half of it
-  turned out to be done. The renderer is deterministic and `--install kit`
-  pins the faces, so what remains is making a *mismatch* detectable rather
-  than invisible: a document that records which faces it was actually set
-  with, so rebuilding it somewhere else can say "this was set in P052 and you
-  do not have it" instead of quietly substituting. Carried from 0.3.0 in its
-  old form.
+- **Byte-identical output across machines.** The claim that the renderer half
+  was already done did not survive its own release — see the Unreleased entry
+  above. Two questions now, in order: what `ubuntu · py3.10` did differently to
+  produce a two-byte difference no other job produced, and then the original
+  item — a document that records which faces it was actually set with, so
+  rebuilding it elsewhere can say "this was set in P052 and you do not have it"
+  instead of quietly substituting. Carried from 0.3.0.
 - `tests/test_layout.py`, for the class where a component reserves more space
   than its content fills, still holds the single `.cols` case that created it.
   Carried from 0.5.0.
