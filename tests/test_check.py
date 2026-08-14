@@ -467,3 +467,56 @@ def test_a_real_ellipsis_is_silent():
 def test_a_leader_of_dots_is_not_an_ellipsis():
     """Four or more is a leader or a redaction, not a mistyped ellipsis."""
     assert "dot-ellipsis" not in rules(doc("<p>Chapter one....... 14</p>"))
+
+
+# ── the measure ───────────────────────────────────────────────────────────
+
+# Repetitive on purpose: what is under test is the column, not the copy. Long
+# enough that the median cannot be swung by one line, and that every fixture
+# below clears the eight-line floor unless it is meant not to.
+PROSE = "<p>" + ("The column is what this fixture measures, not the copy in it. " * 60) + "</p>"
+
+# A page wide enough that no installed face can bring the line under 90
+# characters. The fixtures below cap the column in `ch` rather than millimetres
+# for the same reason: both ends of the comparison then move with the face.
+WIDE = "@page{size:400mm 300mm;margin:10mm}"
+
+
+def test_a_column_wider_than_the_canon_is_reported():
+    html = f"<!DOCTYPE html><html><head><style>{WIDE}</style></head><body>{PROSE}</body></html>"
+    assert "measure" in rules(html)
+
+
+def test_a_column_inside_the_canon_is_silent():
+    html = (
+        f"<!DOCTYPE html><html><head><style>{WIDE}p{{max-width:60ch}}</style>"
+        f"</head><body>{PROSE}</body></html>"
+    )
+    assert "measure" not in rules(html)
+
+
+def test_a_column_narrower_than_the_canon_is_reported():
+    html = (
+        f"<!DOCTYPE html><html><head><style>{WIDE}p{{max-width:20ch}}</style>"
+        f"</head><body>{PROSE}</body></html>"
+    )
+    assert "measure" in rules(html)
+
+
+def test_a_document_with_almost_no_prose_is_not_measured():
+    """`menu` has no full lines of body copy and `architecture` four.
+
+    A median over that many is noise, so both are left alone even though this
+    fixture's column is far outside the range.
+    """
+    short = "<p>" + "The column is what this fixture measures. " + "</p>"
+    html = (
+        f"<!DOCTYPE html><html><head><style>{WIDE}p{{max-width:20ch}}</style>"
+        f"</head><body>{short}</body></html>"
+    )
+    assert "measure" not in rules(html)
+
+
+def test_measure_is_reported_once_for_the_whole_document():
+    html = f"<!DOCTYPE html><html><head><style>{WIDE}</style></head><body>{PROSE}</body></html>"
+    assert len([f for f in inspect(html, Path("/tmp")) if f.rule == "measure"]) == 1

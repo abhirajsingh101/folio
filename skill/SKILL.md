@@ -148,6 +148,13 @@ perfectly:
   mean a section was inserted or deleted and nothing after it moved. Renumber,
   or drop the number. A label with no digits in it (`APPENDIX A`) is not a
   counter and is left alone.
+- `measure` — body copy runs outside 45–90 characters a line. The oldest
+  measurement in typesetting: too wide and the eye loses its place on the
+  return, too narrow and it returns so often the rhythm breaks. Reported once
+  for the document, taken from the modal `<p>` size and ignoring each
+  paragraph's last line, which is short by definition. Narrow the column with
+  the measure token (`var(--measure)`), or set two. A document with fewer than
+  six full lines of body copy is not measured — a menu is not prose.
 - `type-drift` — two type sizes less than 1% apart. No reader can tell them
   apart, so the scale has a step that carries no meaning. The usual cause is a
   relative size compounding: an `em` nested inside another `em`.

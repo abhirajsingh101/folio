@@ -15,6 +15,7 @@ why they are worth running: they are not hypothetical.
 from __future__ import annotations
 
 import re
+import statistics
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -54,6 +55,18 @@ BOLD = 700
 # finest deliberate step in the shipped themes (1.4%), measured not guessed —
 # widen it and real scale steps start reporting as drift.
 SAME_SIZE_PCT = 1.0
+
+# The comfortable line, in characters. Butterick puts it at 45–90; the book
+# guides that disagree, disagree inside that range rather than outside it.
+MEASURE_MIN, MEASURE_MAX = 45, 90
+# Below this many full lines of body copy a document is not prose and the
+# median is noise rather than a measurement. Measured, not guessed: across the
+# nine examples the count falls either side of a gap between four and six —
+# `menu` has none and `architecture` four, while the shortest document that is
+# genuinely prose, `runbook`, has six. Raise it to eight and runbook goes
+# silent at 98 characters a line, which is the false negative this rule exists
+# to remove.
+MIN_BODY_LINES = 6
 
 # Elements whose text is not prose. A `--` in one of these is a command flag
 # and a `-` is a minus — measured, not assumed: folio's own corpus holds
@@ -1115,6 +1128,76 @@ def _check_type_drift(pages) -> list[Finding]:
     return out
 
 
+def _body_paragraphs(pages):
+    """(page number, [(font size, line text)]) for every `<p>` laid out.
+
+    Paragraphs rather than every line box, because the last line of a paragraph
+    is short by definition — it measures where the sentence ended, not how wide
+    the column is — and only the paragraph knows which line that is.
+    """
+    for number, page in enumerate(pages, start=1):
+        for box in _walk(page._page_box):
+            if getattr(box, "element_tag", None) != "p":
+                continue
+            lines = []
+            for child in getattr(box, "children", ()) or ():
+                if type(child).__name__ != "LineBox":
+                    continue
+                runs = [t for t in _walk(child) if _is_text(t)]
+                if runs:
+                    lines.append((runs[0].style["font_size"], "".join(r.text for r in runs)))
+            if lines:
+                yield number, lines
+
+
+def _check_measure(pages) -> list[Finding]:
+    """How many characters the reader crosses before the line returns.
+
+    The oldest measurement in typesetting and the one folio never took. Too
+    wide and the eye loses its place on the return; too narrow and it returns
+    so often that the rhythm breaks. Neither shows up in geometry: the column
+    is exactly as wide as it was asked to be.
+
+    Body copy is the modal font size among `<p>` lines, which is how a document
+    that is mostly tables and captions still gets measured on its prose.
+    """
+    paragraphs = list(_body_paragraphs(pages))
+    sizes = [round(size, 2) for _, lines in paragraphs for size, _ in lines]
+    if not sizes:
+        return []
+    body = statistics.mode(sizes)
+    lengths: list[int] = []
+    page = 1
+    for number, lines in paragraphs:
+        for size, text in lines[:-1]:
+            if abs(size - body) < 0.05:
+                if not lengths:
+                    page = number
+                lengths.append(len(text))
+    if len(lengths) < MIN_BODY_LINES:
+        return []
+    median = statistics.median(lengths)
+    if MEASURE_MIN <= median <= MEASURE_MAX:
+        return []
+    wide = median > MEASURE_MAX
+    return [
+        Finding(
+            "measure",
+            WARN,
+            page,
+            f"body copy runs {median:.0f} characters a line",
+            (
+                f"{MEASURE_MIN}–{MEASURE_MAX} is the comfortable range; "
+                + (
+                    "narrow the column with --measure, or set two"
+                    if wide
+                    else "widen the column, or set the type smaller"
+                )
+            ),
+        )
+    ]
+
+
 def _check_inline_style(ordered) -> list[Finding]:
     """Rule 2 of the kit — never hand-roll a style — now measured.
 
@@ -1195,6 +1278,7 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
     findings += _check_image_role(ordered)
     findings += _check_image_alt(ordered)
     findings += _check_type_drift(pages)
+    findings += _check_measure(pages)
 
     order = {ERROR: 0, WARN: 1}
     findings.sort(key=lambda f: (order[f.severity], f.page))
