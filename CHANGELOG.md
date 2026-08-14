@@ -63,6 +63,51 @@ comment had said the plate was placed mid-essay to break up a solid page; once
 the measure narrowed, the page was no longer solid and the plate stranded the
 closing paragraph on a page of its own instead.
 
+### Added — folio reads the face it got, not the one it asked for
+Every measurement folio took read the layout tree, which records what the
+stylesheet requested. `src/folio/faces.py` reads what pango actually resolved,
+which is a different thing whenever the named family is not installed. Two
+rules follow from it, and both are repairs.
+
+- **`font-fallback` is replaced, not extended.** A document that passed on a
+  machine missing its fonts now reports, and that is the intent. The old rule
+  read the CSS stack and asked whether any family named in it covers the
+  script — a question about the stylesheet rather than the page. `Noto Sans KR`
+  and `Noto Sans CJK KR` are one design under two names, a machine usually has
+  one, and naming only the absent one satisfied the rule while the text
+  rendered in whatever fontconfig substituted. On Linux, for Korean, that is
+  commonly a Chinese face.
+
+  The rule now asks **who chose the face**. A family named in a theme, in the
+  script stack `folio build` injects, or in a project `brand.css` was chosen by
+  someone and is left alone; a family named nowhere was substituted, and the
+  substitution is the finding whatever the face is called. This sidesteps the
+  question folio cannot answer — it has no way to tell a Korean face it has
+  never heard of from a Chinese one, and `Pretendard` and `WenQuanYi Zen Hei`
+  are equally unknown to it. Neither family names nor OS/2 codepage bits
+  separate them: measured, WenQuanYi declares Korean and Noto Sans CJK KR
+  declares Chinese, because those bits record what a face can *encode* rather
+  than what it was drawn for.
+
+  **One behaviour changed with it:** a document naming a face the machine does
+  not have is now reported rather than excused, because it was set in a
+  substitute. Silence is reserved for a face the document asked for and got.
+
+- **`fake-small-caps`** — a repair. `editorial` set the first line after the
+  lead in small caps, and none of the Latin faces folio resolves carries an
+  `smcp` table: Inter, P052 and DejaVu Serif all lack it, so pango synthesised
+  them by scaling capitals — too light and too wide for the size they imitate.
+  Butterick's rule 14: if you do not have real small caps, do not use them at
+  all. It shipped that way since the theme was written, under a green check,
+  because the geometry was perfectly correct. The declaration is dropped rather
+  than reassigned to a face that has the feature, since mixing a second serif
+  into one line is its own defect and folio bundles no face with real small
+  caps.
+
+Both rules read the resolved face rather than the stylesheet — the same move
+`check.py` made for geometry, applied to type. No new dependency: the OpenType
+feature list is parsed with `struct` rather than fontTools.
+
 ### Investigated — the `ubuntu · py3.10` two-byte difference, narrowed by elimination
 No fix, and no reproduction. What this adds is the list of things it is *not*,
 which is worth writing down because the next person to look at it — including
