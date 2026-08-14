@@ -520,3 +520,17 @@ def test_a_document_with_almost_no_prose_is_not_measured():
 def test_measure_is_reported_once_for_the_whole_document():
     html = f"<!DOCTYPE html><html><head><style>{WIDE}</style></head><body>{PROSE}</body></html>"
     assert len([f for f in inspect(html, Path("/tmp")) if f.rule == "measure"]) == 1
+
+
+def test_hard_broken_lines_do_not_measure_the_column():
+    """An address block is one <p> with <br> between its lines.
+
+    Those lines end where the author broke them, not where the column does —
+    the same reason a paragraph's last line is excluded. Reading them as prose
+    reported the invoice and letter scaffolds at 31 characters a line.
+    """
+    address = "<p>" + "<br>".join(["Your Company Ltd", "1 Example Street, City, PO57 0DE",
+                                   "VAT 000 0000 00", "Ms A. Recipient",
+                                   "Head of Operations", "Client Company Ltd",
+                                   "2 Client Road, City, CL1 2NT", "Accounts Payable"]) + "</p>"
+    assert "measure" not in rules(doc(address))

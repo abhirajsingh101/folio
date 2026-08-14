@@ -1128,6 +1128,25 @@ def _check_type_drift(pages) -> list[Finding]:
     return out
 
 
+def _has_hard_breaks(box) -> bool:
+    """Does this paragraph contain a `<br>`?
+
+    An address block is one `<p>` with `<br>` between its lines, and so is a
+    signature block, a verse, and a set of terms. Those lines end where the
+    author broke them rather than where the column does — the same reason a
+    paragraph's last line is excluded — so reading them as prose measures the
+    longest address line. It reported folio's own invoice and letter scaffolds
+    at 31 characters a line.
+    """
+    el = getattr(box, "element", None)
+    if el is None:
+        return False
+    try:
+        return any(str(getattr(node, "tag", "")).lower() == "br" for node in el.iter())
+    except (AttributeError, TypeError):  # pragma: no cover - defensive
+        return False
+
+
 def _body_paragraphs(pages):
     """(page number, [(font size, line text)]) for every `<p>` laid out.
 
@@ -1138,6 +1157,8 @@ def _body_paragraphs(pages):
     for number, page in enumerate(pages, start=1):
         for box in _walk(page._page_box):
             if getattr(box, "element_tag", None) != "p":
+                continue
+            if _has_hard_breaks(box):
                 continue
             lines = []
             for child in getattr(box, "children", ()) or ():

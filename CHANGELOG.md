@@ -6,6 +6,63 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — four rules that read the characters, not the geometry
+Every rule folio had measured a box. These read what was typed, which is the
+first thing a reader sees and the last thing a layout tree can tell you about.
+
+- **`straight-quote`** — a repair. Twenty-four marks across seven examples and
+  four scaffolds, almost every one a possessive (`Meridian's`, `Halloran's`,
+  `yesterday's`), plus two quotations and one heading set large reading
+  `What "done" means for Q4`. In a serif face a straight apostrophe is a foot
+  mark. All of it shipped through seven releases under a green check. Marks
+  after a digit are left alone — `5' 10"` is feet and inches — and code
+  elements are exempt, on the evidence of folio's own runbook, whose four `--`
+  are command flags and whose one spaced hyphen is a SQL minus.
+- **`measure`** — a repair. Body copy ran 96–110 characters a line in five of
+  the nine examples against a 45–90 canon. Reported once per document, from the
+  modal `<p>` size, ignoring each paragraph's last line.
+- **`dash`** and **`dot-ellipsis`** — insurance, and named as such: the corpus
+  contains neither defect. There is deliberately **no rule for the spaced
+  hyphen**, because the only occurrence in the corpus is a real minus inside
+  `<code>` — the evidence for that rule is the evidence against it.
+
+`measure` ignores any paragraph containing a `<br>`. An address block is one
+`<p>` with hard breaks between its lines, and so is a signature block or a set
+of terms; those lines end where the author broke them rather than where the
+column does. Read as prose they reported the `invoice` and `letter` scaffolds
+at 31 characters a line. Verified not to have weakened the rule: with the
+column cap removed, all five wide documents still report.
+
+### Changed — the measure, the leading that compensated for it, and two page rules
+`--measure` caps prose at 130mm; figures, tables, metric tiles and the contents
+list keep the full width. All nine examples now measure 76–86 characters.
+Leading came back with the column — 1.58 → 1.48 in the base, 1.62 → 1.50 in
+`minimal`, 1.66 → 1.52 in `editorial` — because those numbers were never a
+decision about rhythm but what a designer reaches for when the column is too
+wide to fix. `technical` was already at 1.46 and is untouched.
+
+Hyphenation is now bounded at `7 4 3`. This was planned as insurance and is a
+repair: left unlimited the renderer breaks after two letters, and the examples
+carried `un‐`, `al‐`, `syn‐`, `com‐`, `run‐` and `Feb‐`. At the conventional
+`6 3 3` the three-letter fragments survive; at `7 4 3` none do.
+
+Two page rules, both written from what a rendered page showed rather than from
+what any rule reported:
+
+- `.bleed { break-before: avoid }` — a bleeding band must not open a page.
+  Three edges reach the paper and the fourth stops short under a strip of
+  white, which is exactly what `half-bleed` reports, so the break that causes
+  it is now forbidden rather than merely measured.
+- `p.lead, blockquote { hyphens: none }` — display type does not hyphenate. The
+  narrowed column made the exhibition lead break `an‐other`.
+
+**Every shipped example looks different.** `exhibition` was recomposed: its
+closing paragraph now precedes the plate instead of following it, so the essay
+runs uninterrupted and the plate and the curator's quote close it. Its own
+comment had said the plate was placed mid-essay to break up a solid page; once
+the measure narrowed, the page was no longer solid and the plate stranded the
+closing paragraph on a page of its own instead.
+
 ### Investigated — the `ubuntu · py3.10` two-byte difference, narrowed by elimination
 No fix, and no reproduction. What this adds is the list of things it is *not*,
 which is worth writing down because the next person to look at it — including
