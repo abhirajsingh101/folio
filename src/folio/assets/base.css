@@ -152,6 +152,14 @@ body {
   line-height: var(--lh-body);
   color: var(--ink);
   hyphens: auto;
+  /* Bound the hyphenation. Left unlimited this renderer breaks after two
+     letters — `ex‐traordin‐ary` — and folio's own examples carried `un‐`,
+     `al‐`, `syn‐`, `com‐`, `run‐` and `Feb‐`. Seven letters minimum, four
+     before the break and three after, measured against the corpus: at 6 3 3
+     the three-letter fragments survive, at 7 4 3 none do. Stricter than the
+     usual 5 2 3 on purpose, and the cost — fewer places to break, so looser
+     justification — was checked on the page rather than assumed. */
+  hyphenate-limit-chars: 7 4 3;
   text-align: justify;
   /* the running head/foot read these off <body>; see build.py */
   string-set: doctitle attr(data-title), footnote attr(data-footer);
