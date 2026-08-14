@@ -413,3 +413,31 @@ def test_summary_reads_correctly():
 
     assert "1 error" in summarise([Finding("r", ERROR, 1, "d")])
     assert "1 warning" in summarise([Finding("r", WARN, 1, "d")])
+
+
+# ── typographic characters ────────────────────────────────────────────────
+
+
+def test_straight_apostrophe_in_prose_is_reported():
+    assert "straight-quote" in rules(doc("<p>Meridian's platform team knew.</p>"))
+
+
+def test_curly_apostrophe_is_silent():
+    assert "straight-quote" not in rules(doc("<p>Meridian’s platform team knew.</p>"))
+
+
+def test_straight_marks_after_a_digit_are_feet_and_inches():
+    """Butterick's rule 26 runs the other way: these are *meant* to be straight."""
+    assert "straight-quote" not in rules(doc("<p>The press bed is 5' 10\" across.</p>"))
+
+
+def test_a_straight_quote_inside_code_is_a_string_literal():
+    assert "straight-quote" not in rules(doc("<p>Run <code>echo 'hi'</code> first.</p>"))
+
+
+def test_a_page_with_many_straight_quotes_reports_once():
+    """Eighteen findings on one page is a report nobody reads to the end."""
+    body = "<p>" + "Meridian's team knew what Halloran's press did. " * 6 + "</p>"
+    found = [f for f in inspect(doc(body), Path("/tmp")) if f.rule == "straight-quote"]
+    assert len(found) == 1
+    assert "more on this page" in found[0].detail

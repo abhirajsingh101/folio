@@ -55,6 +55,11 @@ BOLD = 700
 # widen it and real scale steps start reporting as drift.
 SAME_SIZE_PCT = 1.0
 
+# Elements whose text is not prose. A `--` in one of these is a command flag
+# and a `-` is a minus — measured, not assumed: folio's own corpus holds
+# `recon report --since 7d` and `SELECT now() - last_replay`, both correct.
+CODE_TAGS = frozenset({"code", "pre", "kbd", "samp", "tt", "var"})
+
 MM = 96 / 25.4  # WeasyPrint lays out in CSS px
 PT = 96 / 72
 PX_IN = 96
@@ -565,6 +570,77 @@ def _check_font_fallback(root, n, scripts) -> list[Finding]:
                     "family, or let `folio build` inject one",
                 )
             )
+    return out
+
+
+# Marks a typewriter had and a typesetter does not. Straight marks are correct
+# after a digit — 5' 10" is feet and inches, and curling those is the defect.
+_STRAIGHT_QUOTE = re.compile(r"(?<![0-9])['\"]")
+_TYPEWRITER_DASH = re.compile(r"--")
+_DOT_ELLIPSIS = re.compile(r"(?<!\.)\.\.\.(?!\.)")
+
+# (rule, pattern, what to call it, what to do about it)
+CHARACTER_RULES: tuple[tuple[str, re.Pattern, str, str], ...] = (
+    (
+        "straight-quote",
+        _STRAIGHT_QUOTE,
+        "a straight quote",
+        "’ for an apostrophe, “ ” for quotes; feet and inches stay straight",
+    ),
+)
+
+
+def _in_code(box, parents: dict) -> bool:
+    """Is this text inside an element where a typewriter mark is the right mark?"""
+    node = box
+    while node is not None:
+        if getattr(node, "element_tag", None) in CODE_TAGS:
+            return True
+        node = parents.get(id(node))
+    return False
+
+
+def _snippet(text: str, at: int, width: int = 28) -> str:
+    """The mark with enough either side of it to find in the source."""
+    start = max(0, at - width // 2)
+    piece = text[start : at + width // 2].strip()
+    lead = "…" if start > 0 else ""
+    tail = "…" if at + width // 2 < len(text) else ""
+    return f"{lead}{piece}{tail}"
+
+
+def _check_characters(root, n, parents: dict) -> list[Finding]:
+    """Typographic marks, which are the one thing a reader sees before the words.
+
+    Every other rule here asks whether a measurement is in range. This one asks
+    which character was typed — closer to `font-fallback` than to the geometry
+    rules, and reported for the same reason: the page is perfectly well formed
+    and reads as amateur anyway. A straight apostrophe in a serif face is a
+    foot mark, and it is the most reliable tell there is.
+
+    One finding per rule per page. Eighteen of these on a page, which is what
+    the quarterly-report actually held, is a report nobody reads to the end.
+    """
+    first: dict[str, tuple[str, int]] = {}
+    counts: dict[str, int] = {}
+    for box in _walk(root):
+        if not _is_text(box) or _in_code(box, parents):
+            continue
+        text = box.text
+        for rule, pattern, _label, _hint in CHARACTER_RULES:
+            for match in pattern.finditer(text):
+                counts[rule] = counts.get(rule, 0) + 1
+                first.setdefault(rule, (text, match.start()))
+    out = []
+    for rule, _pattern, label, hint in CHARACTER_RULES:
+        if rule not in counts:
+            continue
+        text, at = first[rule]
+        more = counts[rule] - 1
+        detail = f"{label} in “{_snippet(text, at)}”"
+        if more:
+            detail += f" (+{more} more on this page)"
+        out.append(Finding(rule, WARN, n, detail, hint))
     return out
 
 
@@ -1097,6 +1173,7 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
         findings += _check_figure_scale(root, i)
         findings += _check_half_bleed(root, i, page.width)
         findings += _check_font_fallback(root, i, profile.scripts)
+        findings += _check_characters(root, i, parents)
 
     # Structure and conformance are properties of the document, not of a page.
     ordered = list(_elements_in_order(pages))

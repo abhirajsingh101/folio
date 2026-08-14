@@ -177,6 +177,15 @@ One rule is not about geometry at all:
   script. The rule stays silent on a family folio does not recognise, because
   that may be exactly the face you chose.
 
+Three rules read the characters rather than the geometry:
+
+- `straight-quote` — a `'` or `"` in prose. In a serif face a straight
+  apostrophe is a foot mark, which is why it is the most reliable amateur tell
+  in typesetting. Use `’` for an apostrophe and `“ ”` for a quotation. Marks
+  after a digit are left alone: `5' 10"` is feet and inches, and curling those
+  would be the defect. Text inside `code`, `pre`, `kbd`, `samp`, `tt` and `var`
+  is exempt — a straight quote in a shell command is the right quote.
+
 One rule measures *where* a block sits rather than what it measures:
 
 - `half-bleed` — a full-bleed block opened a page. `.bleed` cancels the page
