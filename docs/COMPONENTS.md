@@ -445,6 +445,21 @@ each theme's page margins. Never scale a figure in CSS: the labels scale with
 it, and `folio check` reports it as `figure-rescaled`. Output is SVG with text
 as outlines, so it renders identically everywhere.
 
+**`theme.save` refuses a reference line drawn outside its axis.** `axhline` and
+`axvline` are how a chart states a threshold, and the caption almost always
+points at one; give it a value beyond the limits and matplotlib draws it, clips
+it away, and says nothing. The report in this repo shipped `axhline(43)` under
+`set_ylim(0, 34)` for four releases with a caption promising a dotted line that
+was never on the page. Widen the limit to include the line, or drop the line
+and the sentence that points at it. A line *on* the boundary — a baseline at
+zero under `ylim=(0, n)` — is drawn, and passes.
+
+**Put annotations outside the data area.** A label placed at the top left of
+the axes is one data change away from having a line drawn through it, and that
+is invisible to every check folio has: chart text is outlined, so `text-overlap`
+stops at the figure's edge. `ax.text(0, 1.04, …, transform=ax.transAxes)` sits
+above the plot where nothing can reach it.
+
 ---
 
 ## Writing systems

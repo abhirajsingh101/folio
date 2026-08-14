@@ -6,6 +6,35 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — `theme.save` refuses a reference line nobody can see
+Of the four defects the look pass found, three are semantic and one is
+mechanical, and this is the mechanical one: `axhline(43)` drawn under
+`set_ylim(0, 34)`. Matplotlib draws the line, clips it away, and says nothing,
+so the quarterly report's caption pointed at a dotted scope line that was never
+on the page — for four releases.
+
+Nothing downstream can catch it. By the time a figure reaches `folio check` it
+is an image, and its text is outlined by design, which is the whole reason
+`figure-rescaled` exists as a proxy. The figure is the only place this is
+knowable, so `theme.save` now knows it: a reference line outside the axis it is
+meant to appear on raises `FigureError`, naming the value, the limits and the
+two remedies. `charts.py` runs as a subprocess during `folio build`, so the
+build fails loudly rather than producing a chart that lies quietly.
+
+- Detection is by transform identity — `axhline` carries the axes' y-axis
+  transform, `axvline` the x — so ordinary plotted data that runs off the
+  visible range is untouched. Clipping data is a choice; clipping a threshold
+  is a mistake.
+- A line **on** the boundary passes. A baseline at zero under `ylim=(0, n)` is
+  drawn and is the common case; refusing it would make the guard unusable.
+- Verified by restoring the defect exactly as it shipped and watching the build
+  refuse it.
+
+`folio components` also gains the rule the fifth defect taught: put annotations
+outside the data area, because a label inside it is one data change away from
+having a line drawn through it — which is precisely what happened while fixing
+the p99 figure, and is invisible to `text-overlap` for the same reason.
+
 ### Fixed — a look pass over the examples, and four numbers that were not true
 Thirty-one pages, nine documents, read one at a time. `folio check` reported
 nothing on any of them, correctly, and that is the point of the exercise: every

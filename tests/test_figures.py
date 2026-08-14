@@ -114,3 +114,53 @@ def test_a_scaled_vector_is_not_called_an_upscaled_raster():
     wrong thing."""
     body = f'<img src="{svg(300, 150)}" alt="chart">'
     assert not findings(doc(body, "img{display:block;width:600px}"), "image-upscaled")
+
+
+# ── a reference line drawn where nobody can see it ────────────────────────
+
+
+def _fig_with_scope_line(scope, ylim):
+    theme = pytest.importorskip("folio.theme")
+    plt = theme.use()
+    fig, ax = plt.subplots()
+    ax.plot(["Apr", "May", "Jun"], [4, 9, 11])
+    ax.axhline(scope, ls=":")
+    ax.set_ylim(*ylim)
+    return theme, fig
+
+
+def test_a_reference_line_outside_the_axis_is_refused(tmp_path):
+    """The quarterly report shipped this for four releases.
+
+    `axhline(43)` under `set_ylim(0, 34)`: matplotlib draws the line, clips it
+    away, and says nothing, so the caption pointed at a dotted line that was
+    never on the page. Nothing downstream can see it either — by the time the
+    chart reaches `folio check` it is an image, and its text is outlined.
+
+    The figure is the only place this is knowable, so it is refused here.
+    """
+    theme, fig = _fig_with_scope_line(43, (0, 34))
+    with pytest.raises(theme.FigureError, match="43"):
+        theme.save(fig, tmp_path / "fig.svg")
+
+
+def test_a_reference_line_inside_the_axis_is_fine(tmp_path):
+    theme, fig = _fig_with_scope_line(43, (0, 46))
+    assert theme.save(fig, tmp_path / "fig.svg").exists()
+
+
+def test_a_line_on_the_boundary_is_visible_and_allowed(tmp_path):
+    """A baseline at zero sits exactly on the axis. It is drawn, so it passes."""
+    theme, fig = _fig_with_scope_line(0, (0, 46))
+    assert theme.save(fig, tmp_path / "fig.svg").exists()
+
+
+def test_a_vertical_reference_line_is_checked_too(tmp_path):
+    theme = pytest.importorskip("folio.theme")
+    plt = theme.use()
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3], [1, 2, 3])
+    ax.axvline(9)
+    ax.set_xlim(0, 4)
+    with pytest.raises(theme.FigureError, match="9"):
+        theme.save(fig, tmp_path / "fig.svg")

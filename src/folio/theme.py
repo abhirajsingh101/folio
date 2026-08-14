@@ -133,7 +133,55 @@ def grid(ax, axis: str = "y"):
     return ax
 
 
+class FigureError(RuntimeError):
+    """A figure that would ship saying something it does not show."""
+
+
+def _clipped_reference_lines(fig) -> list[str]:
+    """Reference lines drawn outside the axis that is meant to show them.
+
+    `axhline` and `axvline` are how a chart states a threshold — a standard, a
+    scope, a target — and the caption almost always points at one. Give it a
+    value outside the limits and matplotlib draws it, clips it away, and says
+    nothing: the quarterly report shipped `axhline(43)` under
+    `set_ylim(0, 34)` for four releases, with a caption promising a dotted line
+    no reader could see.
+
+    Nothing downstream can catch it. By the time the figure reaches
+    `folio check` it is an image, and its text is outlined by design. The
+    figure is the only place it is knowable, so it is knowable here.
+
+    A line *on* the boundary is drawn and therefore fine — a baseline at zero
+    under `ylim=(0, n)` is the common case, and refusing it would make the
+    guard unusable.
+    """
+    out = []
+    for ax in fig.get_axes():
+        for line in ax.lines:
+            transform = line.get_transform()
+            if transform is ax.get_yaxis_transform():
+                value, (low, high), axis = line.get_ydata()[0], ax.get_ylim(), "y"
+            elif transform is ax.get_xaxis_transform():
+                value, (low, high), axis = line.get_xdata()[0], ax.get_xlim(), "x"
+            else:
+                continue
+            if not low <= value <= high:
+                out.append(
+                    f"a reference line at {axis}={value:g} is outside the axis "
+                    f"({low:g} to {high:g}), so it is drawn and then clipped away"
+                )
+    return out
+
+
 def save(fig, path):
     """Write an SVG sized for the report column. Always vector, never raster."""
+    clipped = _clipped_reference_lines(fig)
+    if clipped:
+        raise FigureError(
+            f"{path.name if hasattr(path, 'name') else path}:\n  "
+            + "\n  ".join(clipped)
+            + "\n  Widen the limit to include it, or drop the line and the "
+            "sentence that points at it."
+        )
     fig.savefig(str(path), format="svg", transparent=True)
     return path
