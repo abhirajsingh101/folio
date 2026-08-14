@@ -15,6 +15,7 @@ an empty-string fallback, so a fifth theme would list as a bare name.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -149,3 +150,23 @@ def test_init_refuses_an_unknown_scaffold_and_lists_the_real_ones(tmp_path, caps
     for name in template_names():
         assert name in message
     assert not list(tmp_path.iterdir())
+
+
+def test_the_readme_table_lists_every_scaffold():
+    """The README's table is the front door, and it drifted within a release.
+
+    `essay` shipped, `folio templates` listed it, the routing table sent people
+    to it, and the README went on offering six. Two guards already exist for
+    exactly this — the skill must route to every scaffold, and every rule must
+    be named in the skill — and the table a reader sees first had none.
+    """
+    from folio.assets import template_names
+
+    readme = Path(__file__).resolve().parents[1] / "README.md"
+    if not readme.exists():  # pragma: no cover - sdist without the README
+        pytest.skip("README not present")
+    text = readme.read_text(encoding="utf-8")
+    table = text[text.index("| template | shape |") :]
+    table = table[: table.index("\n\n")]
+    missing = [t for t in template_names() if f"`{t}`" not in table]
+    assert not missing, f"the README template table omits: {missing}"

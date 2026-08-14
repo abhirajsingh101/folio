@@ -298,6 +298,14 @@ everyone. A decorative illustration captioned `Fig. 3` is not — it wears the
 same grammar as a measurement, so the reader files it as sourced without ever
 deciding to.
 
+**Where the credit sits is part of what it says.** A `.credit` under a plate
+that sits above a `.signature` reads as belonging to the signature — a line of
+small type directly over a name is a job title, not an image credit, and no
+measurement distinguishes the two. Put the plate's credit above the signature
+block, or move the plate. This is advice rather than a rule for exactly that
+reason: `folio check` measures geometry, and both arrangements are
+geometrically correct.
+
 Rules for what may go in a plate:
 
 - **Never anything a reader could take as data or record.** Real numbers go in

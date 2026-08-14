@@ -6,6 +6,26 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed — the README offered six scaffolds and folio shipped seven
+`essay` shipped in 0.6.0. `folio templates` listed it, the skill's routing table
+sent people to it, two guards checked both of those — and the table a reader
+sees *first* still offered six. Every existing guard pointed inwards, at the
+interface an agent reads; nothing checked the front door.
+
+A test now asserts the README's template table names every installed scaffold,
+the same shape as "the skill must route to every scaffold" and "every rule must
+be named in the skill". It failed on arrival, which is how the omission was
+found rather than noticed.
+
+### Added — the credit under a plate, as advice rather than a rule
+0.6.0's Planned section closed out the composition frontier by saying the last
+of 0.4.0's three defects — an image credit under a plate reading as part of the
+signature block beneath it — is not a rule and belongs in `folio components`.
+It is there now. A line of small type directly over a name is a job title, not
+an image credit, and no measurement distinguishes the two: both arrangements
+are geometrically correct, which is precisely why the checker cannot be the one
+to say so.
+
 ### Added — `section-number`, written from a defect folio shipped last release
 The `essay` scaffold went out with two sections numbered `04`: one was inserted
 ahead of `Notes` and nothing after it moved. `folio check` reported "No layout

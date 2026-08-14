@@ -127,6 +127,7 @@ folio build document.html           # → document.pdf + document.page.html
 | `runbook` | control block · numbered steps · verification — an SOP or playbook |
 | `case-study` | headline · metrics · narrative · quote — proof, and no cover |
 | `letter` | one sheet, no furniture — letterhead, subject, sign-off |
+| `essay` | cover · continuous prose · pull quote · notes — a long read, no contents |
 
 Each scaffold arrives in the direction that suits it — an invoice in `minimal`,
 a runbook in `technical` — and `--theme` overrides the pairing:
