@@ -9,6 +9,10 @@ plt = theme.use()
 OUT = Path(__file__).parent / "charts"
 OUT.mkdir(exist_ok=True)
 
+# Services in the programme. The burn-up plots progress against it and the
+# migration stack sums to it, so it is named once rather than typed twice.
+SCOPE = 43
+
 
 def fig_deploys():
     """Deploy frequency — the dashboard-flavour bar chart."""
@@ -64,23 +68,38 @@ def fig_migration():
 
 
 def fig_latency():
-    """p99 latency distribution before and after — the analytical figure."""
+    """p99 latency distribution before and after — the analytical figure.
+
+    The means are chosen so the drawn p99s land on the two numbers the document
+    reports, 412ms and 231ms. They used to be chosen by eye, and the label was
+    typed in beside them: the dashed lines fell at 646 and 290 while the text
+    said 412 and 231, so the figure disagreed with itself in the one place a
+    reader can check it — the axis it is drawn against.
+
+    The label is computed from the same array the lines are drawn from now, so
+    the two cannot drift apart again.
+    """
     rng = np.random.default_rng(11)
-    before = rng.lognormal(mean=5.42, sigma=0.44, size=1400)
-    after = rng.lognormal(mean=4.86, sigma=0.31, size=1400)
+    before = rng.lognormal(mean=4.9697, sigma=0.44, size=1400)
+    after = rng.lognormal(mean=4.6326, sigma=0.31, size=1400)
+    p99_before, p99_after = np.percentile(before, 99), np.percentile(after, 99)
 
     fig, ax = plt.subplots(figsize=(3.25, 2.45))
-    bins = np.linspace(0, 700, 46)
+    bins = np.linspace(0, 750, 46)
     ax.hist(before, bins=bins, color=theme.RAMP[0], alpha=0.85, zorder=3, label="before")
     ax.hist(after, bins=bins, color=theme.BRAND_DEEP, alpha=0.85, zorder=4, label="after")
-    for v, c, ls in ((np.percentile(before, 99), theme.RAMP[0], "--"),
-                     (np.percentile(after, 99), theme.BRAND_DEEP, "--")):
+    for v, c, ls in ((p99_before, theme.RAMP[0], "--"), (p99_after, theme.BRAND_DEEP, "--")):
         ax.axvline(v, color=c, lw=1.1, ls=ls, zorder=5)
     ax.set_xlabel("request latency [ms]")
     ax.set_ylabel("requests")
     ax.legend(frameon=False, fontsize=7, loc="upper right")
-    ax.text(0.04, 0.95, "p99  412 → 231 ms", transform=ax.transAxes,
-            fontsize=7.5, va="top", color=theme.INK, fontweight="600")
+    # Above the axes, not inside them. Sat at the top left until the p99s were
+    # corrected — which moved both dashed lines left, straight through the
+    # text. An annotation placed in the data area is one data change away from
+    # being struck through, and no rule can see it: chart text is outlined, so
+    # `text-overlap` stops at the figure's edge.
+    ax.text(0, 1.04, f"p99  {p99_before:.0f} → {p99_after:.0f} ms", transform=ax.transAxes,
+            fontsize=7.5, va="bottom", color=theme.INK, fontweight="600")
     fig.tight_layout(pad=0.3)
     theme.save(fig, OUT / "fig-latency.svg")
     plt.close(fig)
@@ -97,8 +116,13 @@ def fig_burnup():
     ax.fill_between(range(len(months)), done, color=theme.BRAND, alpha=0.09, zorder=2)
     theme.grid(ax)
     ax.set_ylabel("services migrated (cumulative)")
-    ax.set_ylim(0, 34)
-    ax.axhline(43, color=theme.MUTED, lw=0.9, ls=":", zorder=1)
+    # The scope line is the point of a burn-up: it is what 27 is short of. It
+    # was drawn at 43 under a `set_ylim(0, 34)` that clipped it, so the caption
+    # promised a dotted line no reader could see — the chart and its own axis
+    # limit disagreeing, which nothing in `folio check` can reach.
+    ax.set_ylim(0, 46)
+    ax.axhline(SCOPE, color=theme.MUTED, lw=0.9, ls=":", zorder=1)
+    ax.text(5.35, SCOPE + 0.8, f"{SCOPE} in scope", fontsize=6.5, color=theme.MUTED, ha="right")
     ax.annotate("dual-write\ncutover", xy=(3, 19), xytext=(1.1, 26), fontsize=6.8,
                 color=theme.INK,
                 arrowprops=dict(arrowstyle="-", color=theme.MUTED, lw=0.8))

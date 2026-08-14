@@ -45,11 +45,11 @@
 
 <p class="lead">Q3 was the quarter the decomposition stopped being a plan. Twenty-seven
 of forty-three services now run independently of the monolith, deploy frequency
-more than doubled, and p99 latency fell 44% against the Q2 baseline.</p>
+rose 42%, and p99 latency fell 44% against the Q2 baseline.</p>
 
 <div class="metrics">
   <div class="metric"><span class="v">27<span class="u">/43</span></span><span class="l">Services migrated</span><span class="d">up from 11 in Q2</span></div>
-  <div class="metric"><span class="v">2,694</span><span class="l">Deploys</span><span class="d">+118% quarter on quarter</span></div>
+  <div class="metric"><span class="v">1,765</span><span class="l">Deploys</span><span class="d">+42% on Q2, Sep partial</span></div>
   <div class="metric"><span class="v">231<span class="u">ms</span></span><span class="l">p99 latency</span><span class="d">from 412ms</span></div>
   <div class="metric"><span class="v">99.97%</span><span class="l">Availability</span><span class="d">two minor incidents</span></div>
 </div>
@@ -356,19 +356,19 @@ too long costs more than the estimate was ever worth.</p>
 <h3>Deploy frequency by domain</h3>
 
 <table>
-  <caption><span class="tnum">Table 5</span>Deploys per week, quarter mean</caption>
+  <caption><span class="tnum">Table 5</span>Deploys by domain, quarter total. Sums to Fig. 1.</caption>
   <thead>
     <tr><th>Domain</th><th class="num">Q2</th><th class="num">Q3</th><th class="num">Change</th><th>Comment</th></tr>
   </thead>
   <tbody>
-    <tr><td>Commerce</td><td class="num">31</td><td class="num">88</td><td class="num">+184%</td><td>Largest single gain</td></tr>
-    <tr><td>Payments</td><td class="num">12</td><td class="num">24</td><td class="num">+100%</td><td>Regulatory review caps this</td></tr>
-    <tr><td>Platform</td><td class="num">44</td><td class="num">97</td><td class="num">+120%</td><td>Includes SDK releases</td></tr>
-    <tr><td>Growth</td><td class="num">28</td><td class="num">61</td><td class="num">+118%</td><td>Effectively unblocked</td></tr>
-    <tr><td>Analytics</td><td class="num">9</td><td class="num">17</td><td class="num">+89%</td><td>Batch cadence, not a limit</td></tr>
+    <tr><td>Commerce</td><td class="num">310</td><td class="num">560</td><td class="num">+81%</td><td>Largest single gain</td></tr>
+    <tr><td>Payments</td><td class="num">120</td><td class="num">134</td><td class="num">+12%</td><td>Regulatory review caps this</td></tr>
+    <tr><td>Platform</td><td class="num">440</td><td class="num">600</td><td class="num">+36%</td><td>Includes SDK releases</td></tr>
+    <tr><td>Growth</td><td class="num">280</td><td class="num">360</td><td class="num">+29%</td><td>Effectively unblocked</td></tr>
+    <tr><td>Analytics</td><td class="num">91</td><td class="num">111</td><td class="num">+22%</td><td>Batch cadence, not a limit</td></tr>
   </tbody>
   <tfoot>
-    <tr><td>Total</td><td class="num">124</td><td class="num">287</td><td class="num">+131%</td><td>Excludes rollbacks</td></tr>
+    <tr><td>Total</td><td class="num">1,241</td><td class="num">1,765</td><td class="num">+42%</td><td>Sep partial; excludes rollbacks</td></tr>
   </tfoot>
 </table>
 

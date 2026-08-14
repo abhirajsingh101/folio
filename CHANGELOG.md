@@ -6,6 +6,46 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed — a look pass over the examples, and four numbers that were not true
+Thirty-one pages, nine documents, read one at a time. `folio check` reported
+nothing on any of them, correctly, and that is the point of the exercise: every
+defect below is a claim the document makes about itself, and no rule that
+measures geometry can reach one.
+
+- **`survey`, Fig. 2** said nitrate "triples between January and March". The
+  series goes 6.8 → 13.2, which is doubling. It *is* three times the autumn
+  baseline, which is presumably where the wording came from, so the caption now
+  says both and neither is wrong.
+- **`quarterly-report`, deploys — three sources, three answers.** The tile said
+  2,694 deploys at +118% quarter on quarter; the prose said frequency "more
+  than doubled"; Table 5 said 124 → 287 per week at +131%. Fig. 1's own bars
+  say Q2 1,241 → Q3 1,765, which is +42%. Everything now derives from the
+  chart: the tile reads 1,765 and +42%, the prose reads 42%, and Table 5 is
+  quarter totals by domain that **sum to the figure**, with the story intact —
+  Commerce still the largest gain, Payments still the laggard the paragraph
+  beneath it explains.
+- **`quarterly-report`, Fig. 3 disagreed with itself.** The dashed p99 lines
+  were computed from the data and fell at 646 and 290ms; the label typed beside
+  them read "412 → 231 ms", which is also what the document reports. The
+  distribution is retuned so the drawn p99s *are* 412 and 231, and the label is
+  now built from the same array the lines are drawn from, so they cannot drift
+  apart again.
+- **`quarterly-report`, Fig. 2 promised a line that was clipped.** `axhline(43)`
+  under `set_ylim(0, 34)`: the scope line the caption points at was drawn
+  outside the visible range on every build. The axis now reaches it, and the
+  gap between 27 and 43 — which is the entire point of a burn-up — is finally
+  on the page.
+
+Fixing the third one caused a fifth: moving both p99s left put the dashed line
+straight through the annotation that names them. Caught by re-rendering and
+looking again, which is the pass working rather than an argument against it.
+The label sits above the axes now, where no data can reach it.
+
+Also removed `examples/proposal/` and `examples/invoice/`, which 0.4.0 retired
+and which had lingered as directories of build output — no source, just a stale
+PDF each. They fooled this very look pass into reporting eleven examples before
+`pdfinfo` was asked what it was reading.
+
 ### Added — guards for the surfaces a reader sees, not just the ones an agent reads
 0.6.2's Planned section named this: every guard in the suite pointed inwards.
 The skill must route to every scaffold; every rule the checker emits must be
