@@ -6,6 +6,37 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — guards for the surfaces a reader sees, not just the ones an agent reads
+0.6.2's Planned section named this: every guard in the suite pointed inwards.
+The skill must route to every scaffold; every rule the checker emits must be
+named in the skill. Nothing checked the documentation a person opens first, and
+it showed — `essay` shipped in 0.6.0 and the README went on offering six
+scaffolds through two releases.
+
+Three more, in a `tests/test_docs.py` that exists to say what they have in
+common:
+
+- The README's **theme table** names every installed theme, the same shape as
+  the template-table guard 0.6.2 added.
+- Every class **`folio components` shows an author using** is styled by at
+  least one shipped stylesheet. A class renamed in the CSS and left in the
+  prose produces a document that builds, passes every check, and quietly loses
+  the look of whatever the block was meant to be.
+- Every class **defined at the top level of `base.css`** appears in
+  `folio components`. That file carries no look of its own, only structure, so
+  anything it defines is vocabulary by construction — and a component nobody is
+  told about is one the next author reinvents inline, which is the drift the
+  whole kit exists to stop.
+
+**None of them found a defect.** All 59 documented classes are styled and all
+20 structural classes are documented, which is worth stating plainly: this is
+regression protection, not a bug fix. Each was mutation-tested instead — drop a
+theme from the table, name a class the CSS does not define, add a class the doc
+never mentions — and the second one is the reason that matters. It first
+"failed to fail" when a class was renamed only in `base.css`, because the themes
+still defined it. That is the rule being right and the mutation being wrong: a
+class styled anywhere is styled.
+
 ## [0.6.2] — 2026-08-14
 
 ### Added — `section-number`, written from a defect folio shipped last release
