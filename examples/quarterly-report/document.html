@@ -55,7 +55,7 @@ rose 42%, and p99 latency fell 44% against the Q2 baseline.</p>
 </div>
 
 <p>Three things drove the quarter. The <strong>dual-write cutover</strong> in
-July removed the last synchronous dependency on the monolith's write path,
+July removed the last synchronous dependency on the monolith’s write path,
 which unblocked eight services at once. The <strong>shared platform SDK</strong>
 cut the median migration from eleven days to four. And retiring the legacy
 scheduler removed the single largest source of tail latency.</p>
@@ -160,7 +160,7 @@ once. The consequence lands entirely in Q4.</p>
 
 <p>Counting services is the metric that was easy to instrument, not the metric
 that describes the work. A service is one unit whether it serves four requests
-a second or four thousand, and the programme's remaining fourteen skew hard
+a second or four thousand, and the programme’s remaining fourteen skew hard
 toward the latter. On a traffic-weighted basis the programme is closer to a
 third complete than to two thirds, which is the number worth planning against
 even though it is the less comfortable one to report.</p>
@@ -199,7 +199,7 @@ migrations has no way to record a deletion as progress.</p>
 <figure>
   <img src="charts/fig-migration.svg" alt="Migration status by service">
   <figcaption><span class="fnum">Fig. 4</span>Service migration status across
-  two quarter-end snapshots. "In flight" means the service has a live branch
+  two quarter-end snapshots. “In flight” means the service has a live branch
   and an owner, not merely a ticket.</figcaption>
 </figure>
 
@@ -312,7 +312,7 @@ independently, and no amount of parallel staffing changes that.</p>
 
 <hr class="divider">
 
-<h3>What "done" means for Q4</h3>
+<h3>What “done” means for Q4</h3>
 
 <p>Stated as conditions rather than a percentage, because the percentage is the
 thing most likely to be gamed at the end of a quarter. Each of these is
