@@ -6,6 +6,77 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-08-14
+
+### Added — `font-fallback`, so the checker can finally see a font
+0.5.0 shipped four font defects' worth of fixes and not one of them was found
+by `folio check`. Every rule there measures geometry, and a document set in the
+wrong typeface has perfectly correct geometry — so all four were found by
+rendering a PDF and reading the embedded fonts back out by hand. That is a
+tool-shaped hole, and 0.5.0's Planned section said so.
+
+- **`font-fallback`** — text in a script that nothing in its stack can set.
+  A stack falls through per glyph; when it runs out the renderer asks
+  fontconfig, which never fails and never asks. For Korean on a Linux machine
+  it commonly answers with a *Chinese* face.
+- **It catches the defect the last release was cut for.** Run against the
+  stylesheet as it shipped before 0.5.0, it reports "Korean text, and nothing
+  in its stack covers Korean" on page 1; run against the same document as
+  folio builds it today, it is silent.
+- **Silent on a family folio does not recognise.** The table is Noto-centric
+  and Korean typography is not: Pretendard, Nanum Gothic and Apple SD Gothic
+  Neo are not in it, and a rule that fired on all three would be noise on
+  exactly the documents whose author knew what they were doing. It reports only
+  when *every* named family is one folio knows to be Latin-only, or a generic —
+  which is the case where the choice provably falls to fontconfig.
+- **Judged against the document's scripts, not each run's.** Han and Japanese
+  share characters, so a run of kanji with no kana in it reads as Chinese, and
+  judging per run would report a Japanese document for naming Japanese faces.
+  The document-level profile has already settled that question.
+- Silent across all nine examples and six scaffolds in four directions.
+
+Both halves are mutation-tested rather than assumed: neutering `covers` fails
+the covering-face test, and neutering `judgeable` fails the unknown-family
+test. Written after 0.5.0's guard refused the commit — a new rule with no
+`SKILL.md` entry, which is what that guard exists for.
+
+### Added — `folio fonts --install <script>`
+A report that names a gap it cannot close is half a feature. `folio fonts`
+would tell you Tamil has no face and then leave you to it, which on a machine
+with no package manager — most Windows, plenty of locked-down macOS — turns
+"install Noto Sans Tamil" from a step into an afternoon. Carried in Planned
+since 0.3.0.
+
+`folio fonts --install ko` fetches the sans and the serif covering a script
+into the user's own font directory and refreshes the font cache. Both faces,
+because half the themes set body copy in a serif and a serif document with a
+sans Korean face in it is still two documents.
+
+The doctrine does not move: **no font is bundled, and nothing is fetched at
+build time.** This runs only when asked, only for the script asked for, and
+only into `~/.local/share/fonts` (or the macOS and Windows equivalents) —
+never a system directory, never with admin rights. Everything it fetches is
+Noto under the SIL Open Font License, from `google/fonts`, and the command
+prints that.
+
+- **A 200 carrying an error page is refused.** A moved URL answers with HTML
+  on plenty of hosts, and a `.ttf` full of `<!DOCTYPE html>` installs happily
+  and renders as nothing at all. The first four bytes decide.
+- **Re-running is free rather than 34MB** — that being what Korean costs.
+  Families already installed are skipped.
+- **The filenames are a table, not a pattern.** Each family names its own
+  variable axes: `NotoSansKR[wght].ttf` beside `NotoSansThai[wdth,wght].ttf`.
+  A derived URL would 404 on half the world. A test asserts the table covers
+  every script `check_document_fonts` can report as missing.
+- `folio fonts <file>` now names this command first when it reports a gap,
+  ahead of the platform's package manager.
+
+Verified against the live upstream rather than only against mocks: all twenty
+URLs resolve, and a real fetch of both Tamil faces produces files that
+fontconfig identifies as `Noto Sans Tamil` and `Noto Serif Tamil` — the exact
+names folio's stacks write — and that WeasyPrint then renders Tamil with. The
+tests themselves inject the fetch and never touch the network.
+
 ### Added — `--install kit`, and output is already reproducible
 The Planned item read "byte-identical output across machines. Currently the
 look degrades gracefully but is not pinned." The first half of that turned out
@@ -75,74 +146,29 @@ Two sections were numbered `04` — the new one was added ahead of `Notes`
 without renumbering. Nothing measures that; it was caught by rendering page 3
 and looking at it, which is the pass that keeps earning its place.
 
-### Added — `folio fonts --install <script>`
-A report that names a gap it cannot close is half a feature. `folio fonts`
-would tell you Tamil has no face and then leave you to it, which on a machine
-with no package manager — most Windows, plenty of locked-down macOS — turns
-"install Noto Sans Tamil" from a step into an afternoon. Carried in Planned
-since 0.3.0.
-
-`folio fonts --install ko` fetches the sans and the serif covering a script
-into the user's own font directory and refreshes the font cache. Both faces,
-because half the themes set body copy in a serif and a serif document with a
-sans Korean face in it is still two documents.
-
-The doctrine does not move: **no font is bundled, and nothing is fetched at
-build time.** This runs only when asked, only for the script asked for, and
-only into `~/.local/share/fonts` (or the macOS and Windows equivalents) —
-never a system directory, never with admin rights. Everything it fetches is
-Noto under the SIL Open Font License, from `google/fonts`, and the command
-prints that.
-
-- **A 200 carrying an error page is refused.** A moved URL answers with HTML
-  on plenty of hosts, and a `.ttf` full of `<!DOCTYPE html>` installs happily
-  and renders as nothing at all. The first four bytes decide.
-- **Re-running is free rather than 34MB** — that being what Korean costs.
-  Families already installed are skipped.
-- **The filenames are a table, not a pattern.** Each family names its own
-  variable axes: `NotoSansKR[wght].ttf` beside `NotoSansThai[wdth,wght].ttf`.
-  A derived URL would 404 on half the world. A test asserts the table covers
-  every script `check_document_fonts` can report as missing.
-- `folio fonts <file>` now names this command first when it reports a gap,
-  ahead of the platform's package manager.
-
-Verified against the live upstream rather than only against mocks: all twenty
-URLs resolve, and a real fetch of both Tamil faces produces files that
-fontconfig identifies as `Noto Sans Tamil` and `Noto Serif Tamil` — the exact
-names folio's stacks write — and that WeasyPrint then renders Tamil with. The
-tests themselves inject the fetch and never touch the network.
-
-### Added — `font-fallback`, so the checker can finally see a font
-0.5.0 shipped four font defects' worth of fixes and not one of them was found
-by `folio check`. Every rule there measures geometry, and a document set in the
-wrong typeface has perfectly correct geometry — so all four were found by
-rendering a PDF and reading the embedded fonts back out by hand. That is a
-tool-shaped hole, and 0.5.0's Planned section said so.
-
-- **`font-fallback`** — text in a script that nothing in its stack can set.
-  A stack falls through per glyph; when it runs out the renderer asks
-  fontconfig, which never fails and never asks. For Korean on a Linux machine
-  it commonly answers with a *Chinese* face.
-- **It catches the defect the last release was cut for.** Run against the
-  stylesheet as it shipped before 0.5.0, it reports "Korean text, and nothing
-  in its stack covers Korean" on page 1; run against the same document as
-  folio builds it today, it is silent.
-- **Silent on a family folio does not recognise.** The table is Noto-centric
-  and Korean typography is not: Pretendard, Nanum Gothic and Apple SD Gothic
-  Neo are not in it, and a rule that fired on all three would be noise on
-  exactly the documents whose author knew what they were doing. It reports only
-  when *every* named family is one folio knows to be Latin-only, or a generic —
-  which is the case where the choice provably falls to fontconfig.
-- **Judged against the document's scripts, not each run's.** Han and Japanese
-  share characters, so a run of kanji with no kana in it reads as Chinese, and
-  judging per run would report a Japanese document for naming Japanese faces.
-  The document-level profile has already settled that question.
-- Silent across all nine examples and six scaffolds in four directions.
-
-Both halves are mutation-tested rather than assumed: neutering `covers` fails
-the covering-face test, and neutering `judgeable` fails the unknown-family
-test. Written after 0.5.0's guard refused the commit — a new rule with no
-`SKILL.md` entry, which is what that guard exists for.
+### Planned
+- **Two sections numbered `04`, and a rule could have said so.** It shipped in
+  a scaffold in this release and was caught by reading page 3. Section numbers
+  are `<span class="idx">` in the DOM, so a duplicate or a gap in the sequence
+  is as measurable as a heading level — and unlike most of what the look pass
+  finds, this one does not need taste to judge. The nearest neighbour to
+  `heading-skip`, and the next rule to write.
+- **Byte-identical output across machines**, rewritten now that half of it
+  turned out to be done. The renderer is deterministic and `--install kit`
+  pins the faces, so what remains is making a *mismatch* detectable rather
+  than invisible: a document that records which faces it was actually set
+  with, so rebuilding it somewhere else can say "this was set in P052 and you
+  do not have it" instead of quietly substituting. Carried from 0.3.0 in its
+  old form.
+- `tests/test_layout.py`, for the class where a component reserves more space
+  than its content fills, still holds the single `.cols` case that created it.
+  Carried from 0.5.0.
+- **The composition frontier is thinner than it looked.** Of the three defects
+  0.4.0 recorded, the plate at a page head became `half-bleed`, the band above
+  a table turned out to be `page-widow` already, and the third — an image
+  credit under a signature block reading as part of the signature — is
+  semantic adjacency that no measurement distinguishes from a correct layout.
+  It is not a rule. It belongs in `folio components`, as advice.
 
 ## [0.5.0] — 2026-08-13
 
