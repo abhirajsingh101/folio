@@ -6,6 +6,35 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Investigated — the `ubuntu · py3.10` two-byte difference, narrowed by elimination
+No fix, and no reproduction. What this adds is the list of things it is *not*,
+which is worth writing down because the next person to look at it — including
+a later me — would otherwise start where this started.
+
+Ruled out, each by running the thing rather than reasoning about it:
+
+- **The Python version.** A 3.10.20 environment built to match the failing job
+  exactly, with WeasyPrint 69.0 and folio installed from source: fifteen
+  double-builds, byte-identical every one.
+- **The renderer version.** WeasyPrint 68 and 69 both stable, in-process and
+  through `folio build`.
+- **folio's own path.** Bare `HTML(...).write_pdf()` is stable on 69, and so is
+  writing to two different output paths versus twice to the same one.
+- **Hash randomisation.** Twelve fixed `PYTHONHASHSEED` values and the default
+  randomised setting all agree.
+
+What remains is the runner environment itself — most plausibly its font
+inventory, since subsetting is the only part of the pipeline whose output
+depends on what is installed — or genuine rarity: it has appeared once, in one
+job of eight, and every `ubuntu · py3.10` job since has passed, including three
+releases.
+
+The next step is unchanged and is CI-side: a branch that builds one document
+twice, uploads both PDFs as artifacts, and diffs them there. It is deliberately
+not being taken now — at an observed rate of one in eight jobs, a single
+instrumented run is more likely to be green than useful, and until it is
+observed nothing about reproducibility should be claimed.
+
 ## [0.7.0] — 2026-08-14
 
 ### Fixed — a look pass over the examples, and four numbers that were not true
