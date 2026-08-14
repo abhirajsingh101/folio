@@ -6,25 +6,7 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Fixed — the README offered six scaffolds and folio shipped seven
-`essay` shipped in 0.6.0. `folio templates` listed it, the skill's routing table
-sent people to it, two guards checked both of those — and the table a reader
-sees *first* still offered six. Every existing guard pointed inwards, at the
-interface an agent reads; nothing checked the front door.
-
-A test now asserts the README's template table names every installed scaffold,
-the same shape as "the skill must route to every scaffold" and "every rule must
-be named in the skill". It failed on arrival, which is how the omission was
-found rather than noticed.
-
-### Added — the credit under a plate, as advice rather than a rule
-0.6.0's Planned section closed out the composition frontier by saying the last
-of 0.4.0's three defects — an image credit under a plate reading as part of the
-signature block beneath it — is not a rule and belongs in `folio components`.
-It is there now. A line of small type directly over a name is a job title, not
-an image credit, and no measurement distinguishes the two: both arrangements
-are geometrically correct, which is precisely why the checker cannot be the one
-to say so.
+## [0.6.2] — 2026-08-14
 
 ### Added — `section-number`, written from a defect folio shipped last release
 The `essay` scaffold went out with two sections numbered `04`: one was inserted
@@ -49,6 +31,57 @@ find.
 - Silent across all nine examples and seven scaffolds in four directions — 64
   renders. The contents page does not trip it, because a TOC entry is `.num`
   rather than `.idx`, which the sweep confirmed rather than the design assumed.
+
+### Fixed — the README offered six scaffolds and folio shipped seven
+`essay` shipped in 0.6.0. `folio templates` listed it, the skill's routing table
+sent people to it, two guards checked both of those — and the table a reader
+sees *first* still offered six. Every existing guard pointed inwards, at the
+interface an agent reads; nothing checked the front door.
+
+A test now asserts the README's template table names every installed scaffold,
+the same shape as "the skill must route to every scaffold" and "every rule must
+be named in the skill". It failed on arrival, which is how the omission was
+found rather than noticed.
+
+### Added — the credit under a plate, as advice rather than a rule
+0.6.0's Planned section closed out the composition frontier by saying the last
+of 0.4.0's three defects — an image credit under a plate reading as part of the
+signature block beneath it — is not a rule and belongs in `folio components`.
+It is there now. A line of small type directly over a name is a job title, not
+an image credit, and no measurement distinguishes the two: both arrangements
+are geometrically correct, which is precisely why the checker cannot be the one
+to say so.
+
+### Note on the version
+A new rule is behaviour, not a fix: a document that passed `folio check
+--strict` on 0.6.1 can report a warning on 0.6.2 without changing a byte.
+Every previous release that added a rule moved the minor. This one is cut as a
+patch because that is what was asked for, and it is recorded here rather than
+argued: anyone pinning `folio-press~=0.6.1` will pick up `section-number`
+without opting in.
+
+### Planned
+- **The `ubuntu · py3.10` two-byte difference**, unchanged and still
+  unreproduced: twenty local runs, twelve fixed hash seeds, WeasyPrint 68 and
+  69, and bare WeasyPrint all agree the output is stable. Seeing it needs CI
+  itself instrumented — a branch that uploads both PDFs as artifacts and diffs
+  them there. Until then nothing about reproducibility should be claimed, and
+  the item below is blocked behind it.
+- **A document that records which faces it was set with**, so rebuilding it
+  elsewhere can say "this was set in P052 and you do not have it" rather than
+  quietly substituting. `font-fallback` catches a stack that *asks* for
+  nothing capable; this is the other half — a stack that asked correctly and
+  did not get it.
+- `tests/test_layout.py`, for the class where a component reserves more space
+  than its content fills, still holds the single `.cols` case that created it.
+  Carried since 0.5.0, and honestly a note rather than a task: the file wants
+  company, and company arrives when the next defect of that shape is found.
+- **The guards all point inwards.** Three now check the interface an agent
+  reads — every scaffold routed to, every rule named, every scaffold in the
+  README table — and finding that last gap took a release. What else is
+  outward-facing and unchecked: the theme table, the gallery images, the
+  component list in `docs/COMPONENTS.md` against the classes the CSS actually
+  ships.
 
 ## [0.6.1] — 2026-08-14
 
