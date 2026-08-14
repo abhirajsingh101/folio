@@ -646,3 +646,53 @@ opinion about WenQuanYi, Pretendard or any other face.
 It does need plumbing: the injected families are computed in `build.py` and are
 not currently available to `check.py`, which receives only the assembled HTML.
 Deciding how to pass them is the first task of whoever picks this up.
+
+---
+
+## Amendment 2 — Task 2 is unblocked. The question was wrong, not the data.
+
+The earlier amendment said Task 2 needed plumbing to carry the injected
+families from `build.py` into `check.py`. It does not. `inspect()` already
+receives the fully assembled HTML, with folio's injected `--script-sans` /
+`--script-serif` / `--script-mono` block and any project `brand.css` inside it.
+
+More importantly, the question itself was wrong. Every attempt so far asked
+some version of *"is this face right for Korean?"* — and folio cannot answer
+that about a face it has never heard of. `Pretendard` and `WenQuanYi Zen Hei`
+are equally unknown to it; one is a deliberate Korean choice and the other is a
+Chinese fallback. Name, OS/2 codepage bits and glyph coverage all fail to
+separate them, each verified rather than assumed.
+
+**Ask instead: was this face chosen by anyone?**
+
+| resolved face | named in a stylesheet? | verdict |
+|---|---|---|
+| WenQuanYi Zen Hei | no — it appears in no theme, no injected stack, no brand.css | fontconfig substituted it → **report** |
+| Pretendard, set in `brand.css` | yes | someone chose it → silent |
+| Noto Sans CJK KR, injected by `build.py` | yes | the kit chose it → silent |
+
+A family named nowhere was substituted by fontconfig, which never fails and
+never asks. That substitution *is* the defect, whatever the face is called —
+and the test needs no font knowledge at all, only the set of family names the
+document's own stylesheets mention.
+
+### Implementation notes for whoever picks this up
+
+- Collect the named set with one regex over the html `inspect()` already has:
+  `(?:font-family|--script-(?:sans|serif|mono))\s*:([^;}]*)`, split on commas,
+  strip quotes, drop anything starting `var(`. Compare lower-cased.
+- Thread it as a parameter: `_check_font_fallback(root, n, scripts, named)`,
+  with `named = _named_families(html)` computed once in `inspect()`.
+- `judgeable` and `covers` are no longer needed by this rule. Leave them in
+  `scripts.py` — `folio fonts` and the doctor still use them.
+- The two tests are written and known-good in shape: a Korean document naming
+  only `Noto Sans KR` must report; one naming `Noto Sans CJK KR` must not.
+
+### One process warning, learned the expensive way
+
+This rewrite was attempted with a scripted in-place edit that replaced
+everything between the `font-fallback` docstring and `def _check_half_bleed`.
+Phase 1 had since inserted `_check_characters` and `_check_fake_small_caps`
+into exactly that span, and both were silently deleted. Reverted, no harm, but:
+**edit this function with a targeted replacement of its own body, not a slice
+between two landmarks.** `check.py` is 1200 lines and its neighbours move.
