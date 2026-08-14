@@ -1,6 +1,6 @@
 # Higher-quality documents: the floor, the resolved face, and the ceiling
 
-**Status:** approved, not yet implemented
+**Status:** Phase 1 shipped (see the amendment boxes below, and CHANGELOG `[Unreleased]`); Phases 2 and 3 approved, not yet implemented
 **Date:** 2026-08-14
 **Ships as:** three releases — 0.8.0 (the floor), 0.9.0 (the resolved face),
 0.10.0 (the ceiling). Version numbers provisional; the sequence is not.
@@ -26,7 +26,7 @@ point size.
 | architecture | 8.9pt | 1.46 | 51 | ✓ |
 | programme | 9.6pt | 1.62 | 47 | ✓ |
 | lookbook | 10.2pt | 1.66 | 58 | ✓ |
-| menu | 7.4pt | 1.21 | 6 | not prose — see the 8-line floor below |
+| menu | 7.4pt | 1.21 | 6 | not prose — see the 6-line floor below |
 | case-study | 10.2pt | 1.66 | **92** | over |
 | runbook | 8.6pt | 1.46 | **98** | over |
 | exhibition | 10.2pt | 1.66 | **98** | over |
@@ -39,7 +39,7 @@ ceiling of 1.45 — is not an independent defect. It is compensation for the
 measure, and it is what a designer reaches for when the column is too wide to
 fix.
 
-### Straight apostrophes in seven of nine examples, and three of seven scaffolds
+### Straight apostrophes in seven of nine examples, and four of seven scaffolds
 
 Almost every occurrence is a possessive: `Meridian's`, `Halloran's`,
 `yesterday's`, `monolith's`, `survey's`. Typed as U+0027, which in a serif face
@@ -50,8 +50,9 @@ with straight double quotes.
 This is the single most reliable amateur tell in typesetting, it is present in
 the artefacts people look at first, and it has survived seven releases under a
 green `folio check`. The scaffolds matter more than the examples: `case-study`,
-`proposal` and `runbook` each ship two, so every document started from one
-inherits the defect.
+`essay`, `proposal` and `runbook` ship six between them, so every document started
+from one inherits the defect. The source-level count that produced "three"
+missed `essay`, whose mark is not a possessive; the rule counts what renders.
 
 ### Capabilities the renderer supports and folio does not use
 
@@ -133,7 +134,7 @@ Four rules in `check.py`, all measuring the laid-out document, all exempting
 
 | rule | severity | trips on | evidence in the corpus |
 |---|---|---|---|
-| `straight-quote` | warn | `'` or `"` in prose; digit-adjacent exempt, because feet and inches *should* be straight | 33 in the rendered text of 7 examples; 6 possessives across 3 scaffolds |
+| `straight-quote` | warn | `'` or `"` in prose; digit-adjacent exempt, because feet and inches *should* be straight | 33 in the rendered text of 7 examples; 6 marks across 4 scaffolds |
 | `measure` | warn | median characters per line of body copy outside 45–90 | 5 of 9 examples, worst at 110 |
 | `dash` | warn | `--` standing in for an em dash | none in prose; 4 in code, all correct |
 | `dot-ellipsis` | warn | three periods where `…` belongs | none |
@@ -143,9 +144,23 @@ must say so plainly rather than implying they fixed something.
 
 **`measure` is document-level**, reported once alongside `heading-skip` and
 `type-drift`, not once per page. Body copy is the modal font size among `<p>`
-line boxes. A document with **fewer than 8 such lines is skipped** — `menu` has
-four and `architecture` six, and neither is prose; a median over that few lines
-is noise, not a measurement.
+line boxes.
+
+> **Amended in execution — the floor is 6 full lines, not 8.** The number
+> proposed here came from an audit that dropped only the last line of the whole
+> document; the rule drops the last line of *each paragraph*, which is what the
+> paragraph above actually specifies. Under the correct definition the corpus
+> falls either side of a gap between four and six — `menu` has none and
+> `architecture` four, while the shortest document that is genuinely prose,
+> `runbook`, has six. At a floor of 8, runbook goes silent at 98 characters a
+> line, which is the false negative the rule exists to remove.
+>
+> A second amendment, found by running the rule over the *scaffolds* rather
+> than the examples: a paragraph containing a `<br>` is skipped entirely. An
+> address block is one `<p>` with hard breaks between its lines, and those
+> lines end where the author broke them rather than where the column does —
+> read as prose they reported the `invoice` and `letter` scaffolds at 31
+> characters a line.
 
 **`straight-quote` is deduplicated per page** — one finding carrying the count
 and the first instance, not eighteen findings on one page of the
@@ -164,6 +179,31 @@ In this order, so each rule is watched to fail before anything makes it pass:
    bring leading down toward 1.45.
 4. `hyphenate-limit-chars`, unset today. Insurance — the measured ladders are
    one line — and labelled as such.
+
+> **Amended in execution — three corrections to the two items above.**
+>
+> **The measure is a length (`130mm`), not `68ch`.** `ch` was the first attempt
+> and it measured correctly while looking wrong: it scales with each element's
+> own font size, so a lead, a body paragraph and a pull-quote each took a
+> different physical width and one page grew *three* right edges — and a lead
+> large enough for 68ch to exceed the frame was never capped at all. One length
+> gives one edge, which is what a measured column beside a full-bleed plate
+> needs to read as a decision rather than an accident. Visible only by
+> rendering a page; no rule reported it.
+>
+> **Hyphenation is a repair, not insurance, and the limits are `7 4 3`.** The
+> "insurance" call rested on the ladder count, which was the wrong
+> measurement. Left unbounded this renderer breaks after two letters —
+> `ex‐traordin‐ary` under a control — and the examples carried `un‐`, `al‐`,
+> `syn‐`, `com‐`, `run‐` and `Feb‐`. At the conventional `6 3 3` the
+> three-letter fragments survive; at `7 4 3` none do.
+>
+> **Two page rules were added that this spec does not anticipate**, both
+> written from what a rendered page showed. `.bleed { break-before: avoid }` —
+> a bleeding band must not open a page, which is exactly what `half-bleed`
+> reports, so the break that causes it is forbidden rather than merely
+> measured. `p.lead, blockquote { hyphens: none }` — display type does not
+> hyphenate; the narrowed column made the exhibition lead break `an‐other`.
 
 ### The risk this phase carries
 
