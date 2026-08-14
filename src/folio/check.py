@@ -14,6 +14,7 @@ why they are worth running: they are not hypothetical.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -853,6 +854,61 @@ def _contains_class(el, name: str) -> bool:
         return False
 
 
+def _check_section_numbers(ordered) -> list[Finding]:
+    """A section index that repeats, or skips, describes a document that is not
+    there.
+
+    `heading-skip` asks whether the *structure* is real; this asks whether the
+    numbering on it is. They fail the same way — an `h4` under no `h3` and a
+    `04` after another `04` both assert something the reader cannot find — and
+    it is the same fix: renumber, or drop the number.
+
+    Written after the `essay` scaffold shipped with two sections numbered `04`,
+    in the release that added it. The checker said "No layout problems found",
+    correctly, because every rule it had measures geometry. Section numbers are
+    in the DOM, so this one never needed taste to judge.
+    """
+    seen: dict[int, int] = {}  # number -> page it first appeared on
+    order: list[tuple[int, int]] = []  # (number, page), in document order
+    for page, el in ordered:
+        if not _has_class(el, "idx"):
+            continue
+        text = "".join(el.itertext())
+        digits = re.search(r"\d+", text)
+        if not digits:
+            continue  # `APPENDIX A` is a label, not a counter
+        order.append((int(digits.group()), page))
+
+    out = []
+    for number, page in order:
+        if number in seen:
+            out.append(
+                Finding(
+                    "section-number",
+                    WARN,
+                    page,
+                    f"two sections are numbered {number:02d}",
+                    "renumber the sections, or drop the number — most often a "
+                    "section was inserted and nothing after it moved",
+                )
+            )
+        seen[number] = page
+    numbers = [n for n, _ in order]
+    for (previous, _), (current, page) in zip(order, order[1:], strict=False):
+        if current > previous + 1 and numbers.count(current) == 1:
+            out.append(
+                Finding(
+                    "section-number",
+                    WARN,
+                    page,
+                    f"numbering jumps from {previous:02d} to {current:02d}",
+                    "a missing number reads as a section the reader cannot "
+                    "find — renumber what follows",
+                )
+            )
+    return out
+
+
 def _check_image_role(ordered) -> list[Finding]:
     """Evidence and decoration must not share a grammar.
 
@@ -1046,6 +1102,7 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
     ordered = list(_elements_in_order(pages))
     findings += _check_heading_levels(ordered)
     findings += _check_inline_style(ordered)
+    findings += _check_section_numbers(ordered)
     findings += _check_image_role(ordered)
     findings += _check_image_alt(ordered)
     findings += _check_type_drift(pages)

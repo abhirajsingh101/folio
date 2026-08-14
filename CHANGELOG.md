@@ -6,6 +6,30 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — `section-number`, written from a defect folio shipped last release
+The `essay` scaffold went out with two sections numbered `04`: one was inserted
+ahead of `Notes` and nothing after it moved. `folio check` reported "No layout
+problems found", correctly — every rule it had measures geometry, and the page
+was laid out perfectly. It was caught by rendering page 3 and looking at it.
+
+Section indices are `<span class="idx">` in the DOM, so unlike most of what the
+look pass finds, this one never needed taste to judge. It is `heading-skip`'s
+neighbour: that rule asks whether the structure is real, this one asks whether
+the numbering on it is, and both fail by asserting something a reader cannot
+find.
+
+- **`section-number`** — two sections with the same index, or a jump in the
+  sequence. Reports the exact defect that shipped, on the exact document:
+  "two sections are numbered 04".
+- **A label with no digits is not a counter.** `APPENDIX A` is a real index in
+  this repo, and both reading it as a number and reporting it for not being one
+  would make the rule wrong on a document that is right. Found by looking at
+  what `.idx` actually holds across the scaffolds and examples rather than
+  assuming it holds integers.
+- Silent across all nine examples and seven scaffolds in four directions — 64
+  renders. The contents page does not trip it, because a TOC entry is `.num`
+  rather than `.idx`, which the sweep confirmed rather than the design assumed.
+
 ## [0.6.1] — 2026-08-14
 
 ### Fixed — 0.6.0 claimed byte-identical output, and CI disproved it

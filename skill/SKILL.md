@@ -143,6 +143,11 @@ perfectly:
   not an exception here.
 - `heading-skip` — an `h2` jumping to `h4` claims a level of structure that
   was never built.
+- `section-number` — two sections carry the same index, or the numbering
+  skips one. Both assert a document the reader cannot find, and both usually
+  mean a section was inserted or deleted and nothing after it moved. Renumber,
+  or drop the number. A label with no digits in it (`APPENDIX A`) is not a
+  counter and is left alone.
 - `type-drift` — two type sizes less than 1% apart. No reader can tell them
   apart, so the scale has a step that carries no meaning. The usual cause is a
   relative size compounding: an `em` nested inside another `em`.

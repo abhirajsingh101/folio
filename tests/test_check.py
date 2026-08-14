@@ -277,6 +277,48 @@ def test_a_one_page_document_is_never_a_widow():
     assert "page-widow" not in rules(doc(body))
 
 
+# ── section numbers that describe a document that does not exist ──────────
+
+
+def _sections(*labels: str) -> str:
+    return "".join(f'<h2 class="section"><span class="idx">{x}</span>Heading</h2>' for x in labels)
+
+
+def test_two_sections_with_the_same_number_are_flagged():
+    """It shipped in the essay scaffold, in the release that added it.
+
+    A section was inserted ahead of `Notes` and nothing renumbered, so the
+    document had two `04`s. `folio check` said "No layout problems found" —
+    correctly, because every rule it had measures geometry — and it was caught
+    by rendering page 3 and looking at it. Section numbers are in the DOM, so
+    this one never needed taste to judge.
+    """
+    assert "section-number" in rules(doc(_sections("01", "02", "04", "04")))
+
+
+def test_a_gap_in_the_numbering_is_flagged():
+    """The same defect from the other side: delete a section, renumber nothing."""
+    assert "section-number" in rules(doc(_sections("01", "02", "04")))
+
+
+def test_sections_numbered_in_sequence_are_silent():
+    assert "section-number" not in rules(doc(_sections("01", "02", "03")))
+
+
+def test_a_prefix_does_not_hide_the_number():
+    """Half the scaffolds write `SECTION 01` and half write `01`."""
+    assert "section-number" in rules(doc(_sections("SECTION 01", "SECTION 03")))
+
+
+def test_a_label_that_carries_no_number_is_not_judged():
+    """`APPENDIX A` is a real index in this repo, and it is not a counter.
+
+    Reading it as a number, or reporting it for not being one, would make the
+    rule wrong on a document that is right.
+    """
+    assert "section-number" not in rules(doc(_sections("01", "02", "APPENDIX A")))
+
+
 # ── a stack with no face for the script it is setting ─────────────────────
 
 
