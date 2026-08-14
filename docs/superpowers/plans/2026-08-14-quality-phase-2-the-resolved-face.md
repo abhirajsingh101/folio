@@ -593,3 +593,56 @@ It must say three things plainly:
   floor (the code uses 6, from the measured gap) and `--measure` in `ch` (the
   code uses 130mm, because `ch` gave one page three right edges). The changelog
   and the CSS comments carry the corrected reasoning; the spec on disk does not.
+
+---
+
+## Amendment — Task 2 is blocked on a design question, not on code
+
+Task 1 shipped (`ea40976`). Task 2 was attempted and reverted; the rewrite
+works mechanically and the rule still stays silent, because of a guard carried
+over from the version it replaces:
+
+```python
+if not judgeable(family):
+    continue   # an unknown face may well be the covering one
+```
+
+On the development host the Korean run resolves to **WenQuanYi Zen Hei**, which
+folio has never heard of, so `judgeable` returns False and the finding is
+dropped — the guard silences precisely the face that proves the defect.
+
+It cannot simply be deleted. Two cases are indistinguishable by family name:
+
+| resolved face | reality |
+|---|---|
+| WenQuanYi Zen Hei | a Chinese face that *has* Hangul glyphs and sets them in the wrong language's shapes — the defect |
+| Pretendard, Nanum Gothic | genuine Korean faces folio does not list |
+
+So measuring the resolved face removed one guess and exposed another. The
+spec's claim that measuring "removes the need to guess" is half true.
+
+**OS/2 codepage bits were the obvious next idea and do not work.** Measured
+rather than assumed, reading `ulCodePageRange1` at offset 78 off the resolved
+face:
+
+| resolved face | codepages declared |
+|---|---|
+| WenQuanYi Zen Hei — wrong | Chinese-Simplified, Chinese-Traditional, Japanese, **Korean-Wansung, Korean-Johab** |
+| Noto Sans CJK KR — right | **Chinese-Simplified, Japanese**, Korean-Wansung, Korean-Johab |
+
+Both claim Korean; both claim Chinese. The bits say what a face can *encode*,
+not what it was *designed for*. Do not spend time here.
+
+**The reframing that survives.** Stop asking "is this face right for Korean?",
+which folio cannot answer about a face it does not know, and ask the question
+it *can* answer: **did folio's own injected stack fail?** `build.py` knows
+exactly which families it injected for each detected script
+(`script_font_css`). If the resolved family is none of them, then either the
+machine has none of those faces installed — the real defect, and the case the
+current rule is blind to — or a `brand.css` named a face deliberately, which is
+detectable because `brand.css` is a file folio can see. That framing needs no
+opinion about WenQuanYi, Pretendard or any other face.
+
+It does need plumbing: the injected families are computed in `build.py` and are
+not currently available to `check.py`, which receives only the assembled HTML.
+Deciding how to pass them is the first task of whoever picks this up.
