@@ -64,6 +64,12 @@
 
   --fs-body: 9.8pt;
   --lh-body: 1.58;
+  /* The measure: how many characters the reader crosses before the line
+     returns. In `ch` so it tracks whatever face and size a theme chooses —
+     68ch lands around 74 characters in the kit's own faces, inside the 45–90
+     the canon asks for. `folio check` measures the result rather than trusting
+     this number. */
+  --measure: 68ch;
   --radius: 3px;
 
   /* page geometry */
@@ -146,6 +152,16 @@ body {
 }
 
 p { margin: 0 0 0.62em; orphans: 3; widows: 3; }
+
+/* Prose is measured; figures, tables and anything that owns its own width are
+   not. Capping everything leaves a ragged right edge that reads as a fault —
+   a measured column beside full-width figures reads as a decision. */
+p, blockquote, ul, ol { max-width: var(--measure); }
+
+/* Components that own their width. `.toc` is a flex row whose dotted fill
+   stretches to the page edge, so a measured `ol` would pull its page numbers
+   into the middle of the page. */
+.toc ul, .toc ol, td p, th p, figcaption p, .metric p { max-width: none; }
 strong { font-weight: 700; color: var(--ink); }
 em { font-style: italic; }
 a { color: var(--brand); text-decoration: none; }
@@ -482,3 +498,17 @@ table.keep, figure.keep, .keep { break-inside: avoid; }
     table, pre { display: block; max-width: 100%; overflow-x: auto; }
   }
 }
+
+
+/* A pull-quote stranded on a page of its own has been separated from the text
+   it quotes, which is a fault in its own right — and it is what a narrowed
+   measure produces first, because the quote is usually the last block in a
+   section. Keeping it with the paragraph above pulls that paragraph down with
+   it, so the page carries a passage rather than an orphaned quotation. */
+
+/* A pull-quote stranded on a page of its own has been separated from the text
+   it quotes, which is a fault in its own right — and it is what a narrowed
+   measure produces first, because the quote is usually the last block in a
+   section. Keeping it with the paragraph above pulls that paragraph down with
+   it, so the page carries a passage rather than an orphaned quotation. */
+.pullquote { break-before: avoid; }
