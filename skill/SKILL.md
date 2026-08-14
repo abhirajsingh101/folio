@@ -185,6 +185,12 @@ Three rules read the characters rather than the geometry:
   after a digit are left alone: `5' 10"` is feet and inches, and curling those
   would be the defect. Text inside `code`, `pre`, `kbd`, `samp`, `tt` and `var`
   is exempt — a straight quote in a shell command is the right quote.
+- `dash` — `--` standing in for a dash. Two hyphens is a typewriter working
+  around a key it did not have. Use `—` for a break in thought and `–` for a
+  range. Exempt inside code, where a double hyphen opens a command-line flag.
+- `dot-ellipsis` — three periods where `…` belongs. The single character keeps
+  its own spacing and cannot be broken across a line. Four or more dots are a
+  leader or a redaction and are left alone.
 
 One rule measures *where* a block sits rather than what it measures:
 

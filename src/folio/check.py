@@ -587,6 +587,18 @@ CHARACTER_RULES: tuple[tuple[str, re.Pattern, str, str], ...] = (
         "a straight quote",
         "’ for an apostrophe, “ ” for quotes; feet and inches stay straight",
     ),
+    (
+        "dash",
+        _TYPEWRITER_DASH,
+        "“--” doing a dash's work",
+        "— for a break in thought, – for a range; -- is a typewriter habit",
+    ),
+    (
+        "dot-ellipsis",
+        _DOT_ELLIPSIS,
+        "three periods where an ellipsis belongs",
+        "… is one character (U+2026), and it keeps its own spacing",
+    ),
 )
 
 

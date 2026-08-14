@@ -441,3 +441,29 @@ def test_a_page_with_many_straight_quotes_reports_once():
     found = [f for f in inspect(doc(body), Path("/tmp")) if f.rule == "straight-quote"]
     assert len(found) == 1
     assert "more on this page" in found[0].detail
+
+
+def test_double_hyphen_in_prose_is_reported():
+    assert "dash" in rules(doc("<p>The result -- and it was a result -- held.</p>"))
+
+
+def test_an_em_dash_is_silent():
+    assert "dash" not in rules(doc("<p>The result — and it was a result — held.</p>"))
+
+
+def test_a_command_flag_is_not_a_dash():
+    """The evidence for this exemption is folio's own runbook."""
+    assert "dash" not in rules(doc("<p>Run <code>recon report --since 7d</code> nightly.</p>"))
+
+
+def test_three_periods_are_reported():
+    assert "dot-ellipsis" in rules(doc("<p>It went on... and on.</p>"))
+
+
+def test_a_real_ellipsis_is_silent():
+    assert "dot-ellipsis" not in rules(doc("<p>It went on… and on.</p>"))
+
+
+def test_a_leader_of_dots_is_not_an_ellipsis():
+    """Four or more is a leader or a redaction, not a mistyped ellipsis."""
+    assert "dot-ellipsis" not in rules(doc("<p>Chapter one....... 14</p>"))
