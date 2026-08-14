@@ -344,16 +344,29 @@ def test_a_stack_that_names_a_covering_face_is_silent():
     assert "font-fallback" not in rules(doc(body))
 
 
-def test_an_unrecognised_family_is_not_judged():
+def test_an_unrecognised_family_the_author_chose_is_not_judged():
     """folio's table is Noto-centric, and Korean typography is not.
 
     Pretendard, Nanum Gothic and Apple SD Gothic Neo are not in it, and a rule
     that fired on every one of them would be noise on exactly the documents
-    whose author knew what they were doing. Silence on an unknown family is the
-    price of the rule being trustworthy on a known one.
+    whose author knew what they were doing. Silence on a family the author
+    chose is the price of the rule being trustworthy elsewhere.
+
+    The contract changed with the rewrite, and this test changed with it. It
+    used to name `Pretendard`, which is not installed here — so the document
+    asked for a face it did not get and was set in a substitute instead, which
+    the rule now reports and should. What must stay silent is the case the test
+    was really written for: a family folio has never heard of that the document
+    asked for *and got*.
     """
-    body = "<p style=\"font-family:'Pretendard',serif\">한글 본문입니다</p>"
+    body = "<p style=\"font-family:'WenQuanYi Zen Hei',serif\">한글 본문입니다</p>"
     assert "font-fallback" not in rules(doc(body))
+
+
+def test_a_named_family_that_is_not_installed_is_reported():
+    """The other half of the same contract: asked for, not got, substituted."""
+    body = "<p style=\"font-family:'Pretendard',serif\">한글 본문입니다</p>"
+    assert "font-fallback" in rules(doc(body))
 
 
 def test_latin_text_is_never_asked_about_coverage():
@@ -546,3 +559,22 @@ def test_small_caps_on_a_face_that_has_them_is_silent():
     body = "<p>Nato and the treaty</p>"
     extra = 'p{font-family:"Noto Serif";font-variant-caps:small-caps}'
     assert "fake-small-caps" not in rules(doc(body, extra))
+
+
+def test_a_stack_naming_an_uninstalled_korean_family_is_reported():
+    """The false negative the rewrite exists to remove.
+
+    `Noto Sans KR` and `Noto Sans CJK KR` are one design under two names and a
+    machine typically has one. Naming only the absent one satisfied the rule
+    that read the stack, while the text rendered in whatever fontconfig
+    substituted — commonly Chinese.
+    """
+    body = '<p lang="ko">한국어 문서입니다</p>'
+    extra = 'p{font-family:"DejaVu Serif","Noto Sans KR",serif}'
+    assert "font-fallback" in rules(doc(body, extra))
+
+
+def test_a_face_the_document_actually_asked_for_is_silent():
+    body = '<p lang="ko">한국어 문서입니다</p>'
+    extra = 'p{font-family:"Noto Sans CJK KR",serif}'
+    assert "font-fallback" not in rules(doc(body, extra))

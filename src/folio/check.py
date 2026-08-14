@@ -537,8 +537,29 @@ def _check_orphan_heading(root, n, frame) -> list[Finding]:
     return out
 
 
-def _check_font_fallback(root, n, scripts) -> list[Finding]:
-    """Text in a script that nothing in its stack can set.
+# Families a stylesheet asks for by name: the theme's stacks, folio's injected
+# script faces, and anything a project `brand.css` added.
+_FAMILY_DECL = re.compile(r"(?:font-family|--script-(?:sans|serif|mono))\s*:([^;}]*)", re.I)
+
+
+def _named_families(html: str) -> set[str]:
+    """Every family the document asks for, lower-cased.
+
+    This is the discriminator `font-fallback` needs, and it took three wrong
+    answers to find. A face named nowhere was substituted by fontconfig; a face
+    named in a theme or a `brand.css` was chosen by someone.
+    """
+    out = set()
+    for declaration in _FAMILY_DECL.findall(html):
+        for part in declaration.split(","):
+            name = part.strip().strip("\"'").strip()
+            if name and not name.startswith("var("):
+                out.add(name.lower())
+    return out
+
+
+def _check_font_fallback(root, n, scripts, named) -> list[Finding]:
+    """Text set in a face that no stylesheet asked for.
 
     A font stack falls through per glyph. When it runs out, the renderer asks
     fontconfig, which never fails and never asks: for Korean on a Linux machine
@@ -546,11 +567,31 @@ def _check_font_fallback(root, n, scripts) -> list[Finding]:
     overflows, and it is simply set in the wrong typeface — which is why this
     is the one rule here that is not about geometry.
 
-    Judged only on families folio can speak for. A stack naming a face it has
-    never heard of gets silence, because that face may be exactly the Korean
-    one the author chose.
+    Rewritten to measure, then rewritten again to ask a different question.
+
+    Reading the CSS stack, as the first version did, asks about the stylesheet
+    rather than the page: `Noto Sans KR` and `Noto Sans CJK KR` are one design
+    under two names, a machine usually has one, and naming only the absent one
+    satisfied the rule while the text rendered in whatever fontconfig chose. It
+    was also silent where no covering face is installed at all — the stylesheet
+    blameless, the output still wrong.
+
+    Reading the *resolved* face is necessary but not sufficient: folio cannot
+    tell a Korean face it has never heard of from a Chinese one. `Pretendard`
+    and `WenQuanYi Zen Hei` are equally unknown to it, one a deliberate choice
+    and one a fallback. Neither the family name nor the OS/2 codepage bits
+    separate them — measured, and WenQuanYi declares Korean while Noto Sans CJK
+    KR declares Chinese, because those bits record what a face can encode
+    rather than what it was drawn for.
+
+    So the question is neither "is this face right" nor "does the stack look
+    right" but **was this face chosen by anyone?** A family named in a theme, in
+    folio's injected script stack, or in a project `brand.css` was chosen. A
+    family named nowhere was substituted, and the substitution is the defect,
+    whatever the face happens to be called.
     """
-    from .scripts import SCRIPT_INFO, covers, judgeable, scripts_in
+    from .faces import FacesUnavailable, resolved_runs
+    from .scripts import SCRIPT_INFO, scripts_in
 
     candidates = [s for s in scripts if s != "latin"]
     if not candidates:
@@ -559,30 +600,31 @@ def _check_font_fallback(root, n, scripts) -> list[Finding]:
     for box in _walk(root):
         if not _is_text(box):
             continue
-        text = box.text
-        if text.isascii():  # the fast path, and most documents take it
+        if box.text.isascii():  # the fast path, and most documents take it
             continue
-        stack = box.style["font_family"]
-        for script in scripts_in(text, candidates):
-            if script in seen:
-                continue
-            if any(covers(f, script) for f in stack):
-                continue
-            if not all(judgeable(f) for f in stack):
-                continue  # an unknown family may well be the covering one
-            seen.add(script)
-            label = SCRIPT_INFO[script][1]
-            out.append(
-                Finding(
-                    "font-fallback",
-                    WARN,
-                    n,
-                    f"{label} text, and nothing in its stack covers {label}",
-                    "the renderer will pick a face on its own, and for CJK it "
-                    "commonly picks the wrong language's — name a covering "
-                    "family, or let `folio build` inject one",
+        try:
+            runs = resolved_runs(box)
+        except FacesUnavailable:  # pragma: no cover - environment dependent
+            return []
+        for text, family in runs:
+            if family.lower() in named:
+                continue  # someone asked for this face
+            for script in scripts_in(text, candidates):
+                if script in seen:
+                    continue
+                seen.add(script)
+                label = SCRIPT_INFO[script][1]
+                out.append(
+                    Finding(
+                        "font-fallback",
+                        WARN,
+                        n,
+                        f"{label} text is set in {family}, which no stylesheet asked for",
+                        "fontconfig substituted it, and for CJK it commonly "
+                        "substitutes the wrong language's face — install a "
+                        "covering family (`folio fonts`), or name one in brand.css",
+                    )
                 )
-            )
     return out
 
 
@@ -1311,6 +1353,7 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
     # or per-run answer would report a Japanese document for naming Japanese
     # faces.
     profile = detect_scripts(html)
+    named = _named_families(html)
     # Indexed 0-based, so page i (1-based) reads its successor at [i].
     authored_starts = _authored_page_starts(pages) + [False]
     findings: list[Finding] = []
@@ -1334,7 +1377,7 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
         findings += _check_image_scale(root, i)
         findings += _check_figure_scale(root, i)
         findings += _check_half_bleed(root, i, page.width)
-        findings += _check_font_fallback(root, i, profile.scripts)
+        findings += _check_font_fallback(root, i, profile.scripts, named)
         findings += _check_characters(root, i, parents)
         findings += _check_fake_small_caps(root, i)
 

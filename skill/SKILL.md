@@ -174,17 +174,22 @@ Two rules measure how a page filled, and they mean different things:
 
 One rule is not about geometry at all:
 
-- `font-fallback` — text in a script that nothing in its font stack can set.
-  A stack falls through per glyph; when it runs out, the renderer asks
-  fontconfig, which never fails and never asks — for Korean on Linux it
-  commonly answers with a *Chinese* face. The document renders and is simply
-  in the wrong typeface. `folio build` injects covering faces for the scripts
-  it detects, so this fires on type styled outside that: a hand-written stack,
-  or a `brand.css` that names only Latin faces. Name a family that covers the
-  script. The rule stays silent on a family folio does not recognise, because
-  that may be exactly the face you chose.
+- `font-fallback` — text set in a face that no stylesheet asked for. A stack
+  falls through per glyph; when it runs out, fontconfig substitutes, and for
+  Korean on Linux it commonly substitutes a *Chinese* face. The document
+  renders and is simply in the wrong typeface.
 
-Three rules read the characters rather than the geometry:
+  The rule asks who chose the face, not whether the face is right — folio
+  cannot tell a Korean face it has never heard of from a Chinese one, and both
+  exist. A family named in a theme, in the script stack `folio build` injects,
+  or in your `brand.css` was chosen by someone and is left alone. A family
+  named nowhere was substituted, and that is the finding. So it fires in the
+  case that matters and the old rule missed: naming `Noto Sans KR` on a machine
+  that only has `Noto Sans CJK KR` — one design, two names — or naming a
+  covering family on a machine that has none of them installed. Run
+  `folio fonts` to see what a document needs, or name a face you have.
+
+Four rules read the characters and the type rather than the geometry:
 
 - `straight-quote` — a `'` or `"` in prose. In a serif face a straight
   apostrophe is a foot mark, which is why it is the most reliable amateur tell
@@ -192,15 +197,15 @@ Three rules read the characters rather than the geometry:
   after a digit are left alone: `5' 10"` is feet and inches, and curling those
   would be the defect. Text inside `code`, `pre`, `kbd`, `samp`, `tt` and `var`
   is exempt — a straight quote in a shell command is the right quote.
-- `dash` — `--` standing in for a dash. Two hyphens is a typewriter working
-  around a key it did not have. Use `—` for a break in thought and `–` for a
-  range. Exempt inside code, where a double hyphen opens a command-line flag.
 - `fake-small-caps` — small caps asked of a face with no `smcp` table. Pango
   synthesises them by scaling capitals, which reads as a weight error rather
   than a style: too light and too wide for the size they imitate. None of the
   Latin faces folio resolves — Inter, P052, DejaVu Serif — carries the feature,
   so this is a decision about the passage rather than a setting to switch on.
   Set it in a face that has real small caps, or drop them.
+- `dash` — `--` standing in for a dash. Two hyphens is a typewriter working
+  around a key it did not have. Use `—` for a break in thought and `–` for a
+  range. Exempt inside code, where a double hyphen opens a command-line flag.
 - `dot-ellipsis` — three periods where `…` belongs. The single character keeps
   its own spacing and cannot be broken across a line. Four or more dots are a
   leader or a redaction and are left alone.
