@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Note at the Foot of the Page — The Quire</title>
+<meta name="author" content="H. M. Ardley">
+<meta name="description" content="Why scholarship kept a device that interrupts reading on purpose, and what it costs to set one properly.">
+<meta name="keywords" content="footnotes, typography, book design, pagination, scholarly apparatus">
+</head>
+<!-- The journal and the author are invented; every work cited in a note is
+     real, and the claims made about those works are deliberately kept to what
+     they are known for. A scholarly example whose apparatus is fabricated
+     would demonstrate the opposite of what an apparatus is for.
+
+     This is folio's footnote document. Nine other examples show components on
+     a page; this one shows the single behaviour a browser cannot reproduce —
+     `float: footnote` — carrying ten notes that find their own pages and
+     number themselves. It is also the only bound example: `data-binding="book"`
+     mirrors the margins and swaps the running heads, so pages 2–3 read as a
+     spread rather than as two identical sheets.
+
+     The colophon in section 06 describes this document's own setting. If a
+     token changes — the measure, the gutter, the body size — that section is
+     now wrong and must be corrected with it. It is the one place in the
+     examples where prose asserts a number that the stylesheet owns. -->
+<body data-theme="editorial"
+      data-binding="book"
+      data-title="The Quire · No. 11"
+      data-footer="The Quire">
+
+<!-- ════════ COVER ════════ -->
+<section class="cover">
+  <div class="cover-brand">the quire</div>
+  <div class="cover-kicker">Essay · Number eleven</div>
+  <h1>The Note at the Foot of the&nbsp;Page</h1>
+  <p class="sub">Scholarship kept a device that interrupts reading on purpose.
+  What the interruption buys, and what it costs to set.</p>
+  <div class="cover-rule"></div>
+  <div class="cover-meta">
+    <div><span class="k">Author</span>H. M. Ardley</div>
+    <div><span class="k">Series</span>Essays on the book</div>
+    <div><span class="k">Date</span>2026.08.15</div>
+    <div><span class="k">Reading</span>12 minutes</div>
+  </div>
+</section>
+
+<!-- ════════ THE ESSAY ════════
+     `cont` throughout: an essay is one argument in stages, not six documents
+     stapled together, so no section starts a fresh page. -->
+<div class="section-wrap cont">
+
+<p class="lead">The footnote is the only part of a book that lets a reader
+check the author without leaving the page. It sits under a rule, in smaller
+type, on the same sheet as the sentence that provoked it, and the reader
+spends a glance rather than a search deciding whether to take it up. That
+geometry is the entire argument for the device, and it is the first thing
+every modern substitute gives away.</p>
+
+<p>The claim of this essay is narrow: the position of a note is not a
+formatting preference, it is part of what the note can do. Move a note to the
+back of the book and it does not become a shorter note or a quieter one — it
+becomes a note most readers will never read, which is a different piece of
+writing altogether. The case rests on two things a reader can check. The
+history is documented, and the reasons notes migrated to the end are
+production reasons rather than scholarly ones. The mechanics are harder than
+they look, and that difficulty explains why so much of what we read now has no
+footnotes in it at all.</p>
+
+<h2 class="section" id="s1" data-section="A device with a date">
+  <span class="idx">01</span>A device with a date</h2>
+
+<p>The footnote feels like a natural property of scholarship, the way the
+paragraph feels like a natural property of prose. It is not. It was invented,
+argued over, ridiculed and eventually standardised, mostly between the
+seventeenth and the nineteenth centuries, and Anthony Grafton’s history of it
+is a history of a profession learning to show its working.<span class="fn">Anthony
+Grafton, <em>The Footnote: A Curious History</em> (Cambridge, MA: Harvard
+University Press, 1997); first published in German in 1995. Grafton’s subject
+is the note as evidence of method rather than as a citation
+format.</span> Before the apparatus, a scholar’s authority was the scholar.
+After it, the authority sat on the page in small type, where a rival could
+reach it.</p>
+
+<div class="cols rail">
+  <div>
+    <p>That is an unusual thing for a piece of typography to accomplish, and it
+    is why the device survived every attempt to be rid of it. A footnote is a
+    standing invitation to be contradicted, made in the one place where the
+    reader is still holding the sentence that provoked it. An author who cites
+    in the back of the book makes the same promise at a distance that makes it
+    much harder to collect on.</p>
+  </div>
+  <aside>
+    <p class="eyebrow">Apparatus</p>
+    <p>Everything on the page that is not the argument: notes, sigla, variant
+    readings, the record of what a text said before an editor touched it. Set
+    small, and read first by whoever came to check.</p>
+  </aside>
+</div>
+
+<!-- These two notes sat inside the rail above until `orphan-note` was written.
+     `.cols` is a flex container and flex does not fragment in this renderer, so
+     when the block moved whole to the next page it left its notes at the foot
+     of the previous one: notes 2 and 3 a page ahead of the sentences that call
+     them, in the one document arguing that a note belongs beside its call. The
+     fix is the one the rule's hint gives — keep footnotes out of a block that
+     can only move whole. -->
+<p>The ridicule arrived with the device and never left.<span class="fn">Chuck
+Zerby, <em>The Devil’s Details: A History of Footnotes</em> (Montpelier, VT:
+Invisible Cities Press, 2002), a defence of the note written against exactly
+this tradition of mockery.</span> Reading a footnote has been likened to going
+downstairs to answer the door in the middle of making love — a line usually
+given to Noël Coward, sometimes to John Barrymore, and to my knowledge never
+traced to a printed source by either.<span class="fn">The attribution is
+unstable in precisely the way a footnote exists to prevent, which is the only
+reason it is quoted here. Anyone holding a citation for it has a small piece of
+scholarship to publish.</span></p>
+
+<h2 class="section" id="s2" data-section="What the foot of the page does">
+  <span class="idx">02</span>What the foot of the page does</h2>
+
+<p>The distance between a call and its note is the whole user interface of the
+device, and the units are not millimetres but decisions. At the foot of the
+page the cost is a glance: the eye drops, reads six or eight lines of smaller
+type, and comes back to a sentence it never let go of. At the end of the
+chapter it is a thumb and a search. At the end of the book it is a hand held
+in one place, a second search through a numbered list, and a return journey —
+which is to say it is a task, and tasks are declined.</p>
+
+<table>
+  <caption><span class="tnum">Table 1</span>Every position for a note is a
+  claim about how much attention the reader will spend to reach it.</caption>
+  <thead>
+    <tr><th>Position</th><th>What the reader does</th><th>What it costs the note</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Foot of the page</td><td>Glances down and back</td>
+        <td>Pagination is hard; the page must be composed around it</td></tr>
+    <tr><td>Foot of the column</td><td>Glances down and back</td>
+        <td>Same, twice over, and short columns strand long notes</td></tr>
+    <tr><td>Outer margin</td><td>Reads sideways without leaving the line</td>
+        <td>A wide margin, permanently, for a note that may not come</td></tr>
+    <tr><td>End of the chapter</td><td>Holds a place and turns</td>
+        <td>Read by the interested; skipped by the engaged</td></tr>
+    <tr><td>End of the book</td><td>Holds a place, turns, searches, returns</td>
+        <td>Read by reviewers and rivals, and by almost no one else</td></tr>
+  </tbody>
+</table>
+
+<p>Publishers know this, and the manuals say so plainly rather than pretending
+otherwise: notes at the foot are easier on the reader, notes at the back are
+easier on the book.<span class="fn">See <em>The Chicago Manual of Style</em>,
+17th ed. (Chicago: University of Chicago Press, 2017), which documents both
+systems and is candid that the choice turns on production as much as on the
+reader’s convenience.</span> Endnotes make a page cheaper to set, let a
+compositor break wherever the text falls, and keep the type area clean for a
+designer who would rather not think about a variable-height block appearing at
+the bottom of an unknown page. Every one of those is a real advantage. Not one
+of them is an argument about reading.</p>
+
+<blockquote class="pullquote">A note the reader will not turn to is not a
+shorter note. It is a deleted one.<cite>— the case against endnotes, in one
+sentence</cite></blockquote>
+
+<h2 class="section" id="s3" data-section="The second voice">
+  <span class="idx">03</span>The second voice</h2>
+
+<p>Gérard Genette put notes among the <em>paratext</em>: the apparatus of
+thresholds — titles, prefaces, epigraphs, notes — through which a text is
+presented and by which it is framed before anyone reads a word of the thing
+itself.<span class="fn">Gérard Genette, <em>Paratexts: Thresholds of
+Interpretation</em>, trans. Jane E. Lewin (Cambridge: Cambridge University
+Press, 1997); originally <em>Seuils</em> (Paris: Éditions du Seuil,
+1987).</span> The description is exact, and it explains what the foot of the
+page is for. A note is a second voice, belonging to the same author, speaking
+at a different volume about the same sentence. It is where the qualification
+goes that would wreck the sentence if it were admitted into it.</p>
+
+<p>This is why a confident prose style and a heavy apparatus are not in
+tension, as they are usually assumed to be. They are the same decision. An
+argument can afford to state itself cleanly precisely because the exception,
+the source, the case that does not fit and the debt to whoever said it first
+are all available six lines below without entering the clause. Strip the notes
+away and one of two things happens: the prose fills with hedging, or the
+qualifications quietly go missing. Both are worse, and the second is
+dishonest.</p>
+
+<p>The typographic discipline is the same discipline. A column is set between
+about forty-five and seventy-five characters because past that the eye loses
+the line on the return.<span class="fn">Robert Bringhurst, <em>The Elements of
+Typographic Style</em>, 4th ed. (Point Roberts, WA: Hartley &amp; Marks,
+2012), whose measure is the source of the range this page is set
+to.</span> The same reasoning governs a note: what matters is not that the
+reader <em>can</em> reach it but how far the eye must travel and whether the
+journey is refusable. A note at the foot of the page can be ignored at no
+cost, which is exactly why it can be taken up at no cost either. Both halves
+of that come from the same geometry.</p>
+
+<h2 class="section" id="s4" data-section="Why so little of it is set">
+  <span class="idx">04</span>Why so little of it is set</h2>
+
+<p>There is a mechanical reason the footnote is rare outside books, and it is
+not laziness. A footnote creates a circular dependency in the one part of
+typesetting that has no easy solutions: what sits on a page determines where
+the page breaks, and where the page breaks determines which notes belong on
+it. Add a note and the text moves up; move the text and a call may cross onto
+the next page, taking its note — and the space the note occupied — with it.</p>
+
+<p>The problem is worse than it sounds. Michael Plass’s thesis, written
+alongside the work that produced TeX, showed that pagination with floating
+material is NP-complete: there is no efficient algorithm that lays out a
+document with figures and notes optimally, and no single pass that gets it
+right.<span class="fn">Michael F. Plass, “Optimal Pagination Techniques for
+Automatic Typesetting Systems” (PhD diss., Stanford University, 1981). The
+easier problem, where a global optimum <em>is</em> reachable, is Donald E.
+Knuth and Michael F. Plass, “Breaking Paragraphs into Lines,” <em>Software:
+Practice and Experience</em> 11, no. 11 (1981): 1119–84.</span> TeX’s answer was to give
+notes a mechanism of their own: material contributed to the page as it fills
+rather than placed in the stream, so a note travels with the line that called
+it.<span class="fn">Donald E. Knuth, <em>The TeXbook</em> (Reading, MA:
+Addison-Wesley, 1984), ch. 15, on how TeX makes lines into pages. Inserts are
+the machinery footnotes ride on.</span> Forty years on, that is still roughly
+how every engine that sets a real footnote does it.</p>
+
+<p>The web never had pages, so it never had the problem and never solved it.
+CSS eventually specified the behaviour — a note declared inline, floated to
+the foot of whatever page it lands on, numbered by the renderer’s own
+counter<span class="fn">The property is <code>float: footnote</code>, from the
+W3C’s <em>CSS Generated Content for Paged Media</em> module. Every
+implementation is a print engine; no shipping browser has one, because no
+browser paginates.</span> — but the implementations live in print engines that
+most people never touch. So on screen the note became a hyperlink, then a
+tooltip, then a panel that slides in from the side. Each of those replaced a
+glance with a click, and a click is a decision made before you can see what is
+on the other side of it. That is precisely the cost the footnote was invented
+to remove.</p>
+
+<h2 class="section" id="s5" data-section="What would change my mind">
+  <span class="idx">05</span>What would change my mind</h2>
+
+<p>The foot of the page is a means, not a principle. The principle is that a
+note must be reachable in a glance and refusable at no cost, and if something
+else delivered both, the position would stop mattering. A sidenote in a
+permanently wide outer margin does deliver both, and on a large enough sheet
+it is the better device — Tschichold’s margins were generous enough to hold
+one, and the reader never leaves the line at all.<span class="fn">Jan
+Tschichold, <em>The Form of the Book: Essays on the Morality of Good Design</em>,
+trans. Hajo Hadeler (Point Roberts, WA: Hartley &amp; Marks, 1991), on page
+proportion and the uses of a wide margin.</span> A reflowable screen that kept
+notes in view beside the text, without displacing it and without asking
+anything of the reader, would satisfy the argument completely, and I would
+drop the preference for the foot of the page the day one existed.</p>
+
+<p>What would not satisfy it is anything that trades the glance for a
+decision, however small the decision looks in a usability report. The
+distinction is not between paper and screen, and treating it that way is how
+the argument usually gets lost. It is between a device the eye can decline
+mid-sentence and a device the hand must commit to.</p>
+
+<p>The practical consequence for anyone setting a document is smaller than the
+argument and worth stating anyway. If a piece has fewer than a dozen notes and
+they are commentary rather than citation, set them at the foot of the page and
+accept the pagination cost, because commentary that is not read is not
+commentary. If it has four hundred notes and they are pure citation — page
+numbers, shelf marks, <em>ibid.</em> — put them at the back, where they belong
+to the record rather than to the reading. The mistake is not choosing endnotes.
+The mistake is choosing them for a piece whose notes were arguments.</p>
+
+<h2 class="section" id="s6" data-section="A note on this document">
+  <span class="idx">06</span>A note on this document</h2>
+
+<p class="appendix">Set in P052, a metric clone of Hermann Zapf’s Palatino, at
+10.2 point over 15.5, with labels and running heads in Inter. The measure is
+130 millimetres, inside the range cited in section 03. The sheet is A4, bound:
+26 millimetres at the spine against 24 at the fore-edge, the difference being
+what a binding takes. The running heads swap sides with the margin, so a reader
+riffling the right-hand edge sees the section rather than the title of the book
+they are already holding.</p>
+
+<p class="appendix">The ten notes were authored inline, in the sentences that
+provoked them, and placed by the renderer: no number here was typed by its
+author, and no note was assigned to a page by hand. It is the one claim in this
+document a reader can check without leaving it — read a note, find its call, and
+see whether the two are ever on different sheets.</p>
+
+</div>
+
+</body>
+</html>

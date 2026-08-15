@@ -120,6 +120,41 @@ def strip(paths: list[Path], out: Path, *, width: int, margin: int) -> None:
     print(f"  {out.name:<24} {w}×{h}  {out.stat().st_size // 1024}KB")
 
 
+def spread(left: Path, right: Path, out: Path, *, width: int, margin: int) -> None:
+    """A verso and a recto, abutted at the spine.
+
+    No gutter between the two cells: the gap is what makes `strip` read as two
+    separate documents, and the whole point of this shot is that these are two
+    halves of one opening. The mirrored margins only show as mirrored when the
+    wide edges meet in the middle.
+    """
+    cells = [scaled(left, width), scaled(right, width)]
+    w = margin * 2 + width * 2
+    h = max(c.height for c in cells) + margin * 2
+    canvas = Image.new("RGB", (w, h), BG)
+    for i, c in enumerate(cells):
+        canvas.paste(c, (margin + i * width, margin))
+    canvas.quantize(colors=256, method=Image.MAXCOVERAGE).save(out, optimize=True)
+    print(f"  {out.name:<24} {w}×{h}  {out.stat().st_size // 1024}KB")
+
+
+def detail(page: Path, out: Path, *, top: float, bottom: float, width: int, margin: int) -> None:
+    """A horizontal band of one page, at reading size.
+
+    Some things are only legible in close-up: the rule over a footnote block,
+    the numbers matching their calls, 8pt type that survives being printed. A
+    whole page at README width cannot show any of it, and the strip shots are
+    sized for shape rather than for reading.
+    """
+    im = Image.open(page).convert("RGB")
+    band = im.crop((0, round(im.height * top), im.width, round(im.height * bottom)))
+    cell = band.resize((width, round(width * band.height / band.width)), Image.LANCZOS)
+    canvas = Image.new("RGB", (width + margin * 2, cell.height + margin * 2), BG)
+    canvas.paste(cell, (margin, margin))
+    canvas.quantize(colors=256, method=Image.MAXCOVERAGE).save(out, optimize=True)
+    print(f"  {out.name:<24} {canvas.width}×{canvas.height}  {out.stat().st_size // 1024}KB")
+
+
 def grid(rows: list[list[Path]], out: Path, *, width: int, margin: int) -> None:
     """Two strips stacked, so eight documents fit one image."""
     cells = [[scaled(p, width) for p in row] for row in rows]
@@ -191,3 +226,12 @@ if __name__ == "__main__":
         width=799,
         margin=54,
     )
+
+    # The bound essay, which is the only example that carries footnotes and the
+    # only one set for a binding. Two shots, because the two things it proves
+    # are legible at different sizes: the opening shows the mirrored gutter and
+    # the running heads swapping sides, and only a close-up shows that the
+    # notes under the rule are numbered to match their calls.
+    essay = pages("essay")
+    spread(page(essay, 2), page(essay, 3), OUT / "spread.png", width=799, margin=54)
+    detail(page(essay, 5), OUT / "footnotes.png", top=0.60, bottom=0.99, width=1652, margin=54)

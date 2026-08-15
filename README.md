@@ -25,6 +25,13 @@ case study and an operations runbook. Every page is a real build from
 [`examples/`](examples/), and every plate was generated through the path
 `folio imagery` prescribes.*
 
+<img src="docs/gallery/spread.png" width="100%" alt="Two facing pages of a bound essay: the verso carries the journal title and page number on the left, the recto the section title and page number on the right, and the margins at the spine are wider than those at the outer edges. Both pages carry numbered footnotes under a rule">
+
+*One opening of a bound essay. `data-binding="book"` mirrors the margins —
+wide at the spine, where the binding eats them — and swaps the running heads,
+so the title sits on the verso and the section on the recto. The notes under
+the rule were written inline, in the sentences that call them.*
+
 <img src="docs/gallery/themes-covers.png" width="100%" alt="The same cover in four design directions: report, editorial, technical, minimal">
 
 <img src="docs/gallery/themes-pages.png" width="100%" alt="The same interior page in four design directions, charts re-paletted to match">
@@ -172,6 +179,17 @@ conclusion. Right: document control, a stop notice, and steps carrying the
 commands you actually type. Nothing here is a one-off style — `folio check`
 reports it if you write one.*
 
+### Footnotes, at the foot of their own page
+
+<img src="docs/gallery/footnotes.png" width="100%" alt="A close-up of one page: a section heading, six lines of prose ending in a superscript ten, then a thin rule with four numbered scholarly notes beneath it">
+
+*Authored inline — `<span class="fn">…</span>` in the sentence that provoked
+the note — and set under the rule at the foot of whatever page that sentence
+lands on. The numbers are the renderer's, so notes renumber themselves and
+travel with the text; nobody types a number or assigns a note to a page. This
+is the one component a browser cannot reproduce, and `folio check` reports a
+note that ends up on a different page from its call.*
+
 ### It checks its own work
 
 ```bash
@@ -196,13 +214,18 @@ Overflow, overlapping text, near-empty pages, tails that spilled onto a page
 of their own, stranded headings, illegibly small type, rasters blown up past
 their pixels, text too close in tone to what it sits on, a full-bleed block
 that reaches both side edges of the paper but stops short of the top one, text
-in a writing system that nothing in its font stack can set, and two sections
+in a writing system that nothing in its font stack can set, a footnote set on a
+different page from the sentence that calls it, and two sections
 numbered the same. Every rule encodes a defect that really shipped during folio's own
 development — that thin page on p6 is a real finding from the example in this
 repo, that 1.9:1 footer is a real finding from folio's own stylesheet,
 `page-widow` was written after a one-sheet invoice quietly shipped as two
 pages with a clean report, and `half-bleed` after an exhibition guide opened a
-page with a band floating 34mm below the sheet's edge.
+page with a band floating 34mm below the sheet's edge. `orphan-note` was
+written the day the essay in this repo shipped two notes at the foot of page 2
+whose calls were on page 3 — a flex container cannot fragment, so the block
+moved whole and left its notes behind. Nothing else saw it: the page was full,
+the type legible, and both halves exactly where the renderer meant to put them.
 
 Charts get measured too, which is harder than it sounds: a chart is an image,
 so every other rule stops at its edge. `figure-rescaled` catches a vector
@@ -230,7 +253,7 @@ difference between a tool that produces documents and one that verifies them.
 
 `folio components` prints the full catalogue — cover, contents, sections,
 metric tiles, figures, tables, status pills, callouts, timeline, numbered
-steps, pull quotes, code blocks.
+steps, pull quotes, footnotes, code blocks.
 
 ## Charts that belong to the page
 
