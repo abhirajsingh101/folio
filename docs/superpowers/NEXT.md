@@ -1,84 +1,92 @@
 # Where folio stands, and what to do next
 
-Written 2026-08-15, at the end of the session that shipped quality Phases 1
-and 2. Read this first; it is the shortest path back into the work.
+Written 2026-08-15, at the end of the session that shipped the footnote
+document. Read this first; it is the shortest path back into the work.
 
 ## State
 
-`main`, tree clean, 348 tests passing, all nine examples and all seven
-scaffolds reporting **No layout problems found**. 22 check rules, 7 document
-types, 4 themes.
+`main`, tree clean, 365 tests passing, all ten examples and all seven scaffolds
+reporting **No layout problems found**. 24 check rules, 7 document types,
+4 themes. (The count earlier notes gave was low: three of the rules live in the
+`CHARACTER_RULES` table and the regex those notes counted with only sees the
+ones written out as `Finding("…")`.)
 
-Phases 1 and 2 of the quality program are shipped and in `CHANGELOG.md` under
-`[Unreleased]`. Phase 3 is specced and unwritten.
+Phases 1 and 2 of the quality program are shipped. Phase 3's four capabilities
+— footnotes, `data-pdf`, `data-binding`, `data-print` — are built; footnotes are
+now documented, exercised by a real document and guarded by a rule, and press
+is broken in two measurable ways (below).
 
 ## Do these in order
 
-### 1. Finish the look pass — 8 of 33 pages read
+### 1. Fix `data-print="press"` — it produces a bleed nothing bleeds into
 
-The largest outstanding item and the highest value per hour. All pages are
-rendered under `examples/*/document.pages/`; regenerate with
+The newest finding, and the only shipped capability that is actively wrong.
+Both halves were measured on a rendered page:
+
+- **Crop marks are clipped.** WeasyPrint draws them inside the bleed area and
+  the media box ends there. At `bleed: 3mm` only a stub of each mark survives;
+  at 8mm they are whole. So the page box needs room for the marks *outside* the
+  artwork bleed — which means a larger CSS `bleed` than the 3mm of ink.
+- **Nothing reaches the bleed.** `.bleed` and the cover plate stop at the trim
+  edge, so the 3mm beyond it is white — exactly the sliver a bleed exists to
+  prevent. Content painted past the page box *does* reach the media box
+  (verified with a control: a band with `margin-left: calc(-20mm - 3mm)` under
+  `bleed: 3mm` paints to x=0), so the fix is reachable. It needs `.bleed` widened
+  by the bleed distance and the cover's absolutely-positioned furniture moved
+  with it, in the injected `production_css` only.
+
+Do not shoot a press image for the README until this is fixed; the last
+gallery commit exists because the README was advertising defects.
+
+### 2. Finish the look pass
+
+All pages render under `examples/*/document.pages/`; regenerate with
 `folio build <doc> -q && folio preview <doc>.pdf`.
 
 Read so far: `exhibition` p2–p3, `quarterly-report` p3, `runbook` p1,
-`programme` p1, `case-study` p2 (×2, before and after ragged-right).
+`programme` p1, `case-study` p2, and all six pages of `essay` (twice, before and
+after the notes moved).
 
-**Why it matters more than it sounds.** Four defects this session were found
-only by opening a PNG, and no rule saw any of them: the `ch` measure putting
-three right edges on one page, a lead hyphenating `an‐other`, `editorial`'s
-justification stretching word spaces, and `editorial`'s synthetic small caps.
-One further candidate dissolved under a proper before/after comparison — so
-flag candidates, then verify with two renders before acting.
+**Why it matters more than it sounds.** Every defect fixed this session was
+found by opening a PNG. `orphan-note` exists because a page image showed two
+notes with no calls above them; no rule saw it, and the checker was green.
 
 **Settle this first:** `exhibition` p2. One reading of the layout tree says it
 is 100% full; a PNG appeared to show it half empty after the ragged-right
-change. Both cannot be true. If the page is full, the "regression" reported at
-the end of that session was wrong and can be disregarded. If it is half empty,
-chase the interaction with `.bleed { break-before: avoid }` — and note
-`thin-page` will not catch it, because it fires below 45% and that page sits
-near 52%.
-
-### 2. Phase 3 — the ceiling
-
-`docs/superpowers/specs/2026-08-14-document-quality-program-design.md`. Each
-capability was verified working on this renderer before it was proposed.
-
-Ordered by how much they unlock rather than by effort:
-
-- **Footnotes** — SHIPPED and verified on a rendered page (`489ceda`, wrap
-  fixed in the commit after). Notes are authored inline, carry the renderer's
-  counter, find their own page, and degrade to a marked aside on screen.
-  One thing to know: WeasyPrint turns a newline *inside* a footnote into a
-  hard line break, which no stylesheet can reach — `build.flatten_footnotes`
-  collapses whitespace inside `.fn` before rendering. Do not remove it, and do
-  not look for the cause in CSS.
-- **PDF conformance and metadata.** `write_pdf()` is currently called with *no
-  options at all*: no PDF/A, no PDF/UA, no metadata. This is what stands
-  between folio and archival, regulatory and accessibility-mandated work, and
-  folio is closer to PDF/UA than it looks — `heading-skip`, `image-alt` and
-  `image-role` already enforce most of the structure. Claim only what a
-  validator confirms; WeasyPrint states its output is not guaranteed valid.
-- **Recto and verso** (`@page :left` / `:right`). Anything bound.
-- **Bleed and crop marks.** Anything going to a commercial printer.
+change. If the page is full, the "regression" reported two sessions ago was
+wrong and can be disregarded. `thin-page` will not catch it either way — it
+fires below 45% and that page sits near 52%.
 
 ### 3. One CJK document through the whole loop
 
-folio's font machinery is now well tested and **no CJK document has ever been
-looked at**. Every example is Latin. This is where the kit has the most to
-prove and the least evidence — and where its worst historical defect lived.
+folio's font machinery is well tested and **no CJK document has ever been looked
+at**. All ten examples are Latin. This is where the kit has the most to prove
+and the least evidence, and where its worst historical defect lived.
 
-## Three traps, each of which cost real time
+### 4. Validate the PDF variants
+
+`data-pdf` declares PDF/A and PDF/UA; nothing has ever been run through a
+validator. Claim only what one confirms — WeasyPrint states its output is not
+guaranteed valid.
+
+## Traps, each of which cost real time
 
 1. **Do not edit a function by replacing a slice between two landmarks.**
-   `check.py` is 1200 lines and its neighbours move; this silently deleted two
+   `check.py` is 1300 lines and its neighbours move; this silently deleted two
    functions once and four SKILL.md entries once. Replace the thing itself.
 2. **`hyphenate-limit-chars` and `text-align` are real properties, not
    tokens.** `base.css` sets both on `body`, so a declaration in a theme's
-   `:root` block loses on specificity and does nothing. Put them on `body`.
-   A measurement showing "no effect" may be your edit not applying.
-3. **Two SKILL.md tests will refuse your prose.** Every rule name must appear
-   as `` `rule-name` ``; and any bare `--word` is read as a CLI flag that must
-   exist, so write CSS custom properties as `var(--name)`.
+   `:root` block loses on specificity and does nothing.
+3. **Three SKILL.md tests will refuse your prose.** Every rule name must appear
+   as `` `rule-name` ``; any bare `--word` is read as a CLI flag that must
+   exist; every scaffold must be routed to.
+4. **A page check only sees what hangs off the document root.** Margin boxes and
+   the footnote area are PageBox children and have to be passed in as their own
+   roots — which is why nothing measured a note for a whole release. If you add
+   a rule, ask which of the three trees it should run against.
+5. **A relative type size inside another relative type size will trip
+   `type-drift` eventually.** It took the first four-theme build of a document
+   with footnotes to surface `0.86em × 0.7em`. Name the step.
 
 ## Dead ends — do not re-derive
 
@@ -88,8 +96,14 @@ prove and the least evidence — and where its worst historical defect lived.
 - **Hanging punctuation, drop caps and `text-wrap: balance` silently no-op**
   on this renderer. All three were tested against a control.
 - **No Latin face folio resolves has `smcp` or `onum`** — Inter, P052 and
-  DejaVu Serif all lack both. Small caps and old-style figures cannot be
-  asked for without synthesis.
+  DejaVu Serif all lack both.
+- **A flex container does not fragment.** `.cols` moves whole to the next page,
+  and until this session it left its footnotes behind. Keep notes out of it;
+  that is what `orphan-note` now says when you forget.
+- **A minimal repro of a note stranded *before* its call was not found.** Eight
+  attempts, sweeping the fill in 2mm steps with and without the aside; the real
+  document does it reliably and the fixture never did. The rule's test covers
+  the *after* direction, which is deterministic between 175mm and 195mm of fill.
 
 ## Two stale claims in the spec
 

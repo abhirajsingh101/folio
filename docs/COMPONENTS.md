@@ -394,6 +394,35 @@ States: `done` (green), `now` (amber, larger), default (brand).
 <blockquote class="pullquote">A sentence worth lifting.<cite>— source</cite></blockquote>
 ```
 
+## Footnotes
+
+Authored inline, in the sentence that provoked the note, and set at the foot of
+whatever page that sentence lands on. Never type a number: the call in the text
+and the marker under the rule are both the renderer's counter, so notes
+renumber themselves when one is added and a note moves with its call when the
+text repaginates.
+
+```html
+<p>The claim in the body<span class="fn">Anthony Grafton, <em>The Footnote: A
+Curious History</em> (Harvard University Press, 1997).</span> continues after
+it.</p>
+```
+
+Write the note as ordinary prose and wrap it across source lines like anything
+else — `folio build` collapses whitespace inside a `.fn` first, because this
+renderer would otherwise turn a source newline into a hard line break.
+
+**Keep a note out of a block that can only move whole.** `.cols`, `.fig-row`,
+`.signature` and anything else that does not fragment is laid out, contributes
+its notes to the page, and then jumps *entire* to the next page if it does not
+fit — leaving the notes a page ahead of their calls. `folio check` reports it
+as `orphan-note`. Move the sentence into ordinary prose.
+
+This is the one component a browser cannot reproduce: none implements
+`float: footnote`. In the shareable `.page.html` a note becomes a marked aside
+in the flow rather than vanishing, so use footnotes when the PDF is the
+deliverable and the web page is the courtesy copy.
+
 ## Code
 
 ```html

@@ -6,6 +6,81 @@ versions follow [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added — footnotes, and the rule written the day they went wrong
+Phase 3's four capabilities landed in the previous three commits and none of
+them appeared here, in `folio components`, or in the skill — a footnote nobody
+is told about is a footnote nobody writes. This entry is the record.
+
+- **Footnotes.** `<span class="fn">…</span>` in the sentence that provoked the
+  note; the renderer floats it to the foot of whatever page that sentence lands
+  on and numbers both ends itself. `build.flatten_footnotes` collapses
+  whitespace inside a note first, because this renderer turns a source newline
+  into a hard line break and no stylesheet can reach it.
+- **`data-pdf`** declares the variant a deliverable must be — `archival`
+  (PDF/A-3b), `accessible` (PDF/UA-1), or a raw variant name. folio declares;
+  it does not certify.
+- **`data-binding="book"`** mirrors the margins and swaps the running heads:
+  title on the verso, section on the recto.
+- **`data-print="press"`** adds bleed and crop marks. See the defect below.
+- **`orphan-note`** — a footnote set on a different page from its call. Written
+  after the essay example below shipped notes 2 and 3 at the foot of page 2
+  with their calls on page 3: `.cols` is a flex container, flex does not
+  fragment in this renderer, so the block moved whole to the next page and left
+  its notes behind. Nothing else could see it — the page was full, the type was
+  legible, and every box was exactly where the renderer meant to put it. An
+  error when the note precedes its call, a warning when the page simply had no
+  room for it.
+
+### Fixed — the footnote area was measured by nothing at all
+Two defects with one cause. A `FootnoteAreaBox` hangs off the PageBox beside
+the margin boxes, so every page check — which walks the document root — stopped
+at its edge.
+
+- **The area is now checked** for characters, type size and contrast, as its
+  own root, the way the running headers already were. It is deliberately not
+  measured for geometry: where the area sits is the renderer's business, and
+  whether a note reached the right page is `orphan-note`'s. The first thing it
+  caught was a straight apostrophe in folio's own `essay` scaffold, shipped
+  under a green check.
+- **A note's size is now a step, not a calculation.** `.fn` was `0.86em` of the
+  body and `::footnote-call` `0.7em` of that — two `em`s compounding — which
+  landed the note at 7.654pt beside a 7.6pt running foot in `technical` and
+  8.256pt beside 8.2pt in `minimal`. `type-drift` reported it the moment a
+  document with footnotes was built in all four directions. `var(--fs-note)`
+  and `var(--fs-note-call)` now name the step each theme wants.
+
+### Added — `examples/essay`, the tenth document and the first bound one
+A scholarly essay on the footnote, set in `editorial` and bound. It is the only
+example that carries footnotes, the only one with `data-binding="book"`, and
+the reason `orphan-note` exists. Its colophon describes its own setting, so a
+change to `--measure`, `--page-gutter` or the body size makes that section
+wrong and it must be corrected with the token. Every work cited is real; the
+journal and the author are not.
+
+Two new gallery shots come with it: an opening — verso and recto abutted, so
+the mirrored gutter and the swapped running heads are visible — and a close-up
+of the foot of a page, which is the only size at which four numbered notes
+under a rule can actually be read.
+
+### Changed — the `essay` scaffold cites in footnotes
+It previously carried a "Notes" section holding a list of sources, under a
+comment explaining that WeasyPrint has no automatic footnote machinery. It has
+had one since the commit before last. The scaffold now demonstrates a footnote
+in its second paragraph and ends on a colophon and further reading.
+
+### Found, not fixed — `data-print="press"` produces a bleed nothing bleeds into
+Measured on a rendered page, not reasoned about. Two defects, both invisible in
+a valid PDF:
+
+- The crop marks are drawn inside the bleed area and clipped by the media box.
+  At `bleed: 3mm` only a stub of each mark survives; at 8mm they are whole.
+- Nothing extends into the bleed. `.bleed` and the cover plate reach the *trim*
+  edge, so the 3mm beyond it is white — which is the one thing a bleed exists
+  to prevent, since a guillotine cutting a millimetre wide leaves a white
+  sliver. Content painted past the page box does reach the media box, verified
+  with a control, so the fix is reachable; it needs the cover's absolute
+  positioning reworked and is not a one-line change.
+
 ### Added — four rules that read the characters, not the geometry
 Every rule folio had measured a box. These read what was typed, which is the
 first thing a reader sees and the last thing a layout tree can tell you about.

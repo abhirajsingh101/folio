@@ -17,7 +17,12 @@
 
      The hard part of an essay is not the prose, it is the claim. If you cannot
      write the first paragraph below as one sentence that someone could
-     disagree with, the piece is not ready to typeset. -->
+     disagree with, the piece is not ready to typeset.
+
+     Sources belong in footnotes here rather than in a list at the back — this
+     is the document type that has them, and `folio components` explains the
+     component. `examples/essay/` in the folio repo is a worked one. -->
+
 <body data-theme="editorial"
       data-title="Essay title"
       data-footer="Your Name">
@@ -45,8 +50,12 @@ place by supporting it.</p>
 
 <p>Then the ground the claim stands on. An essay is not a report — it argues
 rather than records — but the argument still rests on something a reader can
-check, and naming it early is what separates an essay from an opinion. Say
-where the evidence comes from and how far it reaches.</p>
+check, and naming it early is what separates an essay from an
+opinion.<span class="fn">A footnote: authored here, in the sentence that
+provoked it, and set at the foot of whatever page this sentence lands on. Never
+type the number — the call and the marker are the renderer’s counter. Delete
+this note if the piece cites nothing.</span> Say where the evidence comes from
+and how far it reaches.</p>
 
 <h2 class="section" id="s1" data-section="What is actually happening">
   <span class="idx">01</span>What is actually happening</h2>
@@ -114,33 +123,39 @@ they are most likely to remember.</p>
 
 </div>
 
-<!-- Sources, not footnotes: WeasyPrint has no automatic footnote machinery,
-     and a list at the end is what a printed essay does anyway. Delete this
-     block if the piece cites nothing — an empty "Notes" heading reads as a
-     section you forgot to write. -->
-<h2 class="section" id="notes" data-section="Notes">
-  <span class="idx">05</span>Notes</h2>
+<!-- Citations go in footnotes, at the foot of the page that makes the claim —
+     see the note in the second paragraph. A list at the back is for a piece
+     with four hundred pure-citation notes; for an essay it is where sources go
+     to be ignored.
+
+     Keep a `.fn` out of `.cols`, `.fig-row` and anything else that cannot
+     fragment: the block moves whole to the next page and leaves its notes
+     behind, which `folio check` reports as `orphan-note`.
+
+     What remains at the end is the colophon. Delete it and the essay names no
+     author, which makes it a leaflet. -->
+<h2 class="section" id="notes" data-section="About this piece">
+  <span class="idx">05</span>About this piece</h2>
 
 <!-- Side by side: end matter is reference, not reading, and stacking it puts
      a third of a page of white under two short blocks. -->
 <div class="cols">
   <div>
-    <ol class="steps">
-      <li>Author, <em>Title</em>, publisher, year — the claim it supports.</li>
-      <li>The dataset, with the window it covers and where a reader can get
-      it.</li>
+    <h3>Further reading</h3>
+    <ul>
       <li>The piece you are arguing against, cited generously enough that its
       author would recognise the summary.</li>
-    </ol>
+      <li>The book a reader who now agrees with you should read next.</li>
+      <li>The dataset, with the window it covers and where to get it.</li>
+    </ul>
   </div>
   <div>
-    <h3>About this piece</h3>
+    <h3>The author</h3>
     <p class="appendix">Who wrote it, when, and what it draws on — a version
     of the argument given as a talk, a longer paper it condenses, the work
-    that paid for the time. An essay that names no author is a leaflet. Say
-    how to reply, too: the useful response to an argument is a
-    counter-argument, and a reader who has one needs somewhere to send
-    it.</p>
+    that paid for the time. Say how to reply, too: the useful response to an
+    argument is a counter-argument, and a reader who has one needs somewhere
+    to send it.</p>
   </div>
 </div>
 
