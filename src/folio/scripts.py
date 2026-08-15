@@ -258,9 +258,22 @@ def detect(html: str) -> Profile:
     counts = {name: len(rx.findall(text)) for name, rx in _COMPILED}
     present = [s for s, n in counts.items() if n > 0]
 
-    # Han appears inside Japanese too; kana is the discriminator.
-    if counts["kana"] >= _MIN_PRIMARY_CHARS and "han" in present:
-        present.remove("han")
+    # Han appears inside Japanese and Korean too, and in both it is part of the
+    # text rather than a second script: kanji in Japanese, hanja in Korean, both
+    # set by the same CJK face as the rest of the document. Kana and Hangul are
+    # the discriminators — a document with either, in quantity and outnumbering
+    # the Han, is not Chinese. Without this a Korean report carrying its
+    # subject's 한자 form asked its reader to install a Chinese family for
+    # glyphs Noto Serif CJK KR already had, and spliced that family into the
+    # stack behind the Korean one.
+    for discriminator in ("kana", "hangul"):
+        if (
+            counts[discriminator] >= _MIN_PRIMARY_CHARS
+            and counts[discriminator] > counts["han"]
+            and "han" in present
+        ):
+            present.remove("han")
+            break
 
     ranked = sorted(present, key=lambda s: counts[s], reverse=True)
 

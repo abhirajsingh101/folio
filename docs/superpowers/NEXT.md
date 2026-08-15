@@ -5,7 +5,7 @@ document. Read this first; it is the shortest path back into the work.
 
 ## State
 
-`main`, tree clean, 368 tests passing, all ten examples and all seven scaffolds
+`main`, tree clean, 371 tests passing, all eleven examples and all seven scaffolds
 reporting **No layout problems found**. 24 check rules, 7 document types,
 4 themes. (The count earlier notes gave was low: three of the rules live in the
 `CHARACTER_RULES` table and the regex those notes counted with only sees the
@@ -43,11 +43,22 @@ change. If the page is full, the "regression" reported two sessions ago was
 wrong and can be disregarded. `thin-page` will not catch it either way — it
 fires below 45% and that page sits near 52%.
 
-### 2. One CJK document through the whole loop
+### 2. The rest of the non-Latin loop
 
-folio's font machinery is well tested and **no CJK document has ever been looked
-at**. All ten examples are Latin. This is where the kit has the most to prove
-and the least evidence, and where its worst historical defect lived.
+`examples/conservation` took Korean through it and found three things in one
+build (see the changelog). What is still unexercised:
+
+- **Japanese and Chinese.** Kinsoku breaking is implemented and has never set a
+  page. A Japanese document would also test the kana/Han discriminator from the
+  other side.
+- **RTL.** `rtl.css` mirrors every accent and marker, and no Arabic or Hebrew
+  document has ever been rendered. This is the largest untested surface left.
+- **The measure canon is Latin.** 45–90 characters is Bringhurst's range for
+  Latin; a full-width glyph is about twice a Latin letter, so the same column
+  holds half as many. `conservation` measures 47 characters a line and passes,
+  but only because its Hangul is diluted by Latin units and digits — a pure
+  Hangul document in the same column measures about 37 and would be reported as
+  too narrow. Make `_check_measure` script-aware before that lands on someone.
 
 ### 3. Validate the PDF variants
 
@@ -66,11 +77,16 @@ guaranteed valid.
 3. **Three SKILL.md tests will refuse your prose.** Every rule name must appear
    as `` `rule-name` ``; any bare `--word` is read as a CLI flag that must
    exist; every scaffold must be routed to.
-4. **A page check only sees what hangs off the document root.** Margin boxes and
+4. **`font:` shorthand resets `line-height` to `normal`, and `normal` is read
+   off the *strut* — the first font on the element — not off the face that set
+   the glyphs.** In a Latin document those are the same font. In a CJK one they
+   are not, and stacked labels overlap. 104 declarations in the themes are
+   written this way; the timeline is the only one measured to collide so far.
+5. **A page check only sees what hangs off the document root.** Margin boxes and
    the footnote area are PageBox children and have to be passed in as their own
    roots — which is why nothing measured a note for a whole release. If you add
    a rule, ask which of the three trees it should run against.
-5. **A relative type size inside another relative type size will trip
+6. **A relative type size inside another relative type size will trip
    `type-drift` eventually.** It took the first four-theme build of a document
    with footnotes to surface `0.86em × 0.7em`. Name the step.
 

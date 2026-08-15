@@ -49,6 +49,37 @@ at its edge.
   document with footnotes was built in all four directions. `var(--fs-note)`
   and `var(--fs-note-call)` now name the step each theme wants.
 
+### Added — `examples/conservation`, the first document folio built that is not in Latin
+A Korean conservation report for a fictional celadon vase, in `report`. Eleven
+examples and every one of them was Latin, while the font machinery — the part
+of folio with the most code and the worst historical defect — had never been
+exercised by a real document. It found three things in one build.
+
+- **`text-overlap` in the timeline, on the first Korean page ever rendered.**
+  Every theme sets the two timeline labels with the `font:` shorthand, which
+  resets `line-height` to `normal` — and `normal` comes from the *strut*, the
+  first font on the element, which is Latin. The glyphs come from the CJK face
+  further down the stack, whose line box is about 1.45em against Inter's 1.21.
+  The line boxes stacked correctly and the text inside them overlapped by half
+  a millimetre. Fixed with a `:lang`-scoped line-height, so Latin documents keep
+  their rhythm to the micron.
+- **Hanja was reported as Chinese.** A Korean document carrying its subject's
+  한자 form asked its reader for a Chinese family — thirty-odd megabytes for
+  glyphs Noto Serif CJK KR already sets — and spliced that family into the
+  stack behind the Korean one. Han inside Korean is Korean text, exactly as it
+  is inside Japanese, where kana already settled it; Hangul settles it now, and
+  only when it outnumbers the Han.
+- **The two script faces are doing what they were built to do.** Verified by
+  reading the face Pango actually chose per element rather than by looking: body
+  copy sets in Noto Serif CJK KR and labels, headings and tables in Noto Sans
+  CJK KR, because `report` asks for a serif body and a sans label. One document,
+  two Korean faces, no declaration in the source.
+
+The example carries no imagery on purpose. A generated picture of a celadon
+vase would be read as a record of the object the report is about, which is the
+misreading `folio imagery` exists to prevent — and a conservation report is
+where it would do the most damage.
+
 ### Changed — the README is the showcase, not a sample of one
 A visitor landing on the repository saw eight documents at one page each and
 had no way to find out what any of them contained. Every example now has its

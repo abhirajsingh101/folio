@@ -409,6 +409,23 @@ code { font-family: var(--font-mono); }
 .timeline li::before { content: ""; position: absolute; left: -3.2px; top: 1.3mm; }
 .timeline .tl-h, .timeline .tl-d { display: block; }
 
+/* Two stacked labels, and in a CJK document they collide.
+
+   Every theme sets these with the `font:` shorthand, which resets
+   `line-height` to `normal` — and `normal` is taken from the *strut*, the first
+   font on the element, which is Latin. The glyphs are set by the face further
+   down the stack that actually has them, and a CJK face's line box is about
+   1.45em where Inter's is 1.21. The line boxes stack correctly; the text inside
+   them overlaps by half a millimetre. `text-overlap` reported it on the first
+   Korean document folio ever built, and nothing else could have.
+
+   Scoped by `:lang` so Latin documents keep their rhythm unchanged, and one
+   selector more specific than the themes' own rule so it wins without
+   `!important`. */
+.timeline .tl-h:lang(ko), .timeline .tl-d:lang(ko),
+.timeline .tl-h:lang(ja), .timeline .tl-d:lang(ja),
+.timeline .tl-h:lang(zh), .timeline .tl-d:lang(zh) { line-height: 1.5; }
+
 /* ── Keep-together ──────────────────────────────────────── */
 
 /* Tables split by default, which is right for long ones. WeasyPrint

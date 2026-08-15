@@ -16,15 +16,15 @@ Your agent can already write the words. It cannot make them look like this.
 *Cover and interior from one HTML file. The cover plate is generated —
 `folio imagery` says when that is worth doing, and when it is not.*
 
-<img src="docs/gallery/documents.png" width="100%" alt="Ten documents in two rows: an exhibition guide with a risograph cover, a water survey with a cyanotype cover, a fashion line sheet, an architectural finishes schedule, a quarterly engineering report; then a concert programme, a bakery menu, a case study, a technical runbook, and a bound essay">
+<img src="docs/gallery/documents.png" width="100%" alt="Ten documents in two rows: an exhibition guide with a risograph cover, a water survey with a cyanotype cover, a fashion line sheet, an architectural finishes schedule, a Korean conservation report; then a concert programme, a bakery menu, a case study, a technical runbook, and a bound essay">
 
-*Ten fields, one design system. A gallery's exhibition guide, a river catchment
-survey, a fashion label's line sheet, an architect's finishes schedule, a
-quarterly engineering report — then a concert programme, a bakery's seasonal
-card, a consultancy case study, an operations runbook and a bound essay. Every
-page is a real build from [`examples/`](examples/), and every plate was
-generated through the path `folio imagery` prescribes. Each one is shown in
-full [below](#the-documents).*
+*Eleven fields, one design system. A gallery's exhibition guide, a river
+catchment survey, a fashion label's line sheet, an architect's finishes
+schedule, a Korean conservation report — then a concert programme, a bakery's
+seasonal card, a consultancy case study, an operations runbook and a bound
+essay, with the quarterly report above making eleven. Every page is a real build
+from [`examples/`](examples/), and every plate was generated through the path
+`folio imagery` prescribes. Each one is shown in full [below](#the-documents).*
 
 <img src="docs/gallery/themes-covers.png" width="100%" alt="The same cover in four design directions: report, editorial, technical, minimal">
 
@@ -53,8 +53,8 @@ Full install notes, including the two native libraries WeasyPrint needs, are
 
 ## The documents
 
-Every example in this repository, two pages each — where a document has a
-cover, the cover beside the page that carries the most of what it is *for*. No
+All eleven examples in this repository, two pages each — where a document has
+a cover, the cover beside the page that carries the most of what it is *for*. No
 mockups: each one is the output of `folio build` on the HTML in
 [`examples/`](examples/), and each reports **no layout problems** under
 `folio check`.
@@ -75,6 +75,16 @@ Ten footnotes, authored inline and placed by the renderer at the foot of
 whatever page their sentence landed on. `data-binding="book"` mirrors the
 margins and swaps the running heads. The colophon describes the page it is
 printed on.
+
+<img src="docs/gallery/doc-conservation.png" width="100%" alt="A Korean conservation report: a deep navy cover set in Hangul, beside a condition-survey page with two tables of measurements and an information callout">
+
+**보존처리 보고서 · Conservation treatment report** · `report` · [`examples/conservation`](examples/conservation)
+
+Korean, and folio's only non-Latin example. Hangul prose, Hanja in the
+classification line and Latin in the units and method names, all resolving to
+one face — `word-break: keep-all` so no word splits mid-syllable, and no italic,
+because a slant in Hangul is a distortion rather than emphasis. Nothing here is
+declared by hand: `folio build` detects the scripts and injects the faces.
 
 <img src="docs/gallery/doc-exhibition.png" width="100%" alt="An exhibition guide: a risograph cover in oxblood and cream, beside a page of wall text set in a measured column">
 
@@ -435,6 +445,13 @@ A document is inspected for the writing systems actually in it, and that sets
 Japanese and Chinese get kinsoku breaking and no hyphenation; Thai defers to
 the shaper; Arabic and Hebrew get a full right-to-left layout with every
 accent, marker and rule mirrored.
+
+[`examples/conservation`](examples/conservation) is the worked one: a Korean
+report whose body sets in Noto Serif CJK KR and whose labels set in the sans,
+because the theme asks for a serif body and a sans label and each side of that
+choice gets its own CJK face. Hanja inside it is Korean text, not a second
+script — the face already covers it, and folio stopped asking for a Chinese
+family the day that document was built.
 
 ```bash
 folio fonts report.html

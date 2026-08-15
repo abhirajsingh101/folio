@@ -50,6 +50,33 @@ def test_latin_fragments_do_not_hijack_a_cjk_document():
     assert detect(html).lang == "ko"
 
 
+def test_hanja_inside_a_korean_document_is_not_a_chinese_document():
+    """Han is not a fourth script here; it is part of the Korean text.
+
+    A Korean document carrying its subject's 한자 form was reported as needing a
+    Chinese face — thirty-odd megabytes for glyphs Noto Serif CJK KR already
+    sets, and a Chinese design spliced into the stack behind the Korean one.
+    The same discriminator already exists for Japanese, where kana settles it;
+    Hangul settles it here.
+    """
+    html = (
+        "<p>청자 상감 운학문 매병(靑磁 象嵌 雲鶴文 梅甁)은 고려 12세기의 "
+        "대표적인 도자기입니다. 이번 보존처리는 접합과 충전을 포함합니다.</p>"
+    )
+    profile = detect(html)
+    assert profile.lang == "ko"
+    assert "han" not in profile.scripts, profile.scripts
+
+
+def test_a_chinese_document_with_a_korean_name_in_it_stays_chinese():
+    """The guard the rule above needs: Hangul only wins when it dominates."""
+    html = (
+        "<p>本次展覽收錄高麗青瓷與朝鮮白瓷的代表作品，並附有詳細的說明文字與"
+        "年表，供研究者參考使用。策展人為김하늘。</p>"
+    )
+    assert "han" in detect(html).scripts
+
+
 def test_a_single_foreign_name_does_not_flip_the_language():
     html = "<p>The report was written by 김민준 and covers the whole quarter in detail.</p>"
     assert detect(html).lang == "en"

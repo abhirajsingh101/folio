@@ -224,6 +224,7 @@ def grid(rows: list[list[Path]], out: Path, *, width: int, margin: int) -> None:
 SHOWCASE = [
     ("quarterly-report", (1, 3)),
     ("essay", (1, 5)),
+    ("conservation", (1, 3)),
     ("exhibition", (1, 2)),
     ("survey", (1, 3)),
     ("lookbook", (1, 2)),
@@ -241,13 +242,15 @@ if __name__ == "__main__":
     programme, menu = pages("programme"), pages("menu")
     case_study, runbook = pages("case-study"), pages("runbook")
 
-    # Every document folio ships, one page each. Ordered for contrast rather
+    # Every document folio ships except the quarterly report, which is the hero
+    # above and would only repeat itself here. One page each. Ordered for contrast rather
     # than by type: at this size what reads is the shape and the ink, not the
     # words, and two documents that look alike waste a cell. The strips further
     # down are where a visitor sees what each one actually contains; this is the
     # shot that says how many there are.
     essay_pages = pages("essay")
     quarterly = pages("quarterly-report")
+    conservation = pages("conservation")
     grid(
         [
             [
@@ -255,7 +258,7 @@ if __name__ == "__main__":
                 page(survey, 1),
                 page(lookbook, 2),
                 page(architecture, 1),
-                page(quarterly, 1),
+                page(conservation, 1),
             ],
             [
                 page(programme, 1),
@@ -309,6 +312,7 @@ if __name__ == "__main__":
     # merely shaped. Built from the pages already rendered above where possible.
     built = {
         "quarterly-report": quarterly,
+        "conservation": conservation,
         "exhibition": exhibition,
         "survey": survey,
         "lookbook": lookbook,
