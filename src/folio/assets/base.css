@@ -64,6 +64,14 @@
 
   --fs-body: 9.8pt;
   --lh-body: 1.48;
+  /* A footnote sits ON a step of the theme's scale, never beside one. Both
+     sizes were relative — the note `0.86em` of the body, the call `0.7em` of
+     the note — which is two `em`s compounding, and it landed 7.654pt beside a
+     7.6pt running foot in `technical` and 8.256pt beside 8.2pt in `minimal`.
+     `type-drift` reported both the day the first document with footnotes was
+     built in all four directions. Each theme now names the step it wants. */
+  --fs-note: 8.4pt;
+  --fs-note-call: 6pt;
   /* The measure: how wide the prose column runs, so the reader crosses 45–90
      characters before the line returns. `folio check` measures the result
      rather than trusting this number.
@@ -552,7 +560,7 @@ table.keep, figure.keep, .keep { break-inside: avoid; }
    sit mid-sentence. */
 .fn {
   float: footnote;
-  font-size: 0.86em;
+  font-size: var(--fs-note);
   line-height: 1.4;
   color: var(--ink-soft);
 }
@@ -560,7 +568,7 @@ table.keep, figure.keep, .keep { break-inside: avoid; }
 ::footnote-call {
   content: counter(footnote);
   vertical-align: super;
-  font-size: 0.7em;
+  font-size: var(--fs-note-call);
   line-height: 1;
   color: var(--brand);
 }

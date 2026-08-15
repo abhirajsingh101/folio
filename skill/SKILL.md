@@ -132,6 +132,25 @@ Document metadata needs nothing here: `<title>` and the usual `author`,
 `description` and `keywords` meta tags in the document's own `<head>` are read
 straight through into the PDF.
 
+## When a claim needs its source on the same page
+
+A footnote is authored inline — `<span class="fn">…</span>` in the sentence
+that provoked it — and set at the foot of whatever page that sentence lands on.
+Never type a number: the call and the marker are the renderer's own counter, so
+notes renumber themselves and travel with the text.
+
+```html
+<p>The claim in the body<span class="fn">Author, <em>Title</em> (Publisher,
+1997).</span> continues after it.</p>
+```
+
+Use them where the qualification would wreck the sentence and the reader should
+still be able to check it in a glance: essays, research write-ups, anything
+argued rather than reported. **Keep a note out of a block that cannot fragment**
+(`.cols`, `.fig-row`) — the block moves whole and leaves the note on the
+previous page, which `folio check` reports as `orphan-note`. `folio components`
+carries the rest.
+
 ## When the document will be physically printed
 
 Two more document properties, both opt-in because both look like defects in a
@@ -221,6 +240,16 @@ Two rules measure how a page filled, and they mean different things:
   take seriously on a short document** — it is what catches an invoice or a
   one-pager that quietly became two pages. Tighten the copy above it, or move
   a block up so the page carries more. A one-page document is never a widow.
+
+One rule measures where a note landed rather than how the page filled:
+
+- `orphan-note` — a footnote is set on a different page from its call, which is
+  the one thing that stops it being a footnote. Two causes, and the report names
+  which: a note *before* its call means an unbreakable block (`.cols`,
+  `.fig-row`) was laid out, contributed its notes, then moved whole to the next
+  page and left them behind — move the sentence into ordinary prose. A note
+  *after* its call means the foot of the page had no room — shorten the note, or
+  move the paragraph that calls it.
 
 One rule is not about geometry at all:
 
@@ -366,7 +395,7 @@ substantiation."*
 
 1. **Run `folio components` before authoring.** Use the existing classes:
    cover, toc, section, metrics, figure, fig-row, table, pill, callout,
-   timeline, steps, tick, pullquote, code. If something seems missing, look
+   timeline, steps, tick, pullquote, fn, code. If something seems missing, look
    again — it usually exists.
 2. **Never hand-roll a style.** No inline `style=`, no `<style>` blocks in the
    document. To restyle a project, write `brand.css` beside the source; it is

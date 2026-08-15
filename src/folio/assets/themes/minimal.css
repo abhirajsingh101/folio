@@ -26,6 +26,7 @@
 
   --font-body: "Inter", "Noto Sans KR", "Noto Sans CJK KR", system-ui, var(--script-sans), sans-serif;
   --fs-body: 9.6pt;
+  --fs-note: 8.2pt;
   --lh-body: 1.50;
   --radius: 0;
   --page-margin-x: 22mm;

@@ -578,3 +578,54 @@ def test_a_face_the_document_actually_asked_for_is_silent():
     body = '<p lang="ko">한국어 문서입니다</p>'
     extra = 'p{font-family:"Noto Sans CJK KR",serif}'
     assert "font-fallback" not in rules(doc(body, extra))
+
+
+# ── a note that left its call behind ──────────────────────────────────────
+
+# A note is only a footnote because it is on the same page as its call; the
+# renderer decides that, and it can get it wrong in both directions. Both
+# fixtures need the real stylesheet — `float: footnote` and the two pseudo
+# elements that carry the numbers are what is being measured.
+
+_LONG_NOTE = (
+    "A note long enough to take three or four lines at the foot of the page, "
+    "because a note that fits on one line is not the case this fixture is "
+    "written for; several of these together cannot fit in the area at all. "
+)
+
+
+def _notes_paragraph(count: int) -> str:
+    calls = "".join(
+        f'point {i}<span class="fn">{i}. {_LONG_NOTE}</span> ' for i in range(1, count + 1)
+    )
+    return f"<p>The paragraph that carries them all: {calls}</p>"
+
+
+def test_a_note_that_will_not_fit_lands_a_page_after_its_call():
+    """The foot of the page ran out of room and carried the last note over.
+
+    The fill is chosen with slack rather than tuned: anywhere from 175mm to
+    195mm strands at least the eighth note, and the paragraph itself does not
+    move to the next page until 200mm. `@footnote` caps the area at 45% of the
+    page, so a page already three-quarters full cannot hold eight notes.
+    """
+    body = f'<p style="{FLAT};margin-bottom:185mm">filler</p>' + _notes_paragraph(8)
+    assert "orphan-note" in rules(doc(body, css_text()))
+
+
+def test_notes_that_sit_with_their_calls_are_silent():
+    body = _notes_paragraph(3)
+    assert "orphan-note" not in rules(doc(body, css_text()))
+
+
+def test_a_straight_quote_inside_a_footnote_is_reported():
+    """Every page rule stopped at the edge of the footnote area.
+
+    The area is a `FootnoteAreaBox` hanging off the PageBox beside the margin
+    boxes, not part of the document root the page checks walk — so a note was
+    measured by nothing at all: not its characters, not its size, not its
+    contrast. Found in folio's own `essay` scaffold, which shipped a straight
+    apostrophe inside a note under a green check.
+    """
+    body = "<p>The claim<span class=\"fn\">The renderer's counter.</span> continues.</p>"
+    assert "straight-quote" in rules(doc(body, css_text()))

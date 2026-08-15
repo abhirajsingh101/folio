@@ -203,6 +203,20 @@ def _margin_boxes(page):
             yield child
 
 
+def _footnote_areas(page):
+    """The block of notes under the rule at the foot of the page.
+
+    Like a MarginBox it is a PageBox child rather than document content, so
+    every page check that walks `_content_root` stops at its edge — which for
+    the first release with footnotes meant a note was measured by nothing at
+    all. It is checked as its own root for the same reason the margin boxes
+    are: the page background is composited once, not twice.
+    """
+    for child in getattr(page._page_box, "children", ()) or ():
+        if type(child).__name__ == "FootnoteAreaBox":
+            yield child
+
+
 def _page_kind(page) -> str:
     """Cover and contents pages are deliberately sparse; do not flag them.
 
@@ -982,6 +996,82 @@ def _check_figure_scale(root, n) -> list[Finding]:
     return out
 
 
+# ── a note that left its call behind ──────────────────────────────────────
+
+
+def _footnote_numbers(pages) -> tuple[dict[str, int], dict[str, int]]:
+    """Which page each call is on, and which page each note landed on.
+
+    Both are generated content the renderer numbers itself, so the number in
+    the text is the only key that joins them: `::footnote-call` carries `1`,
+    `::footnote-marker` carries `1.`. The marker lives in a `FootnoteAreaBox`,
+    which hangs off the PageBox beside the margin boxes rather than inside the
+    document — which is why this walks the page and not `_content_root`.
+
+    A note long enough to split across two pages fragments after its marker, so
+    only the first fragment is keyed and a continued note is not a finding.
+    """
+    calls: dict[str, int] = {}
+    notes: dict[str, int] = {}
+    for n, page in enumerate(pages, start=1):
+        for box in _walk(page._page_box):
+            if not _is_text(box):
+                continue
+            tag = getattr(box, "element_tag", "") or ""
+            if tag.endswith("::footnote-call"):
+                calls.setdefault(box.text.strip(), n)
+            elif tag.endswith("::footnote-marker"):
+                notes.setdefault(box.text.strip().rstrip("."), n)
+    return calls, notes
+
+
+def _check_orphan_note(pages) -> list[Finding]:
+    """A footnote is only a footnote because it is on its call's page.
+
+    Move it one page and the device stops working: the reader's glance lands on
+    a note for a sentence they have not read, or on nothing at all. Nothing else
+    reports it — the page is full, the type is legible, and both halves are
+    exactly where the renderer meant to put them.
+
+    Both directions are real, and they are different defects:
+
+    - **A note *before* its call.** A block that cannot fragment — `.cols` is a
+      flex container, and flex does not split in this renderer — was laid out,
+      contributed its notes to the page, and then moved whole to the next one.
+      The notes stayed. folio's own essay example shipped this way for exactly
+      one build: notes 2 and 3 at the foot of page 2, their calls on page 3.
+    - **A note *after* its call.** `@footnote` caps the area at 45% of the page,
+      so a page that is already three-quarters full cannot take another note and
+      carries it forward.
+
+    An author can fix the first by moving the sentence out of the unbreakable
+    block and the second by shortening the note or the page, so both are worth
+    reporting; only the first is nonsense to a reader, so only the first is an
+    error.
+    """
+    calls, notes = _footnote_numbers(pages)
+    out = []
+    for num, note_page in sorted(notes.items(), key=lambda kv: kv[1]):
+        call_page = calls.get(num)
+        if call_page is None or call_page == note_page:
+            continue
+        before = note_page < call_page
+        out.append(
+            Finding(
+                "orphan-note",
+                ERROR if before else WARN,
+                note_page,
+                f"note {num} is set on p{note_page}, its call is on p{call_page}",
+                "an unbreakable block took its call to the next page and left "
+                "the note behind — move the sentence out of the block"
+                if before
+                else "the foot of the page could not hold it — shorten the note, "
+                "or move the paragraph that calls it",
+            )
+        )
+    return out
+
+
 # ── conformance: was the document built the way the kit intends? ──────────
 
 HEADINGS = ("h1", "h2", "h3", "h4", "h5", "h6")
@@ -1380,6 +1470,15 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
         findings += _check_font_fallback(root, i, profile.scripts, named)
         findings += _check_characters(root, i, parents)
         findings += _check_fake_small_caps(root, i)
+        # A note is prose set small on the page background, so it wants exactly
+        # the checks its paragraph got. The geometry rules are left out on
+        # purpose: the area's position is the renderer's business, and whether
+        # a note landed on the right page is `orphan-note`'s.
+        for note_area in _footnote_areas(page):
+            note_parents = _parent_map(note_area)
+            findings += _check_characters(note_area, i, note_parents)
+            findings += _check_tiny_text(note_area, i)
+            findings += _check_contrast(note_area, i, note_parents, paper)
 
     # Structure and conformance are properties of the document, not of a page.
     ordered = list(_elements_in_order(pages))
@@ -1390,6 +1489,7 @@ def inspect(html: str, base_dir: Path) -> list[Finding]:
     findings += _check_image_alt(ordered)
     findings += _check_type_drift(pages)
     findings += _check_measure(pages)
+    findings += _check_orphan_note(pages)
 
     order = {ERROR: 0, WARN: 1}
     findings.sort(key=lambda f: (order[f.severity], f.page))
