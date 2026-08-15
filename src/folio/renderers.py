@@ -72,9 +72,7 @@ class ChromiumRenderer(Renderer):
     def available(self) -> bool:
         return self._bin is not None
 
-    def render(
-        self, html: str, base_dir: Path, out: Path, variant: str | None = None
-    ) -> None:
+    def render(self, html: str, base_dir: Path, out: Path, variant: str | None = None) -> None:
         # `variant` is accepted and ignored: Chromium's print-to-PDF has no
         # PDF/A or PDF/UA mode. A document that asks for one and is rendered
         # here silently gets an ordinary PDF, which is the same bargain the

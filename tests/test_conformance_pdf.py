@@ -30,9 +30,10 @@ def _readable(pdf: Path) -> bytes:
             pass
     return b"".join(out)
 
+
 DOC = (
     '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Archive me</title></head>'
-    '<body{attr}><p>A document that says what it is for.</p></body></html>'
+    "<body{attr}><p>A document that says what it is for.</p></body></html>"
 )
 
 

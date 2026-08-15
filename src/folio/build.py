@@ -73,8 +73,13 @@ PDF_VARIANTS = {
 }
 _RAW_VARIANTS = frozenset(
     {
-        "pdf/a-1b", "pdf/a-2b", "pdf/a-3b", "pdf/a-4b",
-        "pdf/a-2u", "pdf/a-3u", "pdf/a-4u",
+        "pdf/a-1b",
+        "pdf/a-2b",
+        "pdf/a-3b",
+        "pdf/a-4b",
+        "pdf/a-2u",
+        "pdf/a-3u",
+        "pdf/a-4u",
         "pdf/ua-1",
     }
 )
@@ -128,9 +133,7 @@ def binding_css(html: str) -> str:
         return ""
     kind = m.group(1).lower()
     if kind != "book":
-        raise BuildError(
-            f"unknown binding {kind!r} in <body data-binding=…>\n  available: book"
-        )
+        raise BuildError(f"unknown binding {kind!r} in <body data-binding=…>\n  available: book")
     return """/* ── Bound: mirrored margins and running heads ── */
 @page :left {
   margin-left: var(--page-margin-x);
@@ -181,9 +184,7 @@ def production_css(html: str) -> str:
         return ""
     kind = m.group(1).lower()
     if kind != "press":
-        raise BuildError(
-            f"unknown print mode {kind!r} in <body data-print=…>\n  available: press"
-        )
+        raise BuildError(f"unknown print mode {kind!r} in <body data-print=…>\n  available: press")
     # 3mm is the trade standard either side of the trim.
     return """/* ── Press-ready: bleed and crop marks ── */
 :root { --bleed: 3mm; }
@@ -276,9 +277,7 @@ def flatten_footnotes(html: str) -> str:
     prose, so the whitespace is normalised at build time. Only whitespace runs
     are touched; markup inside the note is left exactly as written.
     """
-    return _FOOTNOTE.sub(
-        lambda m: m.group(1) + re.sub(r"\s+", " ", m.group(2)) + m.group(3), html
-    )
+    return _FOOTNOTE.sub(lambda m: m.group(1) + re.sub(r"\s+", " ", m.group(2)) + m.group(3), html)
 
 
 def _inject(html: str, css: str) -> str:

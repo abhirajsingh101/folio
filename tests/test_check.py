@@ -37,6 +37,27 @@ BLEED = "margin-left:-20mm;margin-right:-20mm;width:calc(100% + 40mm)"
 NO_BODY_MARGIN = "body{margin:0}"
 
 
+def _faces_available() -> bool:
+    """Whether this machine's pango exports what face resolution needs.
+
+    CI answered no on all four runners the first time these ran there, and the
+    two rules that read a resolved face go quiet when it does — which is the
+    designed behaviour and makes their tests unrunnable rather than failing.
+    """
+    from folio.faces import FacesUnavailable, _ffi
+
+    try:
+        _ffi()
+    except FacesUnavailable:
+        return False
+    return True
+
+
+needs_faces = pytest.mark.skipif(
+    not _faces_available(), reason="this pango does not export the face-resolution symbols"
+)
+
+
 def rules(html: str) -> set[str]:
     return {f.rule for f in inspect(html, Path("/tmp"))}
 
@@ -322,6 +343,7 @@ def test_a_label_that_carries_no_number_is_not_judged():
 # ── a stack with no face for the script it is setting ─────────────────────
 
 
+@needs_faces
 def test_text_in_a_script_the_stack_cannot_cover_is_flagged():
     """The defect 0.5.0 was cut for, and the rule that would have found it.
 
@@ -339,11 +361,13 @@ def test_text_in_a_script_the_stack_cannot_cover_is_flagged():
     assert "font-fallback" in rules(doc(body))
 
 
+@needs_faces
 def test_a_stack_that_names_a_covering_face_is_silent():
     body = "<p style=\"font-family:'P052','Noto Serif CJK KR',serif\">한글 본문입니다</p>"
     assert "font-fallback" not in rules(doc(body))
 
 
+@needs_faces
 def test_an_unrecognised_family_the_author_chose_is_not_judged():
     """folio's table is Noto-centric, and Korean typography is not.
 
@@ -363,12 +387,14 @@ def test_an_unrecognised_family_the_author_chose_is_not_judged():
     assert "font-fallback" not in rules(doc(body))
 
 
+@needs_faces
 def test_a_named_family_that_is_not_installed_is_reported():
     """The other half of the same contract: asked for, not got, substituted."""
     body = "<p style=\"font-family:'Pretendard',serif\">한글 본문입니다</p>"
     assert "font-fallback" in rules(doc(body))
 
 
+@needs_faces
 def test_latin_text_is_never_asked_about_coverage():
     assert "font-fallback" not in rules(doc("<p>Ordinary Latin prose, unremarkable.</p>"))
 
@@ -542,25 +568,40 @@ def test_hard_broken_lines_do_not_measure_the_column():
     the same reason a paragraph's last line is excluded. Reading them as prose
     reported the invoice and letter scaffolds at 31 characters a line.
     """
-    address = "<p>" + "<br>".join(["Your Company Ltd", "1 Example Street, City, PO57 0DE",
-                                   "VAT 000 0000 00", "Ms A. Recipient",
-                                   "Head of Operations", "Client Company Ltd",
-                                   "2 Client Road, City, CL1 2NT", "Accounts Payable"]) + "</p>"
+    address = (
+        "<p>"
+        + "<br>".join(
+            [
+                "Your Company Ltd",
+                "1 Example Street, City, PO57 0DE",
+                "VAT 000 0000 00",
+                "Ms A. Recipient",
+                "Head of Operations",
+                "Client Company Ltd",
+                "2 Client Road, City, CL1 2NT",
+                "Accounts Payable",
+            ]
+        )
+        + "</p>"
+    )
     assert "measure" not in rules(doc(address))
 
 
+@needs_faces
 def test_small_caps_on_a_face_without_them_is_reported():
     body = "<p>Nato and the treaty</p>"
     extra = 'p{font-family:"DejaVu Serif";font-variant-caps:small-caps}'
     assert "fake-small-caps" in rules(doc(body, extra))
 
 
+@needs_faces
 def test_small_caps_on_a_face_that_has_them_is_silent():
     body = "<p>Nato and the treaty</p>"
     extra = 'p{font-family:"Noto Serif";font-variant-caps:small-caps}'
     assert "fake-small-caps" not in rules(doc(body, extra))
 
 
+@needs_faces
 def test_a_stack_naming_an_uninstalled_korean_family_is_reported():
     """The false negative the rewrite exists to remove.
 
@@ -574,6 +615,7 @@ def test_a_stack_naming_an_uninstalled_korean_family_is_reported():
     assert "font-fallback" in rules(doc(body, extra))
 
 
+@needs_faces
 def test_a_face_the_document_actually_asked_for_is_silent():
     body = '<p lang="ko">한국어 문서입니다</p>'
     extra = 'p{font-family:"Noto Sans CJK KR",serif}'
@@ -627,5 +669,5 @@ def test_a_straight_quote_inside_a_footnote_is_reported():
     contrast. Found in folio's own `essay` scaffold, which shipped a straight
     apostrophe inside a note under a green check.
     """
-    body = "<p>The claim<span class=\"fn\">The renderer's counter.</span> continues.</p>"
+    body = '<p>The claim<span class="fn">The renderer\'s counter.</span> continues.</p>'
     assert "straight-quote" in rules(doc(body, css_text()))

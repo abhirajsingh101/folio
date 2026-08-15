@@ -72,7 +72,7 @@ def test_a_note_authored_across_source_lines_sets_as_one_paragraph():
     page = _render(
         '<p>The claim<span class="fn">A note long enough that its author\n'
         "would naturally break it across two source lines rather than let it\n"
-        'run off the edge of the editor.</span> continues.</p>'
+        "run off the edge of the editor.</span> continues.</p>"
     )
     notes = [t for _, t in _texts(page) if "naturally break" in t or "run off" in t]
     assert len(notes) == 1, f"the note fragmented at its source newlines: {notes}"
