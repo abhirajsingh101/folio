@@ -45,9 +45,12 @@ capability was verified working on this renderer before it was proposed.
 
 Ordered by how much they unlock rather than by effort:
 
-- **Footnotes** (`float: footnote`). Blocks academic, scholarly and legal work
-  entirely. Needs a screen fallback — no browser implements the property, so
-  the `.page.html` output must not swallow the note.
+- **Footnotes** — SHIPPED (`489ceda`) with one known defect. Structurally
+  correct: right page, right number, right order, screen fallback in place.
+  Visibly wrong: the note text breaks its first line early and continues at
+  the left margin instead of aligning under the marker. **Fix that before any
+  scaffold or example uses `.fn`.** Reproduce by building any document with a
+  two-line note and looking at the foot of the page — no rule sees it.
 - **PDF conformance and metadata.** `write_pdf()` is currently called with *no
   options at all*: no PDF/A, no PDF/UA, no metadata. This is what stands
   between folio and archival, regulatory and accessibility-mandated work, and
