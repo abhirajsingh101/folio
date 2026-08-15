@@ -91,3 +91,66 @@ thead th, tbody td, tfoot td { padding-left: 2.4mm; padding-right: 2.4mm; }
 /* ── Editorial / minimal use trailing rules on tiles ────── */
 
 .metrics .metric { border-right-width: 2.5px; }
+
+/* ── Leading: the face asks for 2.11em, and the themes give 1.21 ─ */
+
+/* Arabic asks for room a Latin face never does: dots below ب ج خ, marks above,
+   and a descender on nearly every final form. Noto Naskh and Noto Sans Arabic
+   both want a line box of 2.11em where Inter wants 1.21 — measured on the
+   rendered page, not looked up.
+
+   Every number in the themes is tuned to Latin and is therefore too small, and
+   the themes' `font:` shorthands make it worse by resetting `line-height` to
+   `normal`, which is read off the *strut* — the first font on the element,
+   which is Latin — while the glyphs come from the Arabic face further down the
+   stack. Sixteen pairs of elements overlapped on the first Arabic page folio
+   rendered: headings sinking into the paragraph beneath them, a label into its
+   value, a `strong` into the line under it.
+
+   The fix is a number, and `normal` is not it: `normal` is read off the strut —
+   the first font on the element, which is Latin — so the line box comes out at
+   1.21em while the Arabic ink needs 2.11, and every block spills into the one
+   below it. Nor is a *small* number: it clamps the text box, which hides the
+   collision from `text-overlap` while leaving it on the page. 2.2 is the face's
+   own 2.11 with a hair of air, measured rather than chosen, and the body
+   measure gets a little more again because prose wants it.
+
+   This layer ships only with a right-to-left document, which is why the floor
+   can be set this broadly here and nowhere else. It sits last in the
+   stylesheet, so an equal-specificity rule wins on order — hence the component
+   selectors are repeated at the depth the themes wrote them. */
+:root { --lh-body: 2.2; }
+
+h1, h2, h3, h4, h2.section, .cover h1, .cover .sub, .lead,
+p, li, dd, dt, td, th, caption, figcaption, blockquote,
+.metric .v, .metric .l, .metric .d,
+.timeline .tl-h, .timeline .tl-d, .timeline .tl-b,
+.facts dt, .facts dd,
+.signature .who, .signature .role,
+.toc li, .toc li .num, .toc li a.pg,
+.cover-brand, .cover-kicker, .cover-meta, .cover-meta .k,
+.eyebrow, .callout .ico, .pullquote cite, .appendix { line-height: 2.2; }
+
+p, li, dd, blockquote, .callout .body p { line-height: var(--lh-body); }
+
+/* ── Tracking: Arabic joins, so nothing may be tracked ───── */
+
+/* `letter-spacing` prises the letters of a cursive script apart. The joins are
+   not decoration in Arabic — they are how a word is a word, and a tracked line
+   reads as a string of disconnected shapes. Every theme tracks its labels,
+   kickers, table heads and pills, because tracking small uppercase Latin is
+   correct; on this page it made the running head, the section headings and
+   every label unreadable, and no check could see it: the glyphs are all there,
+   in the right order, at the right size.
+
+   Verified against a control rather than assumed — the same string set twice,
+   once at `letter-spacing: 0` and once at `0.1em`, in both the serif and the
+   sans stack. */
+h1, h2, h3, h4, h2.section, h2.section .idx, .cover h1, .cover .sub, .lead,
+p, li, dd, dt, td, th, thead th, caption, figcaption, blockquote,
+.metric .v, .metric .l, .metric .d, .pill, .tnum, .fnum,
+.timeline .tl-h, .timeline .tl-d, .timeline .tl-b,
+.facts dt, .facts dd, .signature .who, .signature .role,
+.toc li, .toc li .num, .toc li a.pg, .steps li::before,
+.cover-brand, .cover-kicker, .cover-meta, .cover-meta .k,
+.eyebrow, .callout .ico, .pullquote cite, .appendix, .credit { letter-spacing: normal; }

@@ -51,8 +51,25 @@ build (see the changelog). What is still unexercised:
 - **Japanese and Chinese.** Kinsoku breaking is implemented and has never set a
   page. A Japanese document would also test the kana/Han discriminator from the
   other side.
-- **RTL.** `rtl.css` mirrors every accent and marker, and no Arabic or Hebrew
-  document has ever been rendered. This is the largest untested surface left.
+- **RTL — half done, and the half that is left needs a reader of Arabic.**
+  `examples/proposal-ar` renders and checks clean, and building it fixed two
+  real defects in `rtl.css` (below). What has *not* happened is the pass that
+  matters: nobody who reads Arabic has looked at the page. Composition, the
+  wording of a commercial proposal, and whether the digits and the currency sit
+  where a Saudi reader expects are all unverified — the author of that document
+  misread one of its own headings as reversed when it was correct. **It is
+  deliberately not in the README showcase for that reason.** Get it read, then
+  add its strip to `SHOWCASE` in `docs/gallery/shoot.py`.
+
+  The two defects it did find, both measured against a control:
+  `letter-spacing` prises apart a cursive script — every theme tracks its
+  labels, and tracked Arabic reads as disconnected shapes; and the Arabic faces
+  want a line box of 2.11em where Inter wants 1.21, so sixteen pairs of
+  elements overlapped. Both are fixed in the RTL layer, which ships only with an
+  RTL document, so no Latin page moved.
+
+- **Hebrew has no face on this machine.** `folio fonts` will report it; the
+  install path is `folio fonts --install hebrew`.
 - **The measure canon is Latin.** 45–90 characters is Bringhurst's range for
   Latin; a full-width glyph is about twice a Latin letter, so the same column
   holds half as many. `conservation` measures 47 characters a line and passes,

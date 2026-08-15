@@ -49,6 +49,31 @@ at its edge.
   document with footnotes was built in all four directions. `var(--fs-note)`
   and `var(--fs-note-call)` now name the step each theme wants.
 
+### Added — `examples/proposal-ar`, and the two things right-to-left was getting wrong
+An Arabic work proposal, in `report`, and the first document ever built with
+`rtl.css` actually in it. The layer mirrored every border, marker and spine
+correctly; what it had never been asked about was type.
+
+- **`letter-spacing` prises apart a cursive script.** The joins are not
+  decoration in Arabic — they are how a word is a word. Every theme tracks its
+  labels, kickers, table heads and pills, which is correct for small uppercase
+  Latin and made the running head, the section headings and every label on this
+  page read as a string of disconnected shapes. No check could see it: the
+  glyphs are all present, in order, at the right size. Verified against a
+  control — the same string at `0` and at `0.1em`, in both stacks.
+- **The Arabic faces want a line box of 2.11em; the themes give 1.21.** Sixteen
+  pairs of elements overlapped, headings sinking into the paragraph beneath
+  them. `normal` is not the fix — it is read off the strut, which is Latin —
+  and nor is a small number, which clamps the text box and hides the collision
+  from `text-overlap` while leaving it on the page.
+
+Both fixes live in the RTL layer, which ships only with a right-to-left
+document, so no Latin page moved by a micron.
+
+**The example is not in the README showcase yet, on purpose.** It builds clean
+and reads plausibly, but nobody who reads Arabic has looked at it, and that is
+the pass this kit says out loud it does not skip.
+
 ### Added — `examples/conservation`, the first document folio built that is not in Latin
 A Korean conservation report for a fictional celadon vase, in `report`. Eleven
 examples and every one of them was Latin, while the font machinery — the part
