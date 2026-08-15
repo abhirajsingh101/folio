@@ -18,11 +18,11 @@ Your agent can already write the words. It cannot make them look like this.
 
 <img src="docs/gallery/documents.png" width="100%" alt="Ten documents in two rows: an exhibition guide with a risograph cover, a water survey with a cyanotype cover, a fashion line sheet, an architectural finishes schedule, a Korean conservation report; then a concert programme, a bakery menu, a case study, a technical runbook, and a bound essay">
 
-*Eleven fields, one design system. A gallery's exhibition guide, a river
+*Twelve fields, one design system. A gallery's exhibition guide, a river
 catchment survey, a fashion label's line sheet, an architect's finishes
-schedule, a Korean conservation report — then a concert programme, a bakery's
+schedule, a Korean conservation report, a design proposal — then a concert programme, a bakery's
 seasonal card, a consultancy case study, an operations runbook and a bound
-essay, with the quarterly report above making eleven. Every page is a real build
+essay, with the quarterly report above making twelve. Every page is a real build
 from [`examples/`](examples/), and every plate was generated through the path
 `folio imagery` prescribes. Each one is shown in full [below](#the-documents).*
 
@@ -53,7 +53,7 @@ Full install notes, including the two native libraries WeasyPrint needs, are
 
 ## The documents
 
-All eleven examples in this repository, two pages each — where a document has
+All twelve examples in this repository, two pages each — where a document has
 a cover, the cover beside the page that carries the most of what it is *for*. No
 mockups: each one is the output of `folio build` on the HTML in
 [`examples/`](examples/), and each reports **no layout problems** under
@@ -75,6 +75,15 @@ Ten footnotes, authored inline and placed by the renderer at the foot of
 whatever page their sentence landed on. `data-binding="book"` mirrors the
 margins and swaps the running heads. The colophon describes the page it is
 printed on.
+
+<img src="docs/gallery/doc-proposal.png" width="100%" alt="A design proposal: a navy cover reading Wayfinding, beside a fee page with a three-stage price table, a ruled total and three metric tiles">
+
+**Design proposal** · `report` · [`examples/proposal`](examples/proposal)
+
+The document type where visible polish is penalised rather than rewarded, so
+there is no cover plate and no chart that is not load-bearing. Opens on what the
+studio found rather than on who they are, prices by stage, says what the fee
+does *not* cover before anyone has to ask, and ends on a signature block.
 
 <img src="docs/gallery/doc-conservation.png" width="100%" alt="A Korean conservation report: a deep navy cover set in Hangul, beside a condition-survey page with two tables of measurements and an information callout">
 

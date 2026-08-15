@@ -225,6 +225,7 @@ SHOWCASE = [
     ("quarterly-report", (1, 3)),
     ("essay", (1, 5)),
     ("conservation", (1, 3)),
+    ("proposal", (1, 4)),
     ("exhibition", (1, 2)),
     ("survey", (1, 3)),
     ("lookbook", (1, 2)),
@@ -259,6 +260,7 @@ if __name__ == "__main__":
                 page(lookbook, 2),
                 page(architecture, 1),
                 page(conservation, 1),
+                page(pages("proposal"), 1),
             ],
             [
                 page(programme, 1),
