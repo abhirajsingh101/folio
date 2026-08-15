@@ -36,6 +36,17 @@ def _ffi():
         from weasyprint.text.ffi import ffi, harfbuzz, pango, pangoft2
     except Exception as exc:  # pragma: no cover - environment dependent
         raise FacesUnavailable("WeasyPrint's pango bindings are unavailable") from exc
+    # cffi resolves a symbol on attribute access, not at import, so a build of
+    # pango that does not export one of these raises `AttributeError` from
+    # inside the check rather than from here. CI found it on all four runners:
+    # every face rule died on `pango_font_describe`, which the machine this was
+    # written on happens to export. Probe once, and let the two rules that need
+    # it go quiet on a machine that cannot answer.
+    for symbol in ("pango_font_describe", "pango_font_description_get_family"):
+        try:
+            getattr(pango, symbol)
+        except AttributeError as exc:  # pragma: no cover - environment dependent
+            raise FacesUnavailable(f"this pango does not export {symbol}") from exc
     return ffi, pango, pangoft2, harfbuzz
 
 

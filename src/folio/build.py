@@ -342,7 +342,8 @@ def prepare(src: Path) -> tuple[str, str]:
     theme = detect_theme(raw)
     prof = detect_scripts(raw)
     run_charts(src, quiet=True, theme=theme)
-    return _inject(_wrap(flatten_footnotes(raw), src, prof), _stylesheet(src, theme, prof, raw)), theme
+    doc = _wrap(flatten_footnotes(raw), src, prof)
+    return _inject(doc, _stylesheet(src, theme, prof, raw)), theme
 
 
 def build(

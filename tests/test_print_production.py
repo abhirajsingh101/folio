@@ -101,8 +101,9 @@ def test_a_bleeding_block_runs_past_the_trim():
     lefts = [
         r[0] for b in _walk(page._page_box) if (r := _border_rect(b)) and r[2] - r[0] > 100 * MM
     ]
+    edge = min(lefts, default=0) / MM
     assert lefts and min(lefts) <= -INK_MM * MM + 1, (
-        f"nothing reached {INK_MM}mm past the trim: leftmost edge at {min(lefts, default=0) / MM:.1f}mm"
+        f"nothing reached {INK_MM}mm past the trim: leftmost edge at {edge:.1f}mm"
     )
 
 
