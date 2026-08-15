@@ -104,7 +104,76 @@ def detect_pdf_variant(html: str) -> str | None:
     )
 
 
-def _stylesheet(src: Path, theme: str, prof: Profile | None = None) -> str:
+_BINDING_ATTR = re.compile(r"<body[^>]*\bdata-binding=[\"'](\w+)[\"']", re.I)
+_PRINT_ATTR = re.compile(r"<body[^>]*\bdata-print=[\"'](\w+)[\"']", re.I)
+
+
+def binding_css(html: str) -> str:
+    """Mirrored margins and running heads, for a document that will be bound.
+
+    `@page` cannot be scoped by a body selector, so this is injected at build
+    time the way the script faces are, rather than shipped in `base.css` where
+    it would reshape every document folio has ever made.
+
+    The inner margin is the one the binding eats, so it has to swap sides page
+    to page: wide on the left of a recto, wide on the right of a verso. The
+    running heads swap with it, and the convention is not arbitrary: the book's
+    title sits on the verso and the current section on the recto, so a reader
+    riffling the right-hand edge sees where they are rather than what they are
+    holding. The first draft here had them the wrong way round, which the tests
+    could not see and a rendered spread could.
+    """
+    m = _BINDING_ATTR.search(html)
+    if not m:
+        return ""
+    kind = m.group(1).lower()
+    if kind != "book":
+        raise BuildError(
+            f"unknown binding {kind!r} in <body data-binding=…>\n  available: book"
+        )
+    return """/* ── Bound: mirrored margins and running heads ── */
+@page :left {
+  margin-left: var(--page-margin-x);
+  margin-right: var(--page-gutter, 26mm);
+  @top-left { content: string(doctitle); }
+  @top-right { content: none; }
+  @bottom-left { content: counter(page); }
+  @bottom-right { content: none; }
+}
+@page :right {
+  margin-left: var(--page-gutter, 26mm);
+  margin-right: var(--page-margin-x);
+  @top-left { content: none; }
+  @top-right { content: string(section); }
+  @bottom-left { content: none; }
+  @bottom-right { content: counter(page); }
+}"""
+
+
+def production_css(html: str) -> str:
+    """Bleed and crop marks, for work going to a commercial printer.
+
+    Only ever wanted on the file that is sent to press: a bleed makes the page
+    box larger than the trimmed sheet, and crop marks are printed instructions
+    to a guillotine. Both look like defects in a PDF meant to be read on a
+    screen, which is why this is opt-in rather than a default.
+    """
+    m = _PRINT_ATTR.search(html)
+    if not m:
+        return ""
+    kind = m.group(1).lower()
+    if kind != "press":
+        raise BuildError(
+            f"unknown print mode {kind!r} in <body data-print=…>\n  available: press"
+        )
+    # 3mm is the trade standard either side of the trim.
+    return """/* ── Press-ready: bleed and crop marks ── */
+@page { bleed: 3mm; marks: crop cross; }"""
+
+
+def _stylesheet(
+    src: Path, theme: str, prof: Profile | None = None, raw_html: str | None = None
+) -> str:
     """Kit, then the document's own scripts, then the project's brand.
 
     Order is the whole point: each layer must be able to override the one
@@ -117,6 +186,9 @@ def _stylesheet(src: Path, theme: str, prof: Profile | None = None) -> str:
         script_css = script_font_css(prof)
         if script_css:
             css += f"\n\n{script_css}"
+    for extra in (binding_css(raw_html or ""), production_css(raw_html or "")):
+        if extra:
+            css += f"\n\n{extra}"
     brand = src.parent / "brand.css"
     if brand.exists():
         css += f"\n\n/* ── project brand.css ── */\n{brand.read_text(encoding='utf-8')}"
@@ -218,7 +290,7 @@ def prepare(src: Path) -> tuple[str, str]:
     theme = detect_theme(raw)
     prof = detect_scripts(raw)
     run_charts(src, quiet=True, theme=theme)
-    return _inject(_wrap(flatten_footnotes(raw), src, prof), _stylesheet(src, theme, prof)), theme
+    return _inject(_wrap(flatten_footnotes(raw), src, prof), _stylesheet(src, theme, prof, raw)), theme
 
 
 def build(
@@ -239,7 +311,7 @@ def build(
     prof = detect_scripts(raw)
     run_charts(src, quiet, theme)
 
-    doc = _inject(_wrap(flatten_footnotes(raw), src, prof), _stylesheet(src, theme, prof))
+    doc = _inject(_wrap(flatten_footnotes(raw), src, prof), _stylesheet(src, theme, prof, raw))
     if not quiet:
         print(f"  theme     {theme}")
         print(f"  scripts   {prof.describe()}")

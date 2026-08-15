@@ -132,6 +132,27 @@ Document metadata needs nothing here: `<title>` and the usual `author`,
 `description` and `keywords` meta tags in the document's own `<head>` are read
 straight through into the PDF.
 
+## When the document will be physically printed
+
+Two more document properties, both opt-in because both look like defects in a
+PDF meant to be read on screen:
+
+```html
+<body data-binding="book">   <!-- mirrored margins and running heads -->
+<body data-print="press">    <!-- 3mm bleed and crop marks -->
+```
+
+`data-binding="book"` swaps the inner margin side to side, because the binding
+eats it: wide on the right of a verso, wide on the left of a recto. Set the
+gutter with `var(--page-gutter)` in `brand.css` if 26mm is wrong for your
+binding. The running heads swap too — the book's title on the verso, the
+current section on the recto — so a reader riffling the right-hand edge sees
+where they are rather than what they are holding.
+
+`data-print="press"` adds a 3mm bleed and crop marks. Only ever put it on the
+file you send to the printer: it makes the page box larger than the trimmed
+sheet, and the marks are instructions to a guillotine.
+
 ## The loop — do not skip a pass
 
 A document is not done when it renders. Print defects are silent by nature:
