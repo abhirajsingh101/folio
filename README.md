@@ -16,21 +16,15 @@ Your agent can already write the words. It cannot make them look like this.
 *Cover and interior from one HTML file. The cover plate is generated —
 `folio imagery` says when that is worth doing, and when it is not.*
 
-<img src="docs/gallery/documents.png" width="100%" alt="Eight documents in two rows. Top: an exhibition guide with a risograph cover, a water survey with a cyanotype cover, a fashion line sheet with cloth swatches, an architectural finishes schedule with concrete and brass. Bottom: a concert programme with a lithograph plate, a bakery menu, a case study, and a technical runbook">
+<img src="docs/gallery/documents.png" width="100%" alt="Ten documents in two rows: an exhibition guide with a risograph cover, a water survey with a cyanotype cover, a fashion line sheet, an architectural finishes schedule, a quarterly engineering report; then a concert programme, a bakery menu, a case study, a technical runbook, and a bound essay">
 
-*Eight fields, one design system. A gallery's exhibition guide, a river
-catchment survey, a fashion label's line sheet, an architect's finishes
-schedule — then a concert programme, a bakery's seasonal card, a consultancy
-case study and an operations runbook. Every page is a real build from
-[`examples/`](examples/), and every plate was generated through the path
-`folio imagery` prescribes.*
-
-<img src="docs/gallery/spread.png" width="100%" alt="Two facing pages of a bound essay: the verso carries the journal title and page number on the left, the recto the section title and page number on the right, and the margins at the spine are wider than those at the outer edges. Both pages carry numbered footnotes under a rule">
-
-*One opening of a bound essay. `data-binding="book"` mirrors the margins —
-wide at the spine, where the binding eats them — and swaps the running heads,
-so the title sits on the verso and the section on the recto. The notes under
-the rule were written inline, in the sentences that call them.*
+*Ten fields, one design system. A gallery's exhibition guide, a river catchment
+survey, a fashion label's line sheet, an architect's finishes schedule, a
+quarterly engineering report — then a concert programme, a bakery's seasonal
+card, a consultancy case study, an operations runbook and a bound essay. Every
+page is a real build from [`examples/`](examples/), and every plate was
+generated through the path `folio imagery` prescribes. Each one is shown in
+full [below](#the-documents).*
 
 <img src="docs/gallery/themes-covers.png" width="100%" alt="The same cover in four design directions: report, editorial, technical, minimal">
 
@@ -42,6 +36,131 @@ oxblood, near-black, teal. Two of the four take a cover image; the other two
 are built not to.*
 
 </div>
+
+---
+
+```bash
+pipx install folio-press
+folio init --template essay          # or report · proposal · invoice · runbook · letter · case-study
+folio build document.html --check    # → a PDF, a shareable HTML page, and a layout report
+```
+
+Full install notes, including the two native libraries WeasyPrint needs, are
+[further down](#install). Everything below is a real build from
+[`examples/`](examples/) — there are no mockups in this README.
+
+---
+
+## The documents
+
+Every example in this repository, two pages each — where a document has a
+cover, the cover beside the page that carries the most of what it is *for*. No
+mockups: each one is the output of `folio build` on the HTML in
+[`examples/`](examples/), and each reports **no layout problems** under
+`folio check`.
+
+<img src="docs/gallery/doc-quarterly-report.png" width="100%" alt="A quarterly engineering report: a navy cover under a two-ink plate, beside an executive summary page with four metric tiles, a bar chart and a callout">
+
+**Quarterly engineering report** · `report` · [`examples/quarterly-report`](examples/quarterly-report)
+
+Metric tiles with their denominators, a chart drawn through `folio.theme` so it
+carries the document's own palette, and a contents page whose numbers resolve at
+render time. Nine pages, and the one folio itself is measured against.
+
+<img src="docs/gallery/doc-essay.png" width="100%" alt="A bound essay: a typographic cover under a pale band, beside an interior page whose foot carries four numbered scholarly notes under a rule">
+
+**Scholarly essay, bound** · `editorial` · [`examples/essay`](examples/essay)
+
+Ten footnotes, authored inline and placed by the renderer at the foot of
+whatever page their sentence landed on. `data-binding="book"` mirrors the
+margins and swaps the running heads. The colophon describes the page it is
+printed on.
+
+<img src="docs/gallery/doc-exhibition.png" width="100%" alt="An exhibition guide: a risograph cover in oxblood and cream, beside a page of wall text set in a measured column">
+
+**Gallery exhibition guide** · `editorial` · [`examples/exhibition`](examples/exhibition)
+
+The case where a generated plate genuinely earns its place — and where it is
+most likely to be mistaken for a work in the show, which is why both plates are
+credited in the colophon.
+
+<img src="docs/gallery/doc-survey.png" width="100%" alt="A river catchment survey: a cyanotype cover in deep blue, beside a findings page with metric tiles and a bar chart">
+
+**River catchment survey** · `report` · [`examples/survey`](examples/survey)
+
+Field data with its sampling window, and figures captioned with the conclusion
+rather than with the axes.
+
+<img src="docs/gallery/doc-lookbook.png" width="100%" alt="A fashion line sheet: a white cover reading Autumn/Winter 27 Undyed, beside a page showing two cloth swatches over a wholesale price table">
+
+**Fashion line sheet** · `editorial` · [`examples/lookbook`](examples/lookbook)
+
+Generated swatches standing in for cloth — never for a garment, which would be
+a claim about a real product — over a wholesale table set in tabular figures.
+
+<img src="docs/gallery/doc-architecture.png" width="100%" alt="An architectural finishes schedule: a first page with a warning callout and two material swatches, beside a page of specification tables">
+
+**Architectural finishes schedule** · `technical` · [`examples/architecture`](examples/architecture)
+
+The densest document here: specification tables, material references, and
+callouts that carry a consequence. `technical` fits noticeably more on a page.
+
+<img src="docs/gallery/doc-programme.png" width="100%" alt="A concert programme: a lithograph plate over the title and the running order, beside a page of programme notes">
+
+**Concert programme** · `minimal` · [`examples/programme`](examples/programme)
+
+Two sheets, no running furniture — `data-furniture="none"`, because page chrome
+on a document with nowhere to run to is noise.
+
+<img src="docs/gallery/doc-case-study.png" width="100%" alt="A consultancy case study: a headline page with metric tiles, beside a narrative page under the heading What we did">
+
+**Consultancy case study** · `editorial` · [`examples/case-study`](examples/case-study)
+
+No cover: proof opens on the result. Numbers with a measurement window, and a
+quote that reads like a person said it.
+
+<img src="docs/gallery/doc-runbook.png" width="100%" alt="An operations runbook: a document-control block over numbered steps with inline commands, beside a page of verification steps and a stop notice">
+
+**Operations runbook** · `technical` · [`examples/runbook`](examples/runbook)
+
+Document control, numbered steps carrying the commands you actually type, and a
+stop notice. Written to be executed under time pressure, not read.
+
+<img src="docs/gallery/doc-menu.png" width="50%" alt="A bakery's seasonal menu: one sheet with a plate band over a price list of breads and pastries">
+
+**Bakery seasonal card** · `minimal` · [`examples/menu`](examples/menu)
+
+One sheet. Short is not a reason to decline — it is a reason to strip the
+furniture and set the list properly.
+
+---
+
+## Made for paper
+
+Three things that only exist because the output is a printed page, and that no
+HTML-to-PDF converter does.
+
+<img src="docs/gallery/spread.png" width="100%" alt="Two facing pages of a bound essay: the verso carries the journal title and page number on the left, the recto the section title and page number on the right, and the margins at the spine are wider than those at the outer edges. Both pages carry numbered footnotes under a rule">
+
+*An opening, not two pages. `data-binding="book"` mirrors the margins — wide at
+the spine, where the binding eats them — and swaps the running heads, so the
+title sits on the verso and the section on the recto. A reader riffling the
+right-hand edge sees where they are, not what they are holding.*
+
+<img src="docs/gallery/footnotes.png" width="100%" alt="A close-up of one page: a section heading, six lines of prose ending in a superscript ten, then a thin rule with four numbered scholarly notes beneath it">
+
+*Footnotes, at the foot of their own page. Authored inline —
+`<span class="fn">…</span>` in the sentence that provoked the note — and
+numbered by the renderer, so notes renumber themselves and travel with the text.
+Nobody types a number or assigns a note to a page, and `folio check` reports one
+that ends up on a different page from its call.*
+
+<img src="docs/gallery/press.png" width="100%" alt="The corner of a press-ready sheet: two crop marks in the white margin, and the cover artwork running past the trim corner into the bleed">
+
+*The corner of the file you send to a printer. `data-print="press"` adds crop
+marks and pushes 3mm of ink past the trim, so the guillotine cuts through
+artwork rather than finding white. Both look like defects on screen, which is
+why neither is a default.*
 
 ---
 
@@ -178,17 +297,6 @@ chart paletted to the document, a numbered figure whose caption states the
 conclusion. Right: document control, a stop notice, and steps carrying the
 commands you actually type. Nothing here is a one-off style — `folio check`
 reports it if you write one.*
-
-### Footnotes, at the foot of their own page
-
-<img src="docs/gallery/footnotes.png" width="100%" alt="A close-up of one page: a section heading, six lines of prose ending in a superscript ten, then a thin rule with four numbered scholarly notes beneath it">
-
-*Authored inline — `<span class="fn">…</span>` in the sentence that provoked
-the note — and set under the rule at the foot of whatever page that sentence
-lands on. The numbers are the renderer's, so notes renumber themselves and
-travel with the text; nobody types a number or assigns a note to a page. This
-is the one component a browser cannot reproduce, and `folio check` reports a
-note that ends up on a different page from its call.*
 
 ### It checks its own work
 

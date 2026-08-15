@@ -5,40 +5,26 @@ document. Read this first; it is the shortest path back into the work.
 
 ## State
 
-`main`, tree clean, 365 tests passing, all ten examples and all seven scaffolds
+`main`, tree clean, 368 tests passing, all ten examples and all seven scaffolds
 reporting **No layout problems found**. 24 check rules, 7 document types,
 4 themes. (The count earlier notes gave was low: three of the rules live in the
 `CHARACTER_RULES` table and the regex those notes counted with only sees the
 ones written out as `Finding("…")`.)
 
-Phases 1 and 2 of the quality program are shipped. Phase 3's four capabilities
-— footnotes, `data-pdf`, `data-binding`, `data-print` — are built; footnotes are
-now documented, exercised by a real document and guarded by a rule, and press
-is broken in two measurable ways (below).
+Phases 1, 2 and 3 of the quality program are shipped: footnotes, `data-pdf`,
+`data-binding` and `data-print` are built, documented, exercised by a real
+document and — where they can be — guarded by rules. Press bleeds properly as
+of this session; `--bleed` is the ink, and the page box is derived from it so
+the crop marks have somewhere to live.
+
+The README is now the showcase: every example appears there, two pages each,
+plus the spread, the footnote close-up and a press corner. If you add an
+example, add its strip — `SHOWCASE` in `docs/gallery/shoot.py` — or it is a
+document nobody sees.
 
 ## Do these in order
 
-### 1. Fix `data-print="press"` — it produces a bleed nothing bleeds into
-
-The newest finding, and the only shipped capability that is actively wrong.
-Both halves were measured on a rendered page:
-
-- **Crop marks are clipped.** WeasyPrint draws them inside the bleed area and
-  the media box ends there. At `bleed: 3mm` only a stub of each mark survives;
-  at 8mm they are whole. So the page box needs room for the marks *outside* the
-  artwork bleed — which means a larger CSS `bleed` than the 3mm of ink.
-- **Nothing reaches the bleed.** `.bleed` and the cover plate stop at the trim
-  edge, so the 3mm beyond it is white — exactly the sliver a bleed exists to
-  prevent. Content painted past the page box *does* reach the media box
-  (verified with a control: a band with `margin-left: calc(-20mm - 3mm)` under
-  `bleed: 3mm` paints to x=0), so the fix is reachable. It needs `.bleed` widened
-  by the bleed distance and the cover's absolutely-positioned furniture moved
-  with it, in the injected `production_css` only.
-
-Do not shoot a press image for the README until this is fixed; the last
-gallery commit exists because the README was advertising defects.
-
-### 2. Finish the look pass
+### 1. Finish the look pass
 
 All pages render under `examples/*/document.pages/`; regenerate with
 `folio build <doc> -q && folio preview <doc>.pdf`.
@@ -57,13 +43,13 @@ change. If the page is full, the "regression" reported two sessions ago was
 wrong and can be disregarded. `thin-page` will not catch it either way — it
 fires below 45% and that page sits near 52%.
 
-### 3. One CJK document through the whole loop
+### 2. One CJK document through the whole loop
 
 folio's font machinery is well tested and **no CJK document has ever been looked
 at**. All ten examples are Latin. This is where the kit has the most to prove
 and the least evidence, and where its worst historical defect lived.
 
-### 4. Validate the PDF variants
+### 3. Validate the PDF variants
 
 `data-pdf` declares PDF/A and PDF/UA; nothing has ever been run through a
 validator. Claim only what one confirms — WeasyPrint states its output is not

@@ -49,6 +49,20 @@ at its edge.
   document with footnotes was built in all four directions. `var(--fs-note)`
   and `var(--fs-note-call)` now name the step each theme wants.
 
+### Changed — the README is the showcase, not a sample of one
+A visitor landing on the repository saw eight documents at one page each and
+had no way to find out what any of them contained. Every example now has its
+own strip — two pages, at a size where the type is legible rather than merely
+shaped — with a line saying what that document is and which part of the kit it
+exercises. The overview grid carries all ten rather than eight, and the three
+things that exist only because the output is paper (a bound opening, footnotes
+at the foot of a page, the corner of a press file) have a section of their own.
+An install line sits directly under the fold, so nobody has to scroll the
+gallery to find out how to try it.
+
+`docs/gallery/shoot.py` grows a `SHOWCASE` table, so adding an example without
+adding its strip is now a visible omission rather than an invisible one.
+
 ### Added — `examples/essay`, the tenth document and the first bound one
 A scholarly essay on the footnote, set in `editorial` and bound. It is the only
 example that carries footnotes, the only one with `data-binding="book"`, and
@@ -68,18 +82,29 @@ comment explaining that WeasyPrint has no automatic footnote machinery. It has
 had one since the commit before last. The scaffold now demonstrates a footnote
 in its second paragraph and ends on a colophon and further reading.
 
-### Found, not fixed — `data-print="press"` produces a bleed nothing bleeds into
-Measured on a rendered page, not reasoned about. Two defects, both invisible in
-a valid PDF:
+### Fixed — `data-print="press"` produced a bleed that nothing bled into
+Found by looking at a rendered corner, not at the PDF. `bleed: 3mm` on its own
+gives a page box 3mm larger with nothing painted in it, which is precisely the
+defect a bleed exists to prevent: the guillotine cuts a millimetre wide and
+finds white. Two halves, both now fixed and both under test.
 
-- The crop marks are drawn inside the bleed area and clipped by the media box.
-  At `bleed: 3mm` only a stub of each mark survives; at 8mm they are whole.
-- Nothing extends into the bleed. `.bleed` and the cover plate reach the *trim*
-  edge, so the 3mm beyond it is white — which is the one thing a bleed exists
-  to prevent, since a guillotine cutting a millimetre wide leaves a white
-  sliver. Content painted past the page box does reach the media box, verified
-  with a control, so the fix is reachable; it needs the cover's absolute
-  positioning reworked and is not a one-line change.
+- **The ink goes out there deliberately.** `--bleed` is how far past the trim it
+  runs, and every element that reaches an edge is widened by it: `.bleed`
+  blocks, the cover band and the cover plate. The cover itself bleeds on all
+  four edges through a layer behind it — it could not simply be made 6mm
+  taller, because 303mm of block inside a 297mm page area paginates, and a
+  two-page cover is a worse defect than no bleed. The layer takes
+  `background: inherit`, so a navy cover bleeds navy and a paper one bleeds
+  paper with no per-theme rule.
+- **The marks have somewhere to live.** WeasyPrint draws each crop mark from
+  the media edge inward for *half* the bleed, so at 3mm it was a 1.5mm stub
+  drawn on top of the artwork. The page box is now twice the ink bleed plus
+  2mm, which puts a 4mm mark 1mm clear of 3mm of ink.
+
+`--bleed` is a token, so a printer who asks for 5mm gets it from `brand.css` and
+the page box follows. Verified on both cover kinds — a plate under `editorial`
+and a dark gradient under `report` — with page counts unchanged and both
+documents still reporting no layout problems.
 
 ### Added — four rules that read the characters, not the geometry
 Every rule folio had measured a box. These read what was typed, which is the

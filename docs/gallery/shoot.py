@@ -88,6 +88,35 @@ def themed_pages(example: str, theme: str) -> Path:
     return work / "document.pages"
 
 
+def press_pages(example: str) -> Path:
+    """Build a copy of one example as it would go to a printer.
+
+    `data-print="press"` belongs on the file sent to press and on nothing else,
+    so the shipped example does not carry it and the shot is taken from a copy
+    — the same argument as `themed_pages`, and for the same reason: what is on
+    the page has to be a real build rather than a picture of one.
+    """
+    src = ROOT / "examples" / example
+    work = Path(tempfile.mkdtemp(prefix="folio-shoot-press-")) / example
+    shutil.copytree(
+        src,
+        work,
+        ignore=shutil.ignore_patterns("charts", "*.pdf", "*.page.html", "*.pages"),
+    )
+    doc = work / "document.html"
+    doc.write_text(
+        doc.read_text(encoding="utf-8").replace("<body ", '<body data-print="press" ', 1),
+        encoding="utf-8",
+    )
+    subprocess.run([sys.executable, "-m", "folio", "build", str(doc), "-q"], check=True)
+    subprocess.run(
+        [sys.executable, "-m", "folio", "preview", str(doc.with_suffix(".pdf")), "--dpi", str(DPI)],
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+    return work / "document.pages"
+
+
 def page(pages_dir: Path, n: int) -> Path:
     """The nth page, whatever the padding.
 
@@ -155,6 +184,21 @@ def detail(page: Path, out: Path, *, top: float, bottom: float, width: int, marg
     print(f"  {out.name:<24} {canvas.width}×{canvas.height}  {out.stat().st_size // 1024}KB")
 
 
+def corner(page: Path, out: Path, *, across: float, down: float, width: int, margin: int) -> None:
+    """The corner of a sheet, for the things that only exist at its edge.
+
+    A press file's crop marks and bleed are three millimetres of the page and
+    invisible at any size that fits a whole one in a README.
+    """
+    im = Image.open(page).convert("RGB")
+    box = im.crop((0, 0, round(im.width * across), round(im.height * down)))
+    cell = box.resize((width, round(width * box.height / box.width)), Image.LANCZOS)
+    canvas = Image.new("RGB", (width + margin * 2, cell.height + margin * 2), BG)
+    canvas.paste(cell, (margin, margin))
+    canvas.quantize(colors=256, method=Image.MAXCOVERAGE).save(out, optimize=True)
+    print(f"  {out.name:<24} {canvas.width}×{canvas.height}  {out.stat().st_size // 1024}KB")
+
+
 def grid(rows: list[list[Path]], out: Path, *, width: int, margin: int) -> None:
     """Two strips stacked, so eight documents fit one image."""
     cells = [[scaled(p, width) for p in row] for row in rows]
@@ -171,16 +215,39 @@ def grid(rows: list[list[Path]], out: Path, *, width: int, margin: int) -> None:
     print(f"  {out.name:<24} {w}×{h}  {out.stat().st_size // 1024}KB")
 
 
+# The showcase: every example, two pages each, in the order the README reads
+# them. A visitor who lands on the repo should be able to see what each kind of
+# document actually looks like without cloning anything, and one page per
+# document does not show what a document *does* — a cover proves nothing about
+# how the inside is set. The pairs are chosen for that: a cover beside the page
+# carrying the most of what that document is for.
+SHOWCASE = [
+    ("quarterly-report", (1, 3)),
+    ("essay", (1, 5)),
+    ("exhibition", (1, 2)),
+    ("survey", (1, 3)),
+    ("lookbook", (1, 2)),
+    ("architecture", (1, 2)),
+    ("programme", (1, 2)),
+    ("case-study", (1, 2)),
+    ("runbook", (1, 2)),
+    ("menu", (1,)),  # one sheet, and a second cell would be a hole
+]
+
+
 if __name__ == "__main__":
     exhibition, survey = pages("exhibition"), pages("survey")
     lookbook, architecture = pages("lookbook"), pages("architecture")
     programme, menu = pages("programme"), pages("menu")
     case_study, runbook = pages("case-study"), pages("runbook")
 
-    # Eight documents from eight fields, one page each — the quarterly report
-    # is the hero above, so it sits this one out. Ordered for contrast rather
+    # Every document folio ships, one page each. Ordered for contrast rather
     # than by type: at this size what reads is the shape and the ink, not the
-    # words, and two documents that look alike waste a cell.
+    # words, and two documents that look alike waste a cell. The strips further
+    # down are where a visitor sees what each one actually contains; this is the
+    # shot that says how many there are.
+    essay_pages = pages("essay")
+    quarterly = pages("quarterly-report")
     grid(
         [
             [
@@ -188,12 +255,14 @@ if __name__ == "__main__":
                 page(survey, 1),
                 page(lookbook, 2),
                 page(architecture, 1),
+                page(quarterly, 1),
             ],
             [
                 page(programme, 1),
                 page(menu, 1),
                 page(case_study, 1),
                 page(runbook, 1),
+                page(essay_pages, 1),
             ],
         ],
         OUT / "documents.png",
@@ -232,6 +301,35 @@ if __name__ == "__main__":
     # are legible at different sizes: the opening shows the mirrored gutter and
     # the running heads swapping sides, and only a close-up shows that the
     # notes under the rule are numbered to match their calls.
-    essay = pages("essay")
+    essay = essay_pages
     spread(page(essay, 2), page(essay, 3), OUT / "spread.png", width=799, margin=54)
     detail(page(essay, 5), OUT / "footnotes.png", top=0.60, bottom=0.99, width=1652, margin=54)
+
+    # One strip per document, at a size where the type is legible rather than
+    # merely shaped. Built from the pages already rendered above where possible.
+    built = {
+        "quarterly-report": quarterly,
+        "exhibition": exhibition,
+        "survey": survey,
+        "lookbook": lookbook,
+        "architecture": architecture,
+        "programme": programme,
+        "menu": menu,
+        "case-study": case_study,
+        "runbook": runbook,
+        "essay": essay,
+    }
+    for name, wanted in SHOWCASE:
+        pages_dir = built.get(name) or pages(name)
+        strip(
+            [page(pages_dir, n) for n in wanted],
+            OUT / f"doc-{name}.png",
+            width=799,
+            margin=54,
+        )
+
+    # The corner of a press file: crop marks in the margin, artwork running
+    # past the trim into the bleed. Three millimetres of the sheet, and the
+    # only part of `data-print="press"` anyone can see.
+    press = press_pages("exhibition")
+    corner(page(press, 1), OUT / "press.png", across=0.46, down=0.30, width=1100, margin=54)
