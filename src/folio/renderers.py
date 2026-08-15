@@ -31,7 +31,9 @@ class Renderer:
     def available(self) -> bool:  # pragma: no cover - trivial
         raise NotImplementedError
 
-    def render(self, html: str, base_dir: Path, out: Path) -> None:  # pragma: no cover
+    def render(
+        self, html: str, base_dir: Path, out: Path, variant: str | None = None
+    ) -> None:  # pragma: no cover
         raise NotImplementedError
 
 
@@ -47,10 +49,15 @@ class WeasyRenderer(Renderer):
         except Exception:
             return False
 
-    def render(self, html: str, base_dir: Path, out: Path) -> None:
+    def render(self, html: str, base_dir: Path, out: Path, variant: str | None = None) -> None:
         from weasyprint import HTML
 
-        HTML(string=html, base_url=str(base_dir)).write_pdf(out)
+        # Metadata comes from the document's own <head> — WeasyPrint reads
+        # <title>, and the author/description/keywords meta tags — so there is
+        # nothing to pass here for it. `pdf_variant` is the one thing a
+        # document cannot express in markup.
+        options = {"pdf_variant": variant} if variant else {}
+        HTML(string=html, base_url=str(base_dir)).write_pdf(out, **options)
 
 
 class ChromiumRenderer(Renderer):
@@ -65,7 +72,14 @@ class ChromiumRenderer(Renderer):
     def available(self) -> bool:
         return self._bin is not None
 
-    def render(self, html: str, base_dir: Path, out: Path) -> None:
+    def render(
+        self, html: str, base_dir: Path, out: Path, variant: str | None = None
+    ) -> None:
+        # `variant` is accepted and ignored: Chromium's print-to-PDF has no
+        # PDF/A or PDF/UA mode. A document that asks for one and is rendered
+        # here silently gets an ordinary PDF, which is the same bargain the
+        # rest of this renderer makes — `build` already warns that running
+        # headers, page numbers and contents references are missing too.
         if not self._bin:
             raise RenderError("no Chromium binary found")
         # write beside the source so relative asset paths still resolve

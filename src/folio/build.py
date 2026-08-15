@@ -56,6 +56,54 @@ def detect_theme(html: str) -> str:
     return name
 
 
+_PDF_ATTR = re.compile(r"<body[^>]*\bdata-pdf=[\"']([\w/.-]+)[\"']", re.I)
+
+# What a document can ask to be. The two aliases are the cases that actually
+# come up — a deliverable that must survive in an archive, and one that must be
+# readable by assistive technology — and the raw variant names are accepted for
+# anyone who knows exactly which conformance level they are being asked for.
+#
+# `folio` declares; it does not certify. WeasyPrint states that its output is
+# not guaranteed to satisfy these specifications, so what a `data-pdf` document
+# gets is a file that identifies itself correctly and is structured to have a
+# chance of validating. Run a validator before promising anyone else.
+PDF_VARIANTS = {
+    "archival": "pdf/a-3b",
+    "accessible": "pdf/ua-1",
+}
+_RAW_VARIANTS = frozenset(
+    {
+        "pdf/a-1b", "pdf/a-2b", "pdf/a-3b", "pdf/a-4b",
+        "pdf/a-2u", "pdf/a-3u", "pdf/a-4u",
+        "pdf/ua-1",
+    }
+)
+
+
+def detect_pdf_variant(html: str) -> str | None:
+    """What kind of PDF this document says it needs to be.
+
+    A document property rather than a build flag, for the same reason
+    `data-furniture` is one: an invoice is an invoice wherever it is rebuilt,
+    and a flag has to be remembered every time. An archival deliverable that
+    only conforms when someone remembers the flag is not an archival
+    deliverable.
+    """
+    m = _PDF_ATTR.search(html)
+    if not m:
+        return None
+    asked = m.group(1).lower()
+    if asked in PDF_VARIANTS:
+        return PDF_VARIANTS[asked]
+    if asked in _RAW_VARIANTS:
+        return asked
+    raise BuildError(
+        f"unknown PDF variant {asked!r} in <body data-pdf=…>\n"
+        f"  aliases: {', '.join(sorted(PDF_VARIANTS))}\n"
+        f"  variants: {', '.join(sorted(_RAW_VARIANTS))}"
+    )
+
+
 def _stylesheet(src: Path, theme: str, prof: Profile | None = None) -> str:
     """Kit, then the document's own scripts, then the project's brand.
 
@@ -200,7 +248,7 @@ def build(
     if pdf == src:
         raise BuildError("output would overwrite the source document")
     pdf.parent.mkdir(parents=True, exist_ok=True)
-    renderer.render(doc, src.parent, pdf)
+    renderer.render(doc, src.parent, pdf, detect_pdf_variant(raw))
     if not quiet:
         print(f"  pdf       {pdf}")
 

@@ -103,6 +103,35 @@ Ask, or infer from the audience — do not always take the default.
 
 Set it on the document (`<body data-theme="…">`), never per element.
 
+## When the PDF itself has to conform
+
+Some deliverables are judged as files, not as pages: an archive will reject a
+PDF that does not identify itself, and a public-sector reader may need one that
+assistive technology can navigate. Declare it on the document, next to the
+theme:
+
+```html
+<body data-theme="report" data-pdf="archival">    <!-- PDF/A-3b -->
+<body data-theme="report" data-pdf="accessible">  <!-- PDF/UA-1 -->
+```
+
+Raw variant names (`pdf/a-2b`, `pdf/a-4u`, `pdf/ua-1`, …) are accepted too. An
+unrecognised one is refused at build time rather than silently ignored.
+
+It is a document property and not a flag for the same reason `data-furniture`
+is: an archival deliverable that only conforms when someone remembers the flag
+is not an archival deliverable.
+
+**folio declares; it does not certify.** WeasyPrint states its output is not
+guaranteed to satisfy these specifications, so what you get is a file that
+identifies itself correctly and is structured to have a chance of validating —
+`heading-skip`, `image-alt` and `image-role` already enforce most of what
+PDF/UA asks of the structure. Run a validator before promising anyone else.
+
+Document metadata needs nothing here: `<title>` and the usual `author`,
+`description` and `keywords` meta tags in the document's own `<head>` are read
+straight through into the PDF.
+
 ## The loop — do not skip a pass
 
 A document is not done when it renders. Print defects are silent by nature:
