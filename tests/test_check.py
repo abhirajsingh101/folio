@@ -37,25 +37,7 @@ BLEED = "margin-left:-20mm;margin-right:-20mm;width:calc(100% + 40mm)"
 NO_BODY_MARGIN = "body{margin:0}"
 
 
-def _faces_available() -> bool:
-    """Whether this machine's pango exports what face resolution needs.
-
-    CI answered no on all four runners the first time these ran there, and the
-    two rules that read a resolved face go quiet when it does — which is the
-    designed behaviour and makes their tests unrunnable rather than failing.
-    """
-    from folio.faces import FacesUnavailable, _ffi
-
-    try:
-        _ffi()
-    except FacesUnavailable:
-        return False
-    return True
-
-
-needs_faces = pytest.mark.skipif(
-    not _faces_available(), reason="this pango does not export the face-resolution symbols"
-)
+from conftest import needs_faces  # noqa: E402
 
 
 def rules(html: str) -> set[str]:

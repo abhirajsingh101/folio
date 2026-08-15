@@ -6,9 +6,12 @@ import pytest
 
 pytest.importorskip("weasyprint", reason="faces reads WeasyPrint's pango layout")
 
+from conftest import needs_faces  # noqa: E402
 from weasyprint import HTML  # noqa: E402
 
 from folio.faces import feature_tags, resolved_runs  # noqa: E402
+
+pytestmark = needs_faces
 
 
 def _first_textbox(html: str):
