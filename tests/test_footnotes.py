@@ -11,6 +11,7 @@ pytest.importorskip("weasyprint", reason="footnotes are a print-layout feature")
 from weasyprint import HTML  # noqa: E402
 
 from folio.assets import css_text  # noqa: E402
+from folio.build import flatten_footnotes  # noqa: E402
 
 PAGE = "@page{size:A4;margin:20mm}"
 
@@ -18,7 +19,7 @@ PAGE = "@page{size:A4;margin:20mm}"
 def _render(body: str):
     html = (
         f"<!DOCTYPE html><html><head><style>{css_text()}{PAGE}</style></head>"
-        f"<body>{body}</body></html>"
+        f"<body>{flatten_footnotes(body)}</body></html>"
     )
     return HTML(string=html, base_url=str(Path("/tmp"))).render().pages[0]
 
@@ -57,3 +58,21 @@ def test_the_call_is_numbered_and_the_marker_matches():
     )
     joined = "".join(t for _, t in _texts(page))
     assert "1" in joined and "2" in joined, joined
+
+
+def test_a_note_authored_across_source_lines_sets_as_one_paragraph():
+    """WeasyPrint turns a newline inside a footnote into a hard break.
+
+    Verified as a renderer bug rather than a stylesheet one: `float: footnote`
+    with no folio CSS at all breaks at the newline, while the same text in a
+    plain span does not. No stylesheet can reach it, so `build.py` collapses
+    whitespace inside a `.fn` before the document is rendered — an author
+    should be able to wrap a note across source lines like any other prose.
+    """
+    page = _render(
+        '<p>The claim<span class="fn">A note long enough that its author\n'
+        "would naturally break it across two source lines rather than let it\n"
+        'run off the edge of the editor.</span> continues.</p>'
+    )
+    notes = [t for _, t in _texts(page) if "naturally break" in t or "run off" in t]
+    assert len(notes) == 1, f"the note fragmented at its source newlines: {notes}"

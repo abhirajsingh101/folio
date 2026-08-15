@@ -87,6 +87,28 @@ def _wrap(html: str, src: Path, prof: Profile) -> str:
     return SKELETON.format(lang=prof.lang, dir=prof.direction, title=title, body=html)
 
 
+_FOOTNOTE = re.compile(r'(<span[^>]*\bclass="[^"]*\bfn\b[^"]*"[^>]*>)(.*?)(</span>)', re.S | re.I)
+
+
+def flatten_footnotes(html: str) -> str:
+    """Collapse whitespace inside a footnote before it is rendered.
+
+    A renderer bug, worked around here because no stylesheet can reach it:
+    WeasyPrint turns a newline inside a `float: footnote` element into a hard
+    line break, so a note wrapped across two source lines sets as two ragged
+    lines at the foot of the page. Confirmed as the renderer's rather than the
+    kit's — `float: footnote` with no folio CSS at all does it, and the same
+    text in a plain span does not.
+
+    An author should be able to wrap a note in their editor like any other
+    prose, so the whitespace is normalised at build time. Only whitespace runs
+    are touched; markup inside the note is left exactly as written.
+    """
+    return _FOOTNOTE.sub(
+        lambda m: m.group(1) + re.sub(r"\s+", " ", m.group(2)) + m.group(3), html
+    )
+
+
 def _inject(html: str, css: str) -> str:
     tag = f"<style>\n{css}\n</style>"
     if "</head>" in html:
@@ -148,7 +170,7 @@ def prepare(src: Path) -> tuple[str, str]:
     theme = detect_theme(raw)
     prof = detect_scripts(raw)
     run_charts(src, quiet=True, theme=theme)
-    return _inject(_wrap(raw, src, prof), _stylesheet(src, theme, prof)), theme
+    return _inject(_wrap(flatten_footnotes(raw), src, prof), _stylesheet(src, theme, prof)), theme
 
 
 def build(
@@ -169,7 +191,7 @@ def build(
     prof = detect_scripts(raw)
     run_charts(src, quiet, theme)
 
-    doc = _inject(_wrap(raw, src, prof), _stylesheet(src, theme, prof))
+    doc = _inject(_wrap(flatten_footnotes(raw), src, prof), _stylesheet(src, theme, prof))
     if not quiet:
         print(f"  theme     {theme}")
         print(f"  scripts   {prof.describe()}")

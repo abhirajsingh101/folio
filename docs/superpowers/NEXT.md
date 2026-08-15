@@ -45,12 +45,13 @@ capability was verified working on this renderer before it was proposed.
 
 Ordered by how much they unlock rather than by effort:
 
-- **Footnotes** — SHIPPED (`489ceda`) with one known defect. Structurally
-  correct: right page, right number, right order, screen fallback in place.
-  Visibly wrong: the note text breaks its first line early and continues at
-  the left margin instead of aligning under the marker. **Fix that before any
-  scaffold or example uses `.fn`.** Reproduce by building any document with a
-  two-line note and looking at the foot of the page — no rule sees it.
+- **Footnotes** — SHIPPED and verified on a rendered page (`489ceda`, wrap
+  fixed in the commit after). Notes are authored inline, carry the renderer's
+  counter, find their own page, and degrade to a marked aside on screen.
+  One thing to know: WeasyPrint turns a newline *inside* a footnote into a
+  hard line break, which no stylesheet can reach — `build.flatten_footnotes`
+  collapses whitespace inside `.fn` before rendering. Do not remove it, and do
+  not look for the cause in CSS.
 - **PDF conformance and metadata.** `write_pdf()` is currently called with *no
   options at all*: no PDF/A, no PDF/UA, no metadata. This is what stands
   between folio and archival, regulatory and accessibility-mandated work, and
