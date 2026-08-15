@@ -53,3 +53,90 @@ def test_a_press_ready_document_carries_bleed():
 def test_an_ordinary_document_has_no_bleed():
     page = _pages(production_css("<body>"))[0]
     assert not any((getattr(page, "bleed", None) or {}).values())
+
+
+# ── ink has to reach into the bleed, or the bleed is decoration ───────────
+
+# A bleed is 3mm of ink *past* the trim, so the guillotine has something to cut
+# through. A page box 3mm larger with nothing painted in it is the defect this
+# section exists to catch: it looks correct in a PDF viewer and comes back from
+# the printer with a white sliver down one edge.
+
+PRESS = '<body data-print="press">'
+INK_MM = 3
+MM = 96 / 25.4  # WeasyPrint lays out in CSS px
+
+
+def _walk(box):
+    yield box
+    for child in getattr(box, "children", ()) or ():
+        yield from _walk(child)
+
+
+def _press_page(body: str):
+    from folio.assets import css_text
+
+    html = (
+        f"<!DOCTYPE html><html><head><style>{css_text()}"
+        f"{production_css(PRESS)}</style></head><body>{body}</body></html>"
+    )
+    return HTML(string=html, base_url="/tmp").render().pages[0]
+
+
+def _border_rect(box):
+    try:
+        return (
+            box.border_box_x(),
+            box.border_box_y(),
+            box.border_box_x() + box.border_width(),
+            box.border_box_y() + box.border_height(),
+        )
+    except (AttributeError, TypeError):
+        return None
+
+
+def test_a_bleeding_block_runs_past_the_trim():
+    """`.bleed` cancels the page margin. Under press it must overshoot it."""
+    page = _press_page('<div class="bleed" style="height:40mm">band</div>')
+    lefts = [
+        r[0] for b in _walk(page._page_box) if (r := _border_rect(b)) and r[2] - r[0] > 100 * MM
+    ]
+    assert lefts and min(lefts) <= -INK_MM * MM + 1, (
+        f"nothing reached {INK_MM}mm past the trim: leftmost edge at {min(lefts, default=0) / MM:.1f}mm"
+    )
+
+
+def test_the_cover_ink_runs_past_every_trim_edge():
+    """A cover fills the sheet, so it bleeds on four edges rather than two.
+
+    The cover cannot simply be made 6mm taller — 303mm of block inside a 297mm
+    page area paginates — so the ink is carried by a layer behind it.
+    """
+    page = _press_page('<section class="cover"><h1>Title</h1></section>')
+    w, h = page._page_box.width, page._page_box.height
+    covering = [
+        r
+        for b in _walk(page._page_box)
+        if (r := _border_rect(b))
+        and r[0] <= -INK_MM * MM + 1
+        and r[1] <= -INK_MM * MM + 1
+        and r[2] >= w + INK_MM * MM - 1
+        and r[3] >= h + INK_MM * MM - 1
+    ]
+    assert covering, "no layer reaches past all four trim edges of the cover"
+
+
+def test_the_crop_marks_clear_the_ink():
+    """The marks must not be drawn on top of the bled artwork.
+
+    WeasyPrint draws each crop mark from the media edge inward for *half* the
+    bleed, so the gap between the mark and the trim line is also half the
+    bleed. At `bleed: 3mm` that is a 1.5mm stub sitting inside the 3mm of ink;
+    the page box has to be larger than the ink bleed for the marks to have
+    anywhere to live.
+    """
+    page = _pages(production_css(PRESS))[0]
+    bleed = page.bleed
+    assert all(v / 2 >= INK_MM * MM for v in bleed.values()), (
+        f"marks would be drawn over the ink: half-bleed {bleed} against {INK_MM}mm of ink"
+    )

@@ -157,6 +157,24 @@ def production_css(html: str) -> str:
     box larger than the trimmed sheet, and crop marks are printed instructions
     to a guillotine. Both look like defects in a PDF meant to be read on a
     screen, which is why this is opt-in rather than a default.
+
+    Two things the first version of this got wrong, both found by looking at a
+    rendered corner rather than at the PDF:
+
+    **The page box is not the ink bleed.** `bleed: 3mm` alone gives a page box
+    3mm larger with nothing painted in it — which is exactly the defect a bleed
+    exists to prevent, since the guillotine cuts a millimetre wide and finds
+    white. The ink has to be pushed out there deliberately: `--bleed` is how far
+    past the trim it goes, and every block that reaches an edge is widened by it.
+
+    **The marks need room outside the ink.** WeasyPrint draws each crop mark
+    from the media edge inward for *half* the bleed, so the gap between mark and
+    trim is also half the bleed. At 3mm that is a 1.5mm stub sitting on top of
+    the artwork. The page box is therefore twice the ink bleed plus 2mm, which
+    puts a 4mm mark 1mm clear of 3mm of ink.
+
+    A printer who asks for 5mm gets it from `brand.css` — appended after this —
+    by setting `--bleed`; the page box follows, because it is derived.
     """
     m = _PRINT_ATTR.search(html)
     if not m:
@@ -168,7 +186,41 @@ def production_css(html: str) -> str:
         )
     # 3mm is the trade standard either side of the trim.
     return """/* ── Press-ready: bleed and crop marks ── */
-@page { bleed: 3mm; marks: crop cross; }"""
+:root { --bleed: 3mm; }
+@page { bleed: calc(var(--bleed) * 2 + 2mm); marks: crop cross; }
+
+/* A full-bleed block already cancels the page margin; now it overshoots it. */
+.bleed {
+  margin-left: calc(-1 * (var(--page-margin-x) + var(--bleed)));
+  margin-right: calc(-1 * (var(--page-margin-x) + var(--bleed)));
+  width: calc(100% + 2 * (var(--page-margin-x) + var(--bleed)));
+}
+
+/* The cover fills the sheet, so it bleeds on four edges rather than two, and
+   it cannot simply be made taller: 303mm of block inside a 297mm page area
+   paginates, and a two-page cover is a worse defect than no bleed. A layer
+   behind the cover carries the ink instead — `background: inherit` takes
+   whatever the theme painted, so a navy cover bleeds navy and a paper one
+   bleeds paper, with no per-theme rule here. */
+.cover::after {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--bleed));
+  left: calc(-1 * var(--bleed));
+  right: calc(-1 * var(--bleed));
+  bottom: calc(-1 * var(--bleed));
+  background: inherit;
+  z-index: -1;
+}
+
+/* The band across the head of the cover, and the plate that may cover it. */
+.cover::before, img.cover-plate {
+  top: calc(-1 * var(--bleed));
+  left: calc(-1 * var(--bleed));
+  height: calc(var(--cover-plate-h, 0) + var(--bleed));
+}
+.cover::before { right: calc(-1 * var(--bleed)); }
+img.cover-plate { width: calc(100% + 2 * var(--bleed)); }"""
 
 
 def _stylesheet(

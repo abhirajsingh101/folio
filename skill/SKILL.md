@@ -168,9 +168,13 @@ binding. The running heads swap too — the book's title on the verso, the
 current section on the recto — so a reader riffling the right-hand edge sees
 where they are rather than what they are holding.
 
-`data-print="press"` adds a 3mm bleed and crop marks. Only ever put it on the
-file you send to the printer: it makes the page box larger than the trimmed
-sheet, and the marks are instructions to a guillotine.
+`data-print="press"` adds crop marks and pushes 3mm of ink past the trim, so a
+guillotine cutting a millimetre wide finds artwork rather than white: the cover,
+its plate and every `.bleed` block are widened to reach it. Only ever put it on
+the file you send to the printer — the page box is larger than the trimmed
+sheet and the marks are instructions to a machine, so both read as defects on
+screen. A printer who wants 5mm instead of 3mm gets it from `brand.css`:
+`:root { --bleed: 5mm }`, and the page box follows.
 
 ## The loop — do not skip a pass
 
