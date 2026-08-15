@@ -538,3 +538,60 @@ table.keep, figure.keep, .keep { break-inside: avoid; }
    The band then pulls the block above it down instead, which is also what
    stops the paragraph before a plate being stranded on its own page. */
 .bleed { break-before: avoid; }
+
+/* ── Footnotes ──────────────────────────────────────────── */
+
+/* Authored inline — `<span class="fn">the note</span>` right where it is
+   referenced — and moved to the foot of whatever page that sentence lands on.
+   The author never tracks a number or a page: `float: footnote` does both, and
+   the counter is the renderer's.
+
+   This is the one component whose behaviour a browser cannot reproduce. No
+   browser implements `float: footnote`, so the screen block below keeps the
+   note visible in the standalone `.page.html` rather than letting it vanish or
+   sit mid-sentence. */
+.fn {
+  float: footnote;
+  font-size: 0.86em;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+::footnote-call {
+  content: counter(footnote);
+  vertical-align: super;
+  font-size: 0.7em;
+  line-height: 1;
+  color: var(--brand);
+}
+
+::footnote-marker {
+  content: counter(footnote) ".";
+  padding-right: 0.4em;
+  color: var(--brand);
+  font-variant-numeric: tabular-nums;
+}
+
+@page {
+  @footnote {
+    border-top: 0.5px solid var(--rule);
+    padding-top: 1.6mm;
+    margin-top: 3mm;
+    /* The area may take at most this much of the page before the note is
+       carried instead — a page that is more note than text is a page that
+       wanted an appendix. */
+    max-height: 45%;
+  }
+}
+
+@media screen {
+  /* No browser floats a footnote, so on screen it becomes an aside in the
+     flow, marked as one rather than left to read as an interruption. */
+  .fn {
+    float: none;
+    display: block;
+    margin: 2mm 0 2mm 6mm;
+    padding-left: 3mm;
+    border-left: 2px solid var(--rule);
+  }
+}
